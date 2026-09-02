@@ -9,7 +9,7 @@ export type Parsed =
     }
   | { command: "list"; global: boolean }
   | { command: "remove"; name: string; global: boolean }
-  | { command: "find"; query: string }
+  | { command: "find"; query: string; json: boolean; limit: number }
   | { command: "init"; name: string; global: boolean }
   | { command: "check"; path?: string }
   | { command: "help" };
@@ -108,16 +108,30 @@ export function parseArgv(argv: string[]): Parsed {
     }
 
     case "find": {
-      const query = rest.find((arg) => !arg.startsWith("-"));
-      if (!query) {
-        throw new Error("find requires a <query> argument");
-      }
-      for (const arg of rest) {
-        if (arg.startsWith("-")) {
+      let json = false;
+      let limit = 10;
+      const positional: string[] = [];
+      for (let i = 0; i < rest.length; i++) {
+        const arg = rest[i]!;
+        if (arg === "--json") {
+          json = true;
+        } else if (arg === "--limit") {
+          const value = nextValue(rest, i);
+          if (!value) {
+            throw new Error("Missing value for --limit");
+          }
+          limit = Number(value);
+          if (!Number.isFinite(limit) || limit < 1) {
+            throw new Error("--limit must be a positive number");
+          }
+          i++;
+        } else if (arg.startsWith("-")) {
           throw new Error(`Unknown flag: ${arg}`);
+        } else {
+          positional.push(arg);
         }
       }
-      return { command: "find", query };
+      return { command: "find", query: positional.join(" "), json, limit };
     }
 
     case "init": {

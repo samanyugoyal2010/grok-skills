@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const SKILL_MD_CANDIDATES = (skillName: string) => [
+  path.join(process.cwd(), "skills", skillName, "SKILL.md"),
   path.join(process.cwd(), "../../skills", skillName, "SKILL.md"),
   path.join("/workspace/skills", skillName, "SKILL.md"),
 ];

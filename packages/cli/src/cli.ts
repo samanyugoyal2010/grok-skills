@@ -7,9 +7,11 @@ import {
   grokSkillsDir,
   installFromSource,
   listInstalled,
+  loadBundledCatalog,
   parseSkillMarkdown,
   removeInstalled,
   scaffoldSkill,
+  searchCatalog,
 } from "@grok-skills/core";
 import { parseArgv } from "./parse.js";
 
@@ -19,7 +21,7 @@ Usage:
   grok-skills add <source> [-g|--global] [-s|--skill <name>]... [-l|--list] [-y|--yes]
   grok-skills list [-g|--global]
   grok-skills remove <name> [-g|--global]
-  grok-skills find <query>
+  grok-skills find [query] [--json] [--limit n]
   grok-skills init <name> [--global]
   grok-skills check [path]
   grok-skills help
@@ -28,7 +30,7 @@ Examples:
   grok-skills add owner/repo
   grok-skills add owner/repo -g -s my-skill
   grok-skills list
-  grok-skills find inbox
+  grok-skills find inbox --json
   grok-skills check ./skills/foo
 `;
 
@@ -110,33 +112,65 @@ async function runRemove(parsed: Extract<ReturnType<typeof parseArgv>, { command
 }
 
 async function runFind(parsed: Extract<ReturnType<typeof parseArgv>, { command: "find" }>): Promise<void> {
-  const base = (process.env.GROK_SKILLS_REGISTRY || "http://localhost:3000").replace(/\/$/, "");
-  const url = `${base}/api/search?q=${encodeURIComponent(parsed.query)}`;
+  const bundled = loadBundledCatalog();
+  let skills = bundled.skills;
 
-  let response: Response;
-  try {
-    response = await fetch(url);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    fail(`Search failed: ${message}`);
+  const registry = process.env.GROK_SKILLS_REGISTRY?.replace(/\/$/, "");
+  if (registry) {
+    try {
+      const url = `${registry}/api/search?q=${encodeURIComponent(parsed.query)}&limit=${parsed.limit}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const payload = (await response.json()) as { skills?: typeof skills };
+        if (Array.isArray(payload.skills) && payload.skills.length > 0) {
+          skills = payload.skills;
+        }
+      }
+    } catch {
+      // Bundled catalog is the offline source of truth for Grok Bot.
+    }
   }
 
-  if (!response.ok) {
-    fail(`Search failed: ${response.status} ${response.statusText}`);
-  }
+  const results = searchCatalog(skills, parsed.query, { limit: parsed.limit });
+  const source = bundled.source || "samanyugoyal2010/grok-skills";
 
-  const payload = (await response.json()) as {
-    skills?: Array<{ name: string; source: string; installs: number }>;
-  };
-  const results = Array.isArray(payload.skills) ? payload.skills : [];
+  if (parsed.json) {
+    console.log(
+      JSON.stringify(
+        {
+          query: parsed.query,
+          count: results.length,
+          install: `grok-skills add ${source} --skill <name> -g -y`,
+          skills: results.map((skill) => ({
+            name: skill.name,
+            source: skill.source,
+            description: skill.shortDescription || skill.description,
+            runtime: skill.runtime,
+            connectors: skill.connectors,
+            approvals: skill.approvals,
+            installs: skill.installs,
+            add: `grok-skills add ${skill.source} --skill ${skill.name} -g -y`,
+          })),
+        },
+        null,
+        2
+      )
+    );
+    return;
+  }
 
   if (results.length === 0) {
     console.log("No results.");
     return;
   }
 
-  for (const item of results) {
-    console.log(`${item.name}\t${item.source}\t${item.installs}`);
+  console.log(`Install with: grok-skills add ${source} --skill <name> -g -y`);
+  console.log("");
+  for (const skill of results) {
+    console.log(`${skill.name}\t${skill.source}\t${skill.installs}`);
+    console.log(`  ${skill.shortDescription || skill.description}`);
+    console.log(`  grok-skills add ${skill.source} --skill ${skill.name} -g -y`);
+    console.log("");
   }
 }
 

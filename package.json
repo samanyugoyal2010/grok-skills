@@ -9,6 +9,7 @@
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
     "dev:web": "pnpm --filter @grok-skills/web dev",
+    "generate:skills": "node scripts/generate-skills.mjs",
     "grok-skills": "pnpm --filter @grok-skills/cli start"
   },
   "engines": {

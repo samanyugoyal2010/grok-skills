@@ -1,43 +1,46 @@
 ---
 name: expense-draft
 description: >
-  Match receipts to an expense policy and draft an expense report without submitting it.
-  Use when the user asks to file expenses, draft an expense report, or reconcile receipts.
-when-to-use: expense report, receipts, file expenses
+  Draft an expense report from receipts without submitting. Use when the user asks about expense report, file expenses, receipts.
+when-to-use: expense report, file expenses, receipts
 metadata:
   author: grok-skills
-  short-description: Draft expense report from receipts
+  short-description: Draft an expense report from receipts without submitting
   runtime: grok-bot
   connectors: [browser, drive]
   computer-use: true
   approvals: [submit-expense, purchase]
+  category: finance
 ---
 
 ## When to use
 
-Use to prepare an expense report from receipts. Do not use to book travel or to submit payments.
+Use for: Draft an expense report from receipts without submitting.
+Trigger phrases: expense report, file expenses, receipts.
+Do not use when the user wants unsupervised sends, purchases, production writes, or legal advice presented as counsel.
 
 ## Required inputs and access
 
-- Receipts (files, Drive folder, or email attachments)
-- Expense policy or default policy in this skill
-- Expense system login on the Bot computer if drafting in-app
+- Access to browser (read unless a later step says otherwise)
+- Access to drive (read unless a later step says otherwise)
+- Named time window or object (ticket, account, thread, file). If missing, ask once.
 
 ## Sequence of work
 
-1. Collect receipts and extract merchant, date, amount, currency, and category.
-2. Check each line against the policy (caps, alcohol, missing attendees).
-3. Draft the report in the expense tool or as a table. Do not submit.
-4. Flag policy exceptions with the rule that fired.
+1. Extract receipt fields.
+2. Check policy.
+3. Do not submit.
 
 ## How to validate the result
 
-Totals match the receipts. Exceptions are listed. Submit button is not pressed.
+Every item cites a source id, URL, or filename. No approval-gated action was executed. If a source is missing, say so instead of inventing data.
 
 ## What to return
 
-A draft report plus exception list, ready for the user to approve submission.
+A reviewable pack in the conversation: findings, drafts, and a list of actions that still need approval.
 
 ## Approvals and safety
 
-Submitting expenses, creating reimbursements, and any purchase require approval. If a receipt cannot be read, omit it and say so. Never reuse an old report's line items when new receipts are missing.
+These always require explicit approval: submit-expense, purchase.
+Prefer drafts over execution. No-data: stop and report. Stale-data: do not silently reuse old extracts.
+Never embed secrets. Computer-use is allowed for listed sites; stay on the user's account and listed tools.

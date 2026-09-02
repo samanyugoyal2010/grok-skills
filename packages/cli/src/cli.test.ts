@@ -25,6 +25,17 @@ describe("parseArgv", () => {
     assert.deepEqual(parseArgv(["find", "inbox"]), {
       command: "find",
       query: "inbox",
+      json: false,
+      limit: 10,
+    });
+  });
+
+  it("parses find --json --limit", () => {
+    assert.deepEqual(parseArgv(["find", "pr", "review", "--json", "--limit", "5"]), {
+      command: "find",
+      query: "pr review",
+      json: true,
+      limit: 5,
     });
   });
 });

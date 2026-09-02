@@ -1,42 +1,45 @@
 ---
 name: inbox-triage
 description: >
-  Triage an inbox into needs-reply, FYI, and noise, and draft replies for approval.
-  Use when the user asks to catch up on email, triage Gmail, or clear an inbox.
+  Triage an inbox into needs-reply, FYI, and noise. Use when the user asks about inbox triage, catch up on email, gmail review.
 when-to-use: inbox triage, catch up on email, gmail review
 metadata:
   author: grok-skills
-  short-description: Inbox triage with draft-only replies
+  short-description: Triage an inbox into needs-reply, FYI, and noise
   runtime: grok-bot
   connectors: [gmail]
   computer-use: false
   approvals: [send-email, archive]
+  category: inbox
 ---
 
 ## When to use
 
-Use when the user wants a ranked inbox digest. Do not use for sending mail unattended or for calendar scheduling.
+Use for: Triage an inbox into needs-reply, FYI, and noise.
+Trigger phrases: inbox triage, catch up on email, gmail review.
+Do not use when the user wants unsupervised sends, purchases, production writes, or legal advice presented as counsel.
 
 ## Required inputs and access
 
-- Mail connector (Gmail or Outlook) with read access
-- Optional: VIP list, mute rules, lookback window (default 24 hours)
+- Access to gmail (read unless a later step says otherwise)
+- Named time window or object (ticket, account, thread, file). If missing, ask once.
 
 ## Sequence of work
 
-1. Fetch unread and recently received threads in the window.
-2. Label each thread: needs-reply, FYI, noise, or needs-human.
-3. For needs-reply, draft a reply in the user's voice. Do not send.
-4. Return a digest grouped by label with links back to each thread.
+1. Fetch unread threads in the window.
+2. Label each thread.
+3. Draft replies for needs-reply. Do not send.
 
 ## How to validate the result
 
-Every item has a thread id. Drafts are clearly marked as drafts. No send or archive actions are executed.
+Every item cites a source id, URL, or filename. No approval-gated action was executed. If a source is missing, say so instead of inventing data.
 
 ## What to return
 
-A digest plus draft replies. Ask which drafts to send.
+A reviewable pack in the conversation: findings, drafts, and a list of actions that still need approval.
 
 ## Approvals and safety
 
-Sending, forwarding, deleting, and bulk archive require approval. Never include message bodies from other customers in a shared channel. If the mailbox cannot be read, stop and report the error.
+These always require explicit approval: send-email, archive.
+Prefer drafts over execution. No-data: stop and report. Stale-data: do not silently reuse old extracts.
+Never embed secrets. Computer-use is not required; stay on the user's account and listed tools.

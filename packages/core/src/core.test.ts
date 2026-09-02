@@ -8,22 +8,20 @@ import { checkSkill, parseSkillMarkdown } from "@grok-skills/spec";
 import {
   discoverSkills,
   installFromSource,
+  loadBundledCatalog,
   resolveSource,
   scaffoldSkill,
+  searchCatalog,
 } from "./index.js";
 
 const SKILLS_ROOT = join(import.meta.dirname, "../../../skills");
 
-test("discoverSkills finds /workspace/skills (4 skills)", async () => {
+test("discoverSkills finds the starter catalog", async () => {
   const skills = await discoverSkills(SKILLS_ROOT);
-  assert.equal(skills.length, 4);
-  const names = skills.map((s) => s.name).sort();
-  assert.deepEqual(names, [
-    "expense-draft",
-    "inbox-triage",
-    "staging-repro-pack",
-    "weekly-account-health",
-  ]);
+  assert.ok(skills.length >= 140, `expected >= 140 skills, got ${skills.length}`);
+  const names = new Set(skills.map((s) => s.name));
+  assert.ok(names.has("find-skills"));
+  assert.ok(names.has("inbox-triage"));
 });
 
 test("installFromSource from /workspace/skills creates inbox-triage in temp cwd", async () => {
@@ -59,4 +57,13 @@ test("resolveSource('vercel-labs/skills') has owner vercel-labs", () => {
   assert.equal(resolved.owner, "vercel-labs");
   assert.equal(resolved.repo, "skills");
   assert.equal(resolved.kind, "git");
+});
+
+test("bundled catalog search finds inbox and find-skills", () => {
+  const catalog = loadBundledCatalog();
+  assert.ok(catalog.count >= 140);
+  const inbox = searchCatalog(catalog.skills, "inbox triage");
+  assert.ok(inbox.some((s) => s.name === "inbox-triage"));
+  const finder = searchCatalog(catalog.skills, "find a skill");
+  assert.ok(finder.some((s) => s.name === "find-skills"));
 });

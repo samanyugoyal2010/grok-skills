@@ -13,3 +13,5 @@ export { grokSkillsDir } from "./paths.js";
 export { installFromSource, listInstalled, removeInstalled } from "./install.js";
 export { scaffoldSkill } from "./scaffold.js";
 export { reportInstall, telemetryEnabled } from "./telemetry.js";
+export { loadBundledCatalog, searchCatalog } from "./search.js";
+export type { BundledCatalog } from "./search.js";

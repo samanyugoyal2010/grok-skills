@@ -1,43 +1,45 @@
 ---
 name: weekly-account-health
 description: >
-  Score CRM accounts for churn and expansion risk and return a review list.
-  Use when the user asks for weekly account health, customer-risk, or churn review.
-when-to-use: weekly account health, churn risk, customer risk review
+  Score CRM accounts for churn and expansion risk. Use when the user asks about weekly account health, churn risk, customer-risk.
+when-to-use: weekly account health, churn risk, customer-risk
 metadata:
   author: grok-skills
-  short-description: Weekly CRM risk review
+  short-description: Score CRM accounts for churn and expansion risk
   runtime: grok-bot
   connectors: [salesforce]
   computer-use: false
   approvals: [customer-contact, send-email]
+  category: crm
 ---
 
 ## When to use
 
-Use for a recurring CRM health pass. Do not use for one-off account research that should stay in chat, or for sending outreach.
+Use for: Score CRM accounts for churn and expansion risk.
+Trigger phrases: weekly account health, churn risk, customer-risk.
+Do not use when the user wants unsupervised sends, purchases, production writes, or legal advice presented as counsel.
 
 ## Required inputs and access
 
-- Read access to the named CRM view or account list
-- Risk definitions (or use the defaults in this skill)
-- Time window (default: last 7 days)
+- Access to salesforce (read unless a later step says otherwise)
+- Named time window or object (ticket, account, thread, file). If missing, ask once.
 
 ## Sequence of work
 
-1. Pull the current account list from the source system. Skip anyone already in an active sequence.
-2. Score each account against the risk definitions. Cite the source fields used.
-3. Identify up to three relevant contacts per at-risk account. Do not message them.
-4. Draft a review table: account, score, evidence, recommended next step.
+1. Pull the account list.
+2. Score with evidence.
+3. Do not contact customers.
 
 ## How to validate the result
 
-Every row has a source record id. Scores are explained. No customer-facing text is sent.
+Every item cites a source id, URL, or filename. No approval-gated action was executed. If a source is missing, say so instead of inventing data.
 
 ## What to return
 
-A review list in the conversation. Stop there.
+A reviewable pack in the conversation: findings, drafts, and a list of actions that still need approval.
 
 ## Approvals and safety
 
-Customer contact, email, and sequence enrollment always require approval. If source data is missing, report the failure instead of using stale data.
+These always require explicit approval: customer-contact, send-email.
+Prefer drafts over execution. No-data: stop and report. Stale-data: do not silently reuse old extracts.
+Never embed secrets. Computer-use is not required; stay on the user's account and listed tools.
