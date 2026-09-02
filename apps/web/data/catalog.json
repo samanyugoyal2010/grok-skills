@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-09-02T00:00:00.000Z",
+  "skills": [
+    {
+      "id": "grok-skills/grok-skills/weekly-account-health",
+      "skillId": "weekly-account-health",
+      "name": "weekly-account-health",
+      "description": "Score CRM accounts for churn and expansion risk and return a review list. Use when the user asks for weekly account health, customer-risk, or churn review.",
+      "owner": "grok-skills",
+      "repo": "grok-skills",
+      "source": "grok-skills/grok-skills",
+      "runtime": "grok-bot",
+      "connectors": ["salesforce"],
+      "computerUse": false,
+      "approvals": ["customer-contact", "send-email"],
+      "installs": 12840,
+      "installs24h": 412,
+      "author": "grok-skills",
+      "shortDescription": "Weekly CRM risk review"
+    },
+    {
+      "id": "grok-skills/grok-skills/inbox-triage",
+      "skillId": "inbox-triage",
+      "name": "inbox-triage",
+      "description": "Triage an inbox into needs-reply, FYI, and noise, and draft replies for approval. Use when the user asks to catch up on email, triage Gmail, or clear an inbox.",
+      "owner": "grok-skills",
+      "repo": "grok-skills",
+      "source": "grok-skills/grok-skills",
+      "runtime": "grok-bot",
+      "connectors": ["gmail"],
+      "computerUse": false,
+      "approvals": ["send-email", "archive"],
+      "installs": 10211,
+      "installs24h": 388,
+      "author": "grok-skills",
+      "shortDescription": "Inbox triage with draft-only replies"
+    },
+    {
+      "id": "grok-skills/grok-skills/staging-repro-pack",
+      "skillId": "staging-repro-pack",
+      "name": "staging-repro-pack",
+      "description": "Reproduce a bug in staging and return a repro pack with steps, evidence, and a minimal test case.",
+      "owner": "grok-skills",
+      "repo": "grok-skills",
+      "source": "grok-skills/grok-skills",
+      "runtime": "grok-bot",
+      "connectors": ["browser", "github"],
+      "computerUse": true,
+      "approvals": ["production-access", "customer-data"],
+      "installs": 8744,
+      "installs24h": 256,
+      "author": "grok-skills",
+      "shortDescription": "Staging bug repro pack"
+    },
+    {
+      "id": "grok-skills/grok-skills/expense-draft",
+      "skillId": "expense-draft",
+      "name": "expense-draft",
+      "description": "Match receipts to an expense policy and draft an expense report without submitting it.",
+      "owner": "grok-skills",
+      "repo": "grok-skills",
+      "source": "grok-skills/grok-skills",
+      "runtime": "grok-bot",
+      "connectors": ["browser", "drive"],
+      "computerUse": true,
+      "approvals": ["submit-expense", "purchase"],
+      "installs": 6310,
+      "installs24h": 190,
+      "author": "grok-skills",
+      "shortDescription": "Draft expense report from receipts"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "grok-skills",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Directory and installer for Grok Bot skills — skills.sh for Grok",
+  "packageManager": "pnpm@10.33.3",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
+    "dev:web": "pnpm --filter @grok-skills/web dev",
+    "grok-skills": "pnpm --filter @grok-skills/cli start"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
