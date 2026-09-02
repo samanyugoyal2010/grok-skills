@@ -1,10 +1,19 @@
 import type { Runtime, TelemetryEvent } from "@grok-skills/spec";
 
 export function telemetryEnabled(): boolean {
+  if (!process.env.GROK_SKILLS_REGISTRY?.trim()) {
+    return false;
+  }
   return process.env.DISABLE_TELEMETRY !== "1" && process.env.DO_NOT_TRACK !== "1";
 }
 
-export async function reportInstall(event: TelemetryEvent, endpoint: string): Promise<void> {
+export async function reportInstall(
+  event: TelemetryEvent,
+  endpoint: string | null | undefined
+): Promise<void> {
+  if (!endpoint) {
+    return;
+  }
   try {
     await fetch(endpoint, {
       method: "POST",
@@ -16,8 +25,17 @@ export async function reportInstall(event: TelemetryEvent, endpoint: string): Pr
   }
 }
 
-export function defaultTelemetryEndpoint(): string {
-  return process.env.GROK_SKILLS_REGISTRY ?? "http://localhost:3000/api/t";
+/** Registry origin only. Never defaults to localhost. */
+export function defaultTelemetryEndpoint(): string | null {
+  const raw = process.env.GROK_SKILLS_REGISTRY?.trim();
+  if (!raw) {
+    return null;
+  }
+  const origin = raw.replace(/\/+$/, "");
+  if (/\/api\/t$/i.test(origin)) {
+    return origin;
+  }
+  return `${origin}/api/t`;
 }
 
 export function buildTelemetryEvent(

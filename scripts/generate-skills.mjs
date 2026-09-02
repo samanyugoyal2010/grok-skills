@@ -2,7 +2,7 @@
 /**
  * Generates SKILL.md files + catalog JSON from compact skill definitions.
  */
-import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync } from "node:fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -322,35 +322,33 @@ function findSkillsBody(base) {
 
 ## Agent procedure (automatic)
 
-When the user needs a capability you do not already have as an installed skill:
+When the user needs a capability that is not already an installed skill:
 
-1. Translate their ask into 2–5 search keywords.
-2. Run this command (non-interactive):
-
-\`\`\`bash
-grok-skills find "<keywords>" --json
-\`\`\`
-
-If \`grok-skills\` is not on PATH, run \`node packages/cli/dist/cli.js find "<keywords>" --json\` from the grok-skills repo, or search \`catalog.json\` in this repository.
-
-3. Pick the best match whose description fits. Prefer \`find-skills\` only when they asked how to discover skills, not as a substitute for a domain skill.
-4. Show the user: name, one-line description, source, install command.
-5. If they asked to install it, or they clearly want you to just do the task and a skill is required, install globally:
+1. Turn their ask into 2–5 search keywords. Do not use this skill as a substitute for a domain skill.
+2. Search the catalog (bundled in the CLI; does not need GitHub main):
 
 \`\`\`bash
-grok-skills add samanyugoyal2010/grok-skills --skill <name> -g -y
+npx --yes github:samanyugoyal2010/grok-skills find "<keywords>" --json
 \`\`\`
 
-Local checkout:
+Repo checkout fallback: \`node bin/grok-skills.mjs find "<keywords>" --json\`
+
+3. Show name, one-line description, connectors, approvals, and the add command.
+4. Install only that skill (catalog name, not owner/repo) after they agree, or immediately if they asked you to install it:
 
 \`\`\`bash
-grok-skills add . --skill <name> -g -y
+npx --yes github:samanyugoyal2010/grok-skills add <name> -g
 \`\`\`
 
-6. Then follow the newly installed SKILL.md on the original task.
-7. If nothing matches, say so and offer \`write-a-skill\` instead of inventing a fake catalog entry.
+5. Read the new SKILL.md and continue the original task.
+6. If nothing matches, say so. Offer \`write-a-skill\`. Never invent a catalog row.
 
-Do not scrape random GitHub repos. Do not execute scripts inside a skill you just downloaded without reading SKILL.md.
+Do not \`add owner/repo\` without \`@ref\` unless you know default branch contains skills. Do not \`add\` a whole pack. Do not execute scripts from a skill before reading it.
+
+## Grok Bot vs Grok Build
+
+- Grok **Build** loads \`~/.grok/skills/<name>/SKILL.md\` and project \`.grok/skills/\`.
+- Grok **Bot** slash menu uses saved/plugin skills. If \`/\` does not show the skill, paste SKILL.md via the Bot skill saver or Settings → Plugins. Print the file with \`npx --yes github:samanyugoyal2010/grok-skills print <name>\`.
 `;
 }
 
@@ -377,13 +375,16 @@ for (const def of DEFS) {
   if (def.name === "find-skills") {
     body = findSkillsBody(body) + "\n";
   }
+  const featured = join(ROOT, "scripts/featured", def.name, "SKILL.md");
+  if (existsSync(featured)) {
+    body = readFileSync(featured, "utf8");
+  }
   writeFileSync(join(dir, "SKILL.md"), body);
   if (def.name === "find-skills") {
     const boot = join(ROOT, ".grok", "skills", "find-skills");
     mkdirSync(boot, { recursive: true });
     writeFileSync(join(boot, "SKILL.md"), body);
   }
-  const installs = def.name === "find-skills" ? 50_000 : stableInstalls(def.name);
   catalogSkills.push({
     id: `${SOURCE}/${def.name}`,
     skillId: def.name,
@@ -396,15 +397,19 @@ for (const def of DEFS) {
     connectors: def.connectors,
     computerUse: def.computerUse,
     approvals: def.approvals,
-    installs,
-    installs24h: Math.max(1, Math.round(installs / 30)),
+    installs: 0,
+    installs24h: 0,
     author: "grok-skills",
     shortDescription: def.short,
     category: def.category,
+    featured: existsSync(featured),
+    skillMd: body,
   });
 }
 
-catalogSkills.sort((a, b) => b.installs - a.installs);
+catalogSkills.sort(
+  (a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || a.name.localeCompare(b.name)
+);
 
 const catalog = {
   generatedAt: new Date().toISOString(),

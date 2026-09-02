@@ -5,7 +5,9 @@ import {
   formatInstallCount,
   getSkillsByRepo,
   runtimeLabel,
+  sortSkills,
 } from "@/lib/catalog";
+import { GITHUB_REF, NPX_GROK_SKILLS, PRIMARY_INSTALL_HINT } from "@/lib/install-cmd";
 
 interface RepoPageProps {
   params: Promise<{ owner: string; repo: string }>;
@@ -13,14 +15,14 @@ interface RepoPageProps {
 
 export default async function RepoPage({ params }: RepoPageProps) {
   const { owner, repo } = await params;
-  const skills = getSkillsByRepo(owner, repo);
+  const skills = sortSkills(getSkillsByRepo(owner, repo), "all-time");
 
   if (skills.length === 0) {
     notFound();
   }
 
   const source = `${owner}/${repo}`;
-  const installCmd = `npx grok-skills add ${source}`;
+  const gitList = `${NPX_GROK_SKILLS} add ${GITHUB_REF} --list`;
 
   return (
     <div>
@@ -34,13 +36,22 @@ export default async function RepoPage({ params }: RepoPageProps) {
         </p>
         <h1 className="text-3xl font-semibold mb-2 font-mono">{source}</h1>
         <p className="text-muted text-sm mb-4">
-          {skills.length} skill{skills.length !== 1 ? "s" : ""} in this pack
+          {skills.length} skill{skills.length !== 1 ? "s" : ""} in this pack.
+          Catalog add uses a skill name (no whole-pack install). Git installs
+          require <code className="font-mono text-xs">--skill</code> or{" "}
+          <code className="font-mono text-xs">--all</code>.
         </p>
-        <div className="flex items-center gap-3">
-          <code className="font-mono text-sm bg-white/5 border border-border rounded px-4 py-2.5">
-            $ {installCmd}
+        <div className="flex items-center gap-3 mb-3">
+          <code className="font-mono text-sm bg-white/5 border border-border rounded px-4 py-2.5 overflow-x-auto">
+            $ {PRIMARY_INSTALL_HINT}
           </code>
-          <CopyButton text={installCmd} />
+          <CopyButton text={PRIMARY_INSTALL_HINT} />
+        </div>
+        <div className="flex items-center gap-3">
+          <code className="font-mono text-xs bg-white/5 border border-border rounded px-4 py-2 overflow-x-auto">
+            $ {gitList}
+          </code>
+          <CopyButton text={gitList} />
         </div>
       </div>
 
@@ -53,7 +64,14 @@ export default async function RepoPage({ params }: RepoPageProps) {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="font-medium text-lg">{skill.name}</h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="font-medium text-lg">{skill.name}</h2>
+                  {skill.featured && (
+                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-accent/40 text-accent">
+                      featured
+                    </span>
+                  )}
+                </div>
                 {skill.shortDescription && (
                   <p className="text-sm text-muted mt-1">
                     {skill.shortDescription}
@@ -64,7 +82,7 @@ export default async function RepoPage({ params }: RepoPageProps) {
                 </p>
               </div>
               <span className="text-sm text-muted tabular-nums shrink-0">
-                {formatInstallCount(skill.installs)}
+                {skill.installs > 0 ? formatInstallCount(skill.installs) : "—"}
               </span>
             </div>
             <div className="flex flex-wrap gap-2 mt-3">

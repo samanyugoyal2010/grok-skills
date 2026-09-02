@@ -32,7 +32,9 @@ export default async function Home({ searchParams }: HomeProps) {
           The Grok Agent Skills Directory
         </p>
         <p className="text-sm text-muted/80">
-          Reusable capabilities for Grok Bot. Install with one command.
+          Reusable capabilities for Grok Bot. Install from the bundled catalog
+          via <code className="font-mono text-xs">npx github:…/grok-skills</code>
+          — not published on npm.
         </p>
       </div>
 

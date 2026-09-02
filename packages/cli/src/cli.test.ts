@@ -11,6 +11,35 @@ describe("parseArgv", () => {
       skills: ["foo"],
       list: false,
       yes: false,
+      all: false,
+      force: false,
+    });
+  });
+
+  it("parses add catalog skill name and --all", () => {
+    assert.deepEqual(parseArgv(["add", "inbox-triage", "--all"]), {
+      command: "add",
+      source: "inbox-triage",
+      global: false,
+      skills: [],
+      list: false,
+      yes: false,
+      all: true,
+      force: false,
+    });
+  });
+
+  it("parses setup -g", () => {
+    assert.deepEqual(parseArgv(["setup", "-g"]), {
+      command: "setup",
+      global: true,
+    });
+  });
+
+  it("parses print name", () => {
+    assert.deepEqual(parseArgv(["print", "inbox-triage"]), {
+      command: "print",
+      name: "inbox-triage",
     });
   });
 

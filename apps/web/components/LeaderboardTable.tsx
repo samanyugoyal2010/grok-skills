@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CatalogSkill } from "@grok-skills/spec";
-import { formatInstallCount } from "@/lib/catalog";
+import { formatInstallCount, hasPublicInstallCounts } from "@/lib/catalog";
 
 interface LeaderboardTableProps {
   skills: CatalogSkill[];
@@ -13,54 +13,70 @@ export function LeaderboardTable({ skills }: LeaderboardTableProps) {
     );
   }
 
+  const showCounts = hasPublicInstallCounts(skills);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left text-muted">
-            <th className="py-3 pr-4 font-normal w-10">#</th>
-            <th className="py-3 pr-4 font-normal">Skill</th>
-            <th className="py-3 pr-4 font-normal hidden sm:table-cell">
-              Source
-            </th>
-            <th className="py-3 font-normal text-right">Installs</th>
-          </tr>
-        </thead>
-        <tbody>
-          {skills.map((skill, index) => (
-            <tr
-              key={skill.id}
-              className="border-b border-border/50 hover:bg-white/[0.02]"
-            >
-              <td className="py-3 pr-4 text-muted tabular-nums">{index + 1}</td>
-              <td className="py-3 pr-4">
-                <Link
-                  href={`/${skill.owner}/${skill.repo}/${skill.name}`}
-                  className="font-medium hover:text-accent"
-                >
-                  {skill.name}
-                </Link>
-                {skill.shortDescription && (
-                  <p className="text-muted text-xs mt-0.5 sm:hidden">
-                    {skill.shortDescription}
-                  </p>
-                )}
-              </td>
-              <td className="py-3 pr-4 hidden sm:table-cell">
-                <Link
-                  href={`/${skill.owner}/${skill.repo}`}
-                  className="text-muted hover:text-accent font-mono text-xs"
-                >
-                  {skill.source}
-                </Link>
-              </td>
-              <td className="py-3 text-right tabular-nums text-muted">
-                {formatInstallCount(skill.installs)}
-              </td>
+    <div>
+      {!showCounts && (
+        <p className="mb-4 text-sm text-muted">
+          No public install counts yet
+        </p>
+      )}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-muted">
+              <th className="py-3 pr-4 font-normal w-10">#</th>
+              <th className="py-3 pr-4 font-normal">Skill</th>
+              <th className="py-3 pr-4 font-normal hidden sm:table-cell">
+                Source
+              </th>
+              <th className="py-3 font-normal text-right">Installs</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {skills.map((skill, index) => (
+              <tr
+                key={skill.id}
+                className="border-b border-border/50 hover:bg-white/[0.02]"
+              >
+                <td className="py-3 pr-4 text-muted tabular-nums">{index + 1}</td>
+                <td className="py-3 pr-4">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Link
+                      href={`/${skill.owner}/${skill.repo}/${skill.name}`}
+                      className="font-medium hover:text-accent"
+                    >
+                      {skill.name}
+                    </Link>
+                    {skill.featured && (
+                      <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-accent/40 text-accent">
+                        featured
+                      </span>
+                    )}
+                  </div>
+                  {skill.shortDescription && (
+                    <p className="text-muted text-xs mt-0.5 sm:hidden">
+                      {skill.shortDescription}
+                    </p>
+                  )}
+                </td>
+                <td className="py-3 pr-4 hidden sm:table-cell">
+                  <Link
+                    href={`/${skill.owner}/${skill.repo}`}
+                    className="text-muted hover:text-accent font-mono text-xs"
+                  >
+                    {skill.source}
+                  </Link>
+                </td>
+                <td className="py-3 text-right tabular-nums text-muted">
+                  {showCounts ? formatInstallCount(skill.installs) : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

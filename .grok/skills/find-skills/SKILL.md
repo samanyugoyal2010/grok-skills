@@ -1,11 +1,13 @@
 ---
 name: find-skills
 description: >
-  Discover and install Grok Bot skills from the grok-skills catalog. Use when the user asks about how do I, find a skill, is there a skill, install a skill, search skills, extend grok bot, missing capability.
-when-to-use: how do I, find a skill, is there a skill, install a skill, search skills, extend grok bot, missing capability
+  Discover and install Grok skills from the grok-skills catalog when the user
+  asks to find a skill, install a skill, search skills, extend Grok Bot, or
+  says they need a capability that might already exist as a skill.
+when-to-use: find a skill, is there a skill, install a skill, search skills, extend grok bot
 metadata:
   author: grok-skills
-  short-description: Discover and install Grok Bot skills from the grok-skills catalog
+  short-description: Discover and install skills from the grok-skills catalog
   runtime: grok-bot
   connectors: []
   computer-use: false
@@ -15,64 +17,47 @@ metadata:
 
 ## When to use
 
-Use for: Discover and install Grok Bot skills from the grok-skills catalog.
-Trigger phrases: how do I, find a skill, is there a skill, install a skill, search skills, extend grok bot, missing capability.
-Do not use when the user wants unsupervised sends, purchases, production writes, or legal advice presented as counsel.
+Use when the user wants a **catalog skill** they do not already have: “find a skill for inbox triage”, “install the expense skill”, “is there a skill for QBRs”.
+
+Do not use for general “how do I …” coding questions that are not about installing skills. Do not use this skill in place of inbox-triage, pr-review-pack, or other domain skills.
 
 ## Required inputs and access
 
-- The user's current conversation, files, and any URLs they provide
-- Named time window or object (ticket, account, thread, file). If missing, ask once.
+- The user’s task in one sentence
+- Network to run `npx github:samanyugoyal2010/grok-skills` (bundled catalog; does not need GitHub `main`)
 
 ## Sequence of work
 
-1. Search the catalog for the user's need.
-2. Show the top matches with install commands.
-3. Install the best match globally only after the user agrees, or immediately if they asked to install it.
+1. Keywords: 2–5 words from the task.
+2. Search:
+
+```bash
+npx --yes github:samanyugoyal2010/grok-skills find "<keywords>" --json
+```
+
+Checkout fallback: `node bin/grok-skills.mjs find "<keywords>" --json`
+
+3. Show the top matches: name, short description, connectors, approvals, add command.
+4. Install **one skill by catalog name** only after they agree (or immediately if they said install it):
+
+```bash
+npx --yes github:samanyugoyal2010/grok-skills add <name> -g
+```
+
+5. Open `~/.grok/skills/<name>/SKILL.md` and continue the original task with that skill.
 
 ## How to validate the result
 
-Every item cites a source id, URL, or filename. No approval-gated action was executed. If a source is missing, say so instead of inventing data.
+Search JSON contains `skills[]`. Install created `SKILL.md`. You did not add an entire GitHub repo. You did not invent a skill that was not in the JSON.
 
 ## What to return
 
-A reviewable pack in the conversation: findings, drafts, and a list of actions that still need approval.
+Matches table + what you installed + whether Grok Build vs Grok Bot still needs a paste into Plugins.
 
 ## Approvals and safety
 
-These always require explicit approval: install-skill.
-Prefer drafts over execution. No-data: stop and report. Stale-data: do not silently reuse old extracts.
-Never embed secrets. Computer-use is not required; stay on the user's account and listed tools.
+`install-skill` requires a yes unless the user already asked to install a named skill. Never `add owner/repo` without `--skill` or a catalog name. Never execute scripts inside a downloaded skill before reading SKILL.md.
 
-## Agent procedure (automatic)
+## Grok Bot vs Grok Build
 
-When the user needs a capability you do not already have as an installed skill:
-
-1. Translate their ask into 2–5 search keywords.
-2. Run this command (non-interactive):
-
-```bash
-grok-skills find "<keywords>" --json
-```
-
-If `grok-skills` is not on PATH, run `node packages/cli/dist/cli.js find "<keywords>" --json` from the grok-skills repo, or search `catalog.json` in this repository.
-
-3. Pick the best match whose description fits. Prefer `find-skills` only when they asked how to discover skills, not as a substitute for a domain skill.
-4. Show the user: name, one-line description, source, install command.
-5. If they asked to install it, or they clearly want you to just do the task and a skill is required, install globally:
-
-```bash
-grok-skills add samanyugoyal2010/grok-skills --skill <name> -g -y
-```
-
-Local checkout:
-
-```bash
-grok-skills add . --skill <name> -g -y
-```
-
-6. Then follow the newly installed SKILL.md on the original task.
-7. If nothing matches, say so and offer `write-a-skill` instead of inventing a fake catalog entry.
-
-Do not scrape random GitHub repos. Do not execute scripts inside a skill you just downloaded without reading SKILL.md.
-
+Grok **Build** reads `~/.grok/skills` and project `.grok/skills`. Grok **Bot** slash commands come from saved/plugin skills. If `/` does not list it, paste SKILL.md (print with `npx --yes github:samanyugoyal2010/grok-skills print <name>`) or enable under Settings → Plugins.

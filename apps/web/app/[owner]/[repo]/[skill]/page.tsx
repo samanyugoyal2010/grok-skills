@@ -10,6 +10,11 @@ import {
   getSkillByPath,
   runtimeLabel,
 } from "@/lib/catalog";
+import {
+  catalogAddCommand,
+  gitSkillAddCommand,
+  NPX_GROK_SKILLS,
+} from "@/lib/install-cmd";
 import { readSkillMarkdown, renderSkillBody } from "@/lib/skill-md";
 
 interface SkillPageProps {
@@ -68,8 +73,9 @@ export default async function SkillPage({ params }: SkillPageProps) {
   }
 
   const source = `${owner}/${repo}`;
-  const installCmd = `npx grok-skills add ${source} --skill ${skill.name}`;
-  const rawMarkdown = readSkillMarkdown(skill.name);
+  const installCmd = catalogAddCommand(skill.name);
+  const gitCmd = gitSkillAddCommand(skill.name);
+  const rawMarkdown = skill.skillMd || readSkillMarkdown(skill.name);
   let checkOk = false;
   let checkIssues: { level: string; message: string }[] = [];
 
@@ -96,23 +102,59 @@ export default async function SkillPage({ params }: SkillPageProps) {
           <span className="mx-2">/</span>
           <span>{skill.name}</span>
         </p>
-        <h1 className="text-3xl font-semibold mb-2">{skill.name}</h1>
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <h1 className="text-3xl font-semibold">{skill.name}</h1>
+          {skill.featured && (
+            <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-accent/40 text-accent">
+              featured
+            </span>
+          )}
+        </div>
         {skill.shortDescription && (
           <p className="text-muted mb-2">{skill.shortDescription}</p>
         )}
         <p className="text-sm text-muted/80 mb-4">{skill.description}</p>
 
-        <p className="text-sm text-muted mb-6">
-          Installs into <code className="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded">.grok/skills</code>{" "}
-          or <code className="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded">~/.grok/skills</code>.
-          In Grok Bot, type <code className="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded">/</code> to
-          invoke it, or enable it under Settings → Plugins if it does not appear.
+        <p className="text-sm text-muted mb-4">
+          Catalog install copies bundled SKILL.md into{" "}
+          <code className="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded">.grok/skills</code>{" "}
+          or{" "}
+          <code className="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded">~/.grok/skills</code>
+          . Not on the npm registry — use{" "}
+          <code className="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded">npx github:…</code>.
         </p>
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-3">
           <code className="font-mono text-sm bg-white/5 border border-border rounded px-4 py-2.5 overflow-x-auto">
             $ {installCmd}
           </code>
           <CopyButton text={installCmd} />
+        </div>
+        <p className="text-xs text-muted mb-2">GitHub git install (this branch, one skill):</p>
+        <div className="flex items-center gap-3 mb-6">
+          <code className="font-mono text-xs bg-white/5 border border-border rounded px-4 py-2 overflow-x-auto">
+            $ {gitCmd}
+          </code>
+          <CopyButton text={gitCmd} />
+        </div>
+
+        <div className="border border-border rounded p-4 mb-6 text-sm space-y-2">
+          <h3 className="font-medium">Grok Build vs Grok Bot</h3>
+          <p className="text-muted">
+            <strong className="text-foreground">Build</strong> reads skills from{" "}
+            <code className="font-mono text-xs bg-white/5 px-1">.grok/skills</code> in
+            the project (and global{" "}
+            <code className="font-mono text-xs bg-white/5 px-1">~/.grok/skills</code>{" "}
+            when configured).
+          </p>
+          <p className="text-muted">
+            <strong className="text-foreground">Bot</strong> does not load a disk
+            install into <code className="font-mono text-xs bg-white/5 px-1">/</code>{" "}
+            automatically. Enable the skill under Settings → Plugins, or paste
+            SKILL.md:
+          </p>
+          <code className="font-mono text-xs bg-white/5 border border-border rounded px-3 py-2 block overflow-x-auto">
+            {NPX_GROK_SKILLS} print {skill.name}
+          </code>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -126,7 +168,9 @@ export default async function SkillPage({ params }: SkillPageProps) {
             <h3 className="text-muted text-xs uppercase tracking-wide mb-2">
               Installs
             </h3>
-            <p className="tabular-nums">{formatInstallCount(skill.installs)}</p>
+            <p className="tabular-nums">
+              {skill.installs > 0 ? formatInstallCount(skill.installs) : "—"}
+            </p>
           </div>
           <div className="border border-border rounded p-4">
             <h3 className="text-muted text-xs uppercase tracking-wide mb-2">
@@ -169,7 +213,8 @@ export default async function SkillPage({ params }: SkillPageProps) {
         <h3 className="font-medium mb-2">Security check</h3>
         {!rawMarkdown ? (
           <p className="text-muted">
-            SKILL.md not found on disk. Security validation unavailable.
+            SKILL.md not in catalog JSON and not found on disk. Security
+            validation unavailable.
           </p>
         ) : checkOk ? (
           <p className="text-green-400/90">

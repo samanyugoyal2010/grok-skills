@@ -79,6 +79,7 @@ export interface CatalogSkill {
   author?: string;
   shortDescription?: string;
   skillMd?: string;
+  featured?: boolean;
 }
 
 export interface TelemetryEvent {

@@ -43,18 +43,43 @@ export function loadCatalogBase(): Catalog {
   });
 }
 
+/** Hand-written catalog entries; others are generated templates. */
+export const FEATURED_SKILL_NAMES = new Set([
+  "find-skills",
+  "inbox-triage",
+  "weekly-account-health",
+  "expense-draft",
+  "pr-review-pack",
+  "staging-repro-pack",
+]);
+
+function telemetryCount(
+  skill: CatalogSkill,
+  counts: Record<string, number>,
+): number {
+  return (
+    (counts[skill.id] ?? 0) +
+    (counts[skill.skillId] ?? 0) +
+    (counts[skill.name] ?? 0)
+  );
+}
+
+function isFeatured(skill: CatalogSkill): boolean {
+  return skill.featured === true || FEATURED_SKILL_NAMES.has(skill.name);
+}
+
+/** Rank by public telemetry only. Catalog seed `installs` are ignored. */
 export function overlayInstalls(
   skills: CatalogSkill[],
   counts: Record<string, number>,
 ): CatalogSkill[] {
   return skills.map((skill) => {
-    const extra =
-      (counts[skill.id] ?? 0) + (counts[skill.skillId] ?? 0) + (counts[skill.name] ?? 0);
-    if (extra === 0) return skill;
+    const installs = telemetryCount(skill, counts);
     return {
       ...skill,
-      installs: skill.installs + extra,
-      installs24h: skill.installs24h + extra,
+      installs,
+      installs24h: installs,
+      featured: isFeatured(skill),
     };
   });
 }
@@ -82,6 +107,13 @@ export function matchesRuntime(
   return skill.runtime === "grok-build" || skill.runtime === "both";
 }
 
+function featuredThenName(a: CatalogSkill, b: CatalogSkill): number {
+  const featA = a.featured ? 1 : 0;
+  const featB = b.featured ? 1 : 0;
+  if (featA !== featB) return featB - featA;
+  return a.name.localeCompare(b.name);
+}
+
 export function sortSkills(
   skills: CatalogSkill[],
   mode: SortMode,
@@ -89,20 +121,28 @@ export function sortSkills(
   const sorted = [...skills];
   switch (mode) {
     case "trending":
-      sorted.sort((a, b) => b.installs24h - a.installs24h);
+      sorted.sort((a, b) => {
+        const d = b.installs24h - a.installs24h;
+        return d !== 0 ? d : featuredThenName(a, b);
+      });
       break;
     case "hot":
-      sorted.sort(
-        (a, b) =>
-          b.installs24h * 4 +
-          b.installs -
-          (a.installs24h * 4 + a.installs),
-      );
+      sorted.sort((a, b) => {
+        const d = hotScore(b) - hotScore(a);
+        return d !== 0 ? d : featuredThenName(a, b);
+      });
       break;
     default:
-      sorted.sort((a, b) => b.installs - a.installs);
+      sorted.sort((a, b) => {
+        const d = b.installs - a.installs;
+        return d !== 0 ? d : featuredThenName(a, b);
+      });
   }
   return sorted;
+}
+
+export function hasPublicInstallCounts(skills: CatalogSkill[]): boolean {
+  return skills.some((s) => s.installs > 0);
 }
 
 export function searchSkills(
@@ -117,24 +157,27 @@ export function searchSkills(
     filtered = filtered.filter((s) => matchesRuntime(s, runtime));
   }
 
-  if (!q) return filtered;
+  if (!q) return sortSkills(filtered, "all-time");
 
-  return filtered.filter((skill) => {
-    const haystack = [
-      skill.name,
-      skill.description,
-      skill.shortDescription ?? "",
-      skill.source,
-      skill.owner,
-      skill.repo,
-      skill.author ?? "",
-      ...skill.connectors,
-      ...skill.approvals,
-    ]
-      .join(" ")
-      .toLowerCase();
-    return haystack.includes(q);
-  });
+  return sortSkills(
+    filtered.filter((skill) => {
+      const haystack = [
+        skill.name,
+        skill.description,
+        skill.shortDescription ?? "",
+        skill.source,
+        skill.owner,
+        skill.repo,
+        skill.author ?? "",
+        ...skill.connectors,
+        ...skill.approvals,
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    }),
+    "all-time",
+  );
 }
 
 export function getSkillByPath(

@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Skills — The Grok Agent Skills Directory",
   description:
-    "Reusable capabilities for Grok Bot. Install with one command.",
+    "Reusable capabilities for Grok Bot. Install via npx github:samanyugoyal2010/grok-skills (not npm).",
 };
 
 function Footer() {

@@ -1,42 +1,43 @@
 # What works vs what does not
 
-Honest snapshot of this repo as a skills.sh replica for Grok Bot.
+Honest snapshot after the production contract in `PRODUCTION.md`.
 
 ## Works today
 
 - **Spec**: parse `SKILL.md`, require Grok Bot headings + approvals, reject `curl | bash` / obvious injection.
-- **Library (`@grok-skills/core`)**: discover skills, copy into `.grok/skills` or `~/.grok/skills`, lockfile, local git/path install.
-- **CLI**: `add`, `list`, `remove`, `init`, `check`.
-- **`grok-skills find`**: searches a **bundled catalog** (no website required). `--json` is for Grok Bot.
+- **Library (`@grok-skills/core`)**: discover skills, copy into `.grok/skills` or `~/.grok/skills`, lockfile, local git/path install, bundled catalog.
+- **CLI catalog add (no GitHub)**: `add inbox-triage` / `add find-skills -g` copies SKILL.md from the bundled catalog.
+- **CLI git add**: `owner/repo` and `owner/repo@ref` (example `samanyugoyal2010/grok-skills@cursor/grok-bot-skills-directory-plan-7471`). Whole packs need `--skill` or `--all`.
+- **`find`**: bundled catalog first. `--json` is for Grok Bot. Optional overlay only if `GROK_SKILLS_REGISTRY` is a deployed origin.
+- **`setup` / `print`**: bootstrap find-skills + plugin files; print SKILL.md for Bot paste.
+- **`npx` from GitHub**: `npx --yes github:samanyugoyal2010/grok-skills` via repo-root `bin/grok-skills.mjs`. Not on npm.
 - **Starter catalog**: 162 Grok Bot skills under `skills/`, including `find-skills`.
-- **Directory site**: leaderboard, search, skill pages, `GET /api/search`, `POST /api/t` — when you run the Next app locally.
-- **Grok Build auto-load of finder**: `.grok/skills/find-skills/SKILL.md` is committed so opening this repo can trigger discovery.
+- **Directory site**: leaderboard (telemetry overlay only; seed installs are 0), search, skill pages (`skillMd` from catalog JSON with disk fallback), `GET /api/search`, `POST /api/t`.
+- **Grok Build auto-load of finder**: `.grok/skills/find-skills/SKILL.md` is committed so opening this repo can trigger discovery in **Build**.
 
 ## Does not work yet (or only works with caveats)
 
 | Gap | Why it matters |
 | --- | --- |
-| **Not on npm** | `npx grok-skills` will fail until `@grok-skills/cli` (or `grok-skills`) is published. Use `node packages/cli/dist/cli.js` from this repo. |
-| **GitHub `add samanyugoyal2010/grok-skills` clones default branch** | Until this branch is merged to `main`, GitHub installs will not see the 162 skills. Local `add .` / `add ./skills` works. |
-| **No Grok Bot Plugins API** | The CLI cannot push a skill into the Grok Bot desktop Plugins UI. It writes `.grok/skills`. Bot users still enable `/` skills under Settings → Plugins if they do not appear. |
-| **No hosted registry** | Telemetry is a local `installs.json`. Public ranking like skills.sh needs a deployed Next app + real `GROK_SKILLS_REGISTRY`. |
-| **`find` remote overlay is optional** | Default is bundled JSON. Set `GROK_SKILLS_REGISTRY` only when the site is deployed. |
+| **Not on npm** | `npx grok-skills` does not install a published package. Use `npx --yes github:samanyugoyal2010/grok-skills` or `node bin/grok-skills.mjs`. |
+| **GitHub `main` is empty until merge** | `add samanyugoyal2010/grok-skills` without `@ref` clones the default branch. Until this branch lands on `main`, that clone will not contain the 162 skills. Use catalog `add NAME` or pass `@cursor/grok-bot-skills-directory-plan-7471`. Local `add . --skill NAME` still works. |
+| **Grok Bot still needs Plugins / paste** | The CLI writes `.grok/skills` and can write `~/.grok/plugins/grok-skills/`. There is no Grok Bot Plugins API. Skills do **not** automatically appear under Bot `/`. Enable Settings → Plugins or paste SKILL.md (`print`). |
+| **Telemetry off unless registry set** | `GROK_SKILLS_REGISTRY` unset → no POST to `/api/t`, no localhost default. Leaderboard shows “No public install counts yet” until a deployed origin is set and clients opt in. Catalog seed counts are 0; ranking is overlay-only. |
+| **Website not deployed** | No public grok-skills URL yet. Local Next app does not turn on CLI telemetry by itself. |
 | **No `update` command** | Re-run `add` to refresh. |
-| **No interactive TTY finder** | Agent-first: keyword + `--json` only. |
 | **Substring search, not embeddings** | `find "inbox"` works; fuzzy synonyms are limited. |
-| **Generated skill bodies share a template** | 162 distinct tasks/approvals/connectors, but not 162 hand-tuned essays. |
+| **Generated skill bodies share a template** | Featured skills are hand-written. Others are 162 distinct tasks/approvals, not 162 hand-tuned essays. |
 | **Computer-use / connectors are instructions** | Skills describe Gmail/Salesforce/browser; they do not OAuth those systems. |
-| **Seed install counts are synthetic** | Leaderboard numbers are stable hashes, except `find-skills` which is pinned high. |
-| **Website not deployed** | No public grok-skills URL yet. |
 
 ## How Grok Bot should auto-find skills
 
-1. Install **find-skills** into the Bot computer (once):
+1. Once: `npx --yes github:samanyugoyal2010/grok-skills setup` (or `add find-skills -g`), then enable the plugin / paste SKILL.md in Bot.
+
+2. The agent should run:
 
 ```bash
-node packages/cli/dist/cli.js add . --skill find-skills -g -y
+npx --yes github:samanyugoyal2010/grok-skills find "KEYWORDS" --json
+npx --yes github:samanyugoyal2010/grok-skills add SKILLNAME -g
 ```
 
-2. After that, when the user asks “is there a skill for inbox triage?”, the Bot should follow `find-skills`: run `grok-skills find "inbox triage" --json`, then `grok-skills add samanyugoyal2010/grok-skills --skill inbox-triage -g -y` (or `add .` from this checkout).
-
-`find-skills` is written so the model is supposed to invoke it automatically from the description (same idea as Vercel’s find-skills).
+Fallback: `node bin/grok-skills.mjs` in this repo. Do not clone `main` for skills.

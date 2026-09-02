@@ -1,18 +1,40 @@
 {
   "name": "grok-skills",
-  "private": true,
+  "private": false,
   "version": "0.1.0",
   "description": "Directory and installer for Grok Bot skills — skills.sh for Grok",
+  "type": "module",
+  "bin": {
+    "grok-skills": "./bin/grok-skills.mjs"
+  },
+  "files": [
+    "bin",
+    "skills",
+    "catalog.json",
+    "packages/*/dist",
+    "README.md"
+  ],
   "packageManager": "pnpm@10.33.3",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
     "dev:web": "pnpm --filter @grok-skills/web dev",
     "generate:skills": "node scripts/generate-skills.mjs",
-    "grok-skills": "pnpm --filter @grok-skills/cli start"
+    "grok-skills": "pnpm --filter @grok-skills/cli start",
+    "bundle": "node scripts/bundle.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
   },
   "engines": {
     "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }
