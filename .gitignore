@@ -1,0 +1,16 @@
+node_modules
+dist
+.next
+.turbo
+*.tsbuildinfo
+.DS_Store
+coverage
+.env
+.env.local
+.grok/*
+!.grok/skills/
+.grok/skills/*
+!.grok/skills/find-skills/
+!.grok/skills/find-skills/**
+*.log
+.vercel

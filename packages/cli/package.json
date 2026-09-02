@@ -1,0 +1,22 @@
+{
+  "name": "@grok-skills/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "grok-skills": "./dist/cli.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/cli.js",
+    "test": "node --test dist/*.test.js"
+  },
+  "dependencies": {
+    "@grok-skills/core": "workspace:*",
+    "@grok-skills/spec": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.3"
+  }
+}
