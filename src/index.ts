@@ -32,17 +32,58 @@ if (config.transport === "http") {
     maxBodyBytes: config.httpMaxBodyBytes
   });
   const httpServer = createNodeServer(protectedHandler);
+  httpServer.requestTimeout = 120_000;
+  httpServer.headersTimeout = 15_000;
+  httpServer.keepAliveTimeout = 5_000;
+  httpServer.maxRequestsPerSocket = 100;
+  httpServer.on("error", (error) => {
+    console.error(`task-time-skill-compiler MCP HTTP error: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  });
   httpServer.listen(config.port, config.httpHost, () => {
     console.error(`task-time-skill-compiler MCP listening on http://${config.httpHost}:${config.port}/mcp`);
   });
+  let shutdownStarted = false;
   const shutdown = async () => {
-    await handler.close();
-    httpServer.close();
+    if (shutdownStarted) return;
+    shutdownStarted = true;
+    console.error("task-time-skill-compiler MCP shutting down");
+    try {
+      const closePromise = new Promise<void>((resolve, reject) => {
+        httpServer.close((error) => error ? reject(error) : resolve());
+      });
+      httpServer.closeIdleConnections?.();
+      let forceTimer: NodeJS.Timeout | undefined;
+      await Promise.race([
+        closePromise,
+        new Promise<void>((resolve) => {
+          forceTimer = setTimeout(() => {
+            httpServer.closeAllConnections?.();
+            resolve();
+          }, 10_000);
+        })
+      ]);
+      if (forceTimer) clearTimeout(forceTimer);
+      await handler.close();
+    } catch (error) {
+      console.error(`task-time-skill-compiler MCP shutdown error: ${error instanceof Error ? error.message : String(error)}`);
+      process.exitCode = 1;
+    }
   };
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
+  process.once("SIGINT", () => void shutdown());
+  process.once("SIGTERM", () => void shutdown());
 } else {
   const handle = serveStdio(() => createServer(dependencies));
   console.error("task-time-skill-compiler MCP running over stdio");
-  process.on("SIGINT", () => void handle.close());
+  let shutdownStarted = false;
+  const shutdown = () => {
+    if (shutdownStarted) return;
+    shutdownStarted = true;
+    void Promise.resolve(handle.close()).catch((error: unknown) => {
+      console.error(`task-time-skill-compiler MCP shutdown error: ${error instanceof Error ? error.message : String(error)}`);
+      process.exitCode = 1;
+    });
+  };
+  process.once("SIGINT", shutdown);
+  process.once("SIGTERM", shutdown);
 }
