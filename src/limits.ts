@@ -8,7 +8,9 @@ export const LIMITS = {
   contextChars: 50_000,
   outputChars: 16_000,
   fetchBytes: 1_000_000,
-  modelResponseBytes: 128_000
+  modelResponseBytes: 128_000,
+  repositories: 8,
+  sources: 5
 } as const;
 
 const forbiddenPath = /(^|\/)(\.env(?:\.|$)|\.git(?:\/|$)|\.ssh(?:\/|$)|credentials?(?:\.|$)|secrets?(?:\.|$)|id_rsa(?:\.|$)|id_ed25519(?:\.|$)|\.npmrc$|\.netrc$|(?:\.docker|docker)\/config\.json$)/i;

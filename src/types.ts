@@ -74,5 +74,5 @@ export interface CompileSkillResponse {
 }
 
 export interface SkillRetriever {
-  search(query: string): Promise<SkillSource[]>;
+  search(query: string, signal?: AbortSignal): Promise<SkillSource[]>;
 }
