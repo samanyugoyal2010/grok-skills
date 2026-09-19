@@ -94,11 +94,11 @@ export default function Home() {
                 <a className="button button-primary" href="#quickstart">Start with the quickstart <ChevronRight size={16} aria-hidden="true" /></a>
                 <a className="text-link" href="#contract">Read the contract <ArrowUpRight size={15} aria-hidden="true" /></a>
               </div>
-              <div className="hero-note"><span>Made for</span><strong>Claude Code + MCP</strong><span>·</span><span>no repository writes</span></div>
+              <div className="hero-note"><span>Made for</span><strong>Claude Code + MCP</strong><span>·</span><span>deterministic by default</span><span>·</span><span>no repository writes</span></div>
             </div>
 
             <div className="trace-card" aria-label="Compiler flow preview">
-              <div className="trace-header"><span>compile_skill</span><span>returns an artifact</span></div>
+              <div className="trace-header"><span>compile_skill</span><span>local by default</span></div>
               <div className="trace-stack">
                 <div className="trace-step"><span className="trace-number">01</span><div><span className="trace-label">task</span><strong>"Add form validation"</strong></div></div>
                 <div className="trace-connector" aria-hidden="true" />
@@ -106,7 +106,7 @@ export default function Home() {
                 <div className="trace-connector" aria-hidden="true" />
                 <div className="trace-step"><span className="trace-number">03</span><div><span className="trace-label">sources</span><strong>frontend-design + 2</strong></div></div>
                 <div className="trace-connector" aria-hidden="true" />
-                <div className="trace-result"><FileCode2 size={18} aria-hidden="true" /><div><span className="trace-label">output</span><strong>SKILL.md</strong></div><span className="result-status">ready</span></div>
+                <div className="trace-result"><FileCode2 size={18} aria-hidden="true" /><div><span className="trace-label">output</span><strong>SKILL.md</strong></div><span className="result-status">deterministic</span></div>
               </div>
               <div className="trace-footer"><span className="status-dot" /> provenance and risk notes included</div>
             </div>
@@ -157,7 +157,7 @@ export default function Home() {
               </div>
               <div className="quickstart-configs">
                 <CodeBlock label=".mcp.json" value={claudeConfig} />
-                <aside className="quiet-note"><span className="eyebrow">What stays local</span><p>Task-Time never edits or executes your repository. Private context is sent only after approval and is not logged by this application.</p></aside>
+                <aside className="quiet-note"><span className="eyebrow">Review before install</span><p>Task-Time never edits or executes your repository. The default compiler is deterministic, and private context is sent only after approval.</p></aside>
               </div>
             </div>
           </section>
