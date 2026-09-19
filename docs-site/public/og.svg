@@ -1,0 +1,14 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#10161B"/>
+  <path d="M0 504H1200" stroke="#2A373E"/>
+  <rect x="72" y="76" width="58" height="58" rx="14" fill="#111820" stroke="#8DE7DB" stroke-width="2"/>
+  <path d="M91 91H111V98H97V103H107V110H97V120H91V91Z" fill="#8DE7DB"/>
+  <path d="M109 112L115 118L109 124" stroke="#F3A261" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="150" y="116" fill="#F2F5F4" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700">task-time</text>
+  <text x="278" y="116" fill="#8B9AA0" font-family="Arial, Helvetica, sans-serif" font-size="25">/ compiler</text>
+  <text x="72" y="292" fill="#F2F5F4" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700" letter-spacing="-4">Compile the skill</text>
+  <text x="72" y="382" fill="#8DE7DB" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700" letter-spacing="-4">for this task.</text>
+  <text x="76" y="454" fill="#9AA7AC" font-family="Arial, Helvetica, sans-serif" font-size="23">Repo-aware SKILL.md guidance for Claude Code.</text>
+  <text x="72" y="570" fill="#8B9AA0" font-family="monospace" font-size="16" letter-spacing="2">CLAUDE CODE MCP SERVER</text>
+  <circle cx="52" cy="564" r="6" fill="#8DE7DB"/>
+</svg>
