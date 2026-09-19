@@ -48,6 +48,16 @@ test("encodes unusual public skill path segments in source URLs", async () => {
   assert.equal(requested.includes("https://raw.githubusercontent.com/acme/skills/main/skills/ui%23review/SKILL.md"), true);
 });
 
+test("encodes branch names in GitHub API paths", async () => {
+  let treeUrl = "";
+  const retriever = new GitHubSkillRetriever(["acme/skills"], async (url) => {
+    treeUrl = url;
+    return JSON.stringify({ tree: [] });
+  }, "release/v1");
+  await retriever.search("frontend");
+  assert.equal(treeUrl, "https://api.github.com/repos/acme/skills/git/trees/release%2Fv1?recursive=1");
+});
+
 test("times out a hung public source fetch", async () => {
   const retriever = new GitHubSkillRetriever(["acme/skills"], async () => new Promise<string>(() => {}), "main", 10);
   const startedAt = Date.now();

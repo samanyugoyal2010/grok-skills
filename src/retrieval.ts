@@ -107,7 +107,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
     const repositories = this.repositories.slice(0, LIMITS.repositories);
     const candidateGroups = await mapWithConcurrency(repositories, 2, async (repository) => {
       try {
-        const tree = JSON.parse(await this.fetchWithTimeout(`https://api.github.com/repos/${repository}/git/trees/${this.branch}?recursive=1`, signal)) as GitTreeResponse;
+        const tree = JSON.parse(await this.fetchWithTimeout(`https://api.github.com/repos/${repository}/git/trees/${encodeURIComponent(this.branch)}?recursive=1`, signal)) as GitTreeResponse;
         return (tree.tree ?? [])
           .filter((entry) => entry.type === "blob" && entry.path?.endsWith("SKILL.md"))
           .map((entry) => ({ repository, path: entry.path!, score: score(query, entry.path!) }));
