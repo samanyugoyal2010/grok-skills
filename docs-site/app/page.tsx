@@ -44,7 +44,7 @@ const outputExample = `{
   "sources": [{
     "url": "https://github.com/.../SKILL.md",
     "title": "frontend-design",
-    "sourceHash": "d91970639e9f5c37"
+    "sourceHash": "fcd3fcf3893605287a54c62e3923958dc854f3bad53754cff331cfd69510ecf5"
   }],
   "contextManifest": [{
     "path": "src/account-settings/form.ts",
@@ -198,7 +198,7 @@ export default function Home() {
                   <div className="compile-row"><span className="compile-key">sources</span><span className="compile-value">frontend-design + 2</span></div>
                   <div className="compile-divider" />
                   <div className="output-row"><FileCode2 size={17} /><span>SKILL.md</span><strong>compiled</strong></div>
-                  <div className="hash-line">sha256 · d91970639e9f5c37</div>
+                  <div className="hash-line">sha256 · fcd3fcf389360528…</div>
                 </div>
               </div>
             </div>
