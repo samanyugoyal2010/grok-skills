@@ -63,5 +63,5 @@ The request fixture at [`examples/compile-skill-request.json`](examples/compile-
 - Set `PUBLIC_SKILL_GITHUB_TOKEN` in the runtime environment when the anonymous GitHub API limit is too low. The token is sent only as an Authorization header and is never included in source URLs or responses.
 - Retrieval requests time out after `PUBLIC_SKILL_FETCH_TIMEOUT_MS` (10 seconds by default), and model responses are capped before parsing.
 - Retrieval is bounded to eight configured repositories and five selected sources, with a 60-second end-to-end deadline and two in-flight compilations by default.
-- HTTP rate limiting is keyed by the connecting client address and returns `429` with `Retry-After`; stdio uses one local process bucket.
+- HTTP rate limiting is keyed by the connecting client address and returns `429` with `Retry-After`; stdio uses one local process bucket. The in-memory limiter prunes expired buckets and caps retained client keys with `RATE_LIMIT_MAX_KEYS` (10,000 by default); use a trusted edge limiter for multi-instance deployments.
 - Risk detection is heuristic and advisory. Review generated skills before installing them.

@@ -9,6 +9,7 @@ test("loads safe HTTP defaults and loopback host guards", () => {
   assert.equal(config.httpMaxBodyBytes, 256_000);
   assert.equal(config.compileDeadlineMs, 60_000);
   assert.equal(config.maxInFlightCompilations, 2);
+  assert.equal(config.rateLimitMaxKeys, 10_000);
   assert.deepEqual(config.allowedHosts, ["localhost", "127.0.0.1", "[::1]"]);
 });
 
@@ -39,6 +40,7 @@ test("fails fast for invalid runtime configuration", () => {
   assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "http://model.example/compile" }), /must use HTTPS/);
   assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "https://user:pass@model.example/compile" }), /embedded credentials/);
   assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_TOKEN: "token" }), /requires/);
+  assert.throws(() => loadRuntimeConfig({ RATE_LIMIT_MAX_KEYS: "0" }), /RATE_LIMIT_MAX_KEYS/);
 });
 
 test("allows loopback HTTP for local model development and rejects remote HTTP by default", () => {

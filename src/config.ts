@@ -1,4 +1,5 @@
 import { isLoopbackHost } from "./http.js";
+import { DEFAULT_RATE_LIMIT_MAX_KEYS } from "./rate-limit.js";
 
 export const DEFAULT_HTTP_PORT = 3_000;
 export const DEFAULT_HTTP_HOST = "127.0.0.1";
@@ -19,6 +20,7 @@ export interface RuntimeConfig {
   modelTimeoutMs: number;
   compileDeadlineMs: number;
   maxInFlightCompilations: number;
+  rateLimitMaxKeys: number;
   publicSkillRepositories: string[];
   publicSkillBranch: string;
   publicSkillFetchTimeoutMs: number;
@@ -116,6 +118,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     modelTimeoutMs: parsePositiveInteger("SKILL_COMPILER_MODEL_TIMEOUT_MS", env.SKILL_COMPILER_MODEL_TIMEOUT_MS, 20_000),
     compileDeadlineMs: parsePositiveInteger("SKILL_COMPILER_DEADLINE_MS", env.SKILL_COMPILER_DEADLINE_MS, DEFAULT_COMPILE_DEADLINE_MS),
     maxInFlightCompilations: parsePositiveInteger("MAX_IN_FLIGHT_COMPILATIONS", env.MAX_IN_FLIGHT_COMPILATIONS, DEFAULT_MAX_IN_FLIGHT_COMPILATIONS),
+    rateLimitMaxKeys: parsePositiveInteger("RATE_LIMIT_MAX_KEYS", env.RATE_LIMIT_MAX_KEYS, DEFAULT_RATE_LIMIT_MAX_KEYS),
     publicSkillRepositories,
     publicSkillBranch,
     publicSkillFetchTimeoutMs: parsePositiveInteger("PUBLIC_SKILL_FETCH_TIMEOUT_MS", env.PUBLIC_SKILL_FETCH_TIMEOUT_MS, 10_000),

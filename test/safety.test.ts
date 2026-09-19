@@ -59,6 +59,16 @@ test("reports a retry window when a rate limit is exceeded", () => {
   assert.throws(() => limiter.consume("client"), (error: unknown) => error instanceof RateLimitError && error.retryAfterSeconds === 60);
 });
 
+test("bounds the number of client buckets", () => {
+  const limiter = new RateLimiter(10, 60_000, 2);
+  limiter.consume("client-a");
+  limiter.consume("client-b");
+  limiter.consume("client-c");
+  const buckets = (limiter as unknown as { buckets: Map<string, unknown> }).buckets;
+  assert.equal(buckets.size, 2);
+  assert.equal(buckets.has("client-c"), true);
+});
+
 test("rejects work above the in-flight compilation cap", async () => {
   const limiter = new InFlightLimiter(1);
   let release!: () => void;

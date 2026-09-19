@@ -3,15 +3,14 @@ import { createMcpHandler } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { toNodeHandler } from "@modelcontextprotocol/node";
 import { createServer } from "./server.js";
-import { RateLimiter } from "./rate-limit.js";
-import { InFlightLimiter } from "./rate-limit.js";
+import { InFlightLimiter, RateLimiter } from "./rate-limit.js";
 import { createProtectedHttpHandler } from "./http.js";
 import { loadRuntimeConfig } from "./config.js";
 import { GitHubSkillRetriever } from "./retrieval.js";
 
 const config = loadRuntimeConfig();
 const dependencies = {
-  rateLimiter: config.transport === "http" ? null : new RateLimiter(config.rateLimitPerMinute),
+  rateLimiter: config.transport === "http" ? null : new RateLimiter(config.rateLimitPerMinute, 60_000, config.rateLimitMaxKeys),
   inFlightLimiter: new InFlightLimiter(config.maxInFlightCompilations),
   retriever: new GitHubSkillRetriever(config.publicSkillRepositories, undefined, config.publicSkillBranch, config.publicSkillFetchTimeoutMs, config.publicSkillGithubToken),
   compilerOptions: {
@@ -30,7 +29,7 @@ if (config.transport === "http") {
     allowedOrigins: config.allowedOrigins,
     allowedHosts: config.allowedHosts,
     maxBodyBytes: config.httpMaxBodyBytes,
-    rateLimiter: new RateLimiter(config.rateLimitPerMinute)
+    rateLimiter: new RateLimiter(config.rateLimitPerMinute, 60_000, config.rateLimitMaxKeys)
   });
   const httpServer = createNodeServer(protectedHandler);
   httpServer.requestTimeout = 120_000;
