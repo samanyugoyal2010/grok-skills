@@ -46,10 +46,12 @@ const outputExample = `{
   "sources": [{
     "url": "https://github.com/.../SKILL.md",
     "title": "frontend-design",
-    "sourceHash": "fcd3fcf3893605287a54c62e3923958dc854f3bad53754cff331cfd69510ecf5"
+    "sourceHash": "fcd3fcf3893605287a54c62e3923958dc854f3bad53754cff331cfd69510ecf5",
+    "matchReason": "Matched query tokens against the public skill path and content."
   }],
   "contextManifest": [{
     "path": "src/account-settings/form.ts",
+    "reason": "Current form boundary.",
     "characterCount": 412
   }],
   "changeSummary": ["Compiled with the deterministic local compiler."],
@@ -223,6 +225,7 @@ export default function Home() {
                   <div><code>SKILL_COMPILER_MODEL_URL</code><span>Optional compatible JSON model endpoint.</span></div>
                   <div><code>SKILL_COMPILER_MODEL_TOKEN</code><span>Optional bearer token for the model endpoint.</span></div>
                   <div><code>SKILL_COMPILER_MODEL_TIMEOUT_MS</code><span>Model request timeout; default 20,000.</span></div>
+                  <div><code>SKILL_COMPILER_ALLOW_INSECURE_HTTP</code><span>Development-only escape hatch for a non-loopback model URL; default false.</span></div>
                   <div><code>SKILL_COMPILER_DEADLINE_MS</code><span>End-to-end compile deadline; default 60,000.</span></div>
                   <div><code>MAX_IN_FLIGHT_COMPILATIONS</code><span>Process concurrency cap; default 2.</span></div>
                   <div><code>RATE_LIMIT_PER_MINUTE</code><span>HTTP requests per client address per minute; default 10.</span></div>
