@@ -50,6 +50,10 @@ function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+function encodeRepositoryPath(path: string): string {
+  return path.split("/").map((segment) => encodeURIComponent(segment)).join("/");
+}
+
 interface GitTreeEntry {
   path?: string;
   type?: string;
@@ -117,8 +121,9 @@ export class GitHubSkillRetriever implements SkillRetriever {
     candidates.sort((a, b) => b.score - a.score);
     const selected = candidates.slice(0, LIMITS.sources);
     const sources = await mapWithConcurrency(selected, 3, async (candidate) => {
-      const rawUrl = `https://raw.githubusercontent.com/${candidate.repository}/${this.branch}/${candidate.path}`;
-      const sourceUrl = `https://github.com/${candidate.repository}/blob/${this.branch}/${candidate.path}`;
+      const encodedPath = encodeRepositoryPath(candidate.path);
+      const rawUrl = `https://raw.githubusercontent.com/${candidate.repository}/${encodeURIComponent(this.branch)}/${encodedPath}`;
+      const sourceUrl = `https://github.com/${candidate.repository}/blob/${encodeURIComponent(this.branch)}/${encodedPath}`;
       try {
         const content = await this.fetchWithTimeout(rawUrl, signal);
         const title = candidate.path.split("/").at(-2) ?? candidate.path;

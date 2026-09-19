@@ -34,6 +34,20 @@ test("passes the optional GitHub token as a request header", async () => {
   assert.deepEqual(receivedHeaders, { authorization: "Bearer github-token" });
 });
 
+test("encodes unusual public skill path segments in source URLs", async () => {
+  const requested: string[] = [];
+  const retriever = new GitHubSkillRetriever(["acme/skills"], async (url) => {
+    requested.push(url);
+    if (url.startsWith("https://api.github.com/")) {
+      return JSON.stringify({ tree: [{ path: "skills/ui#review/SKILL.md", type: "blob" }] });
+    }
+    return "# Safe skill";
+  });
+  const results = await retriever.search("ui review");
+  assert.equal(results[0]?.url, "https://github.com/acme/skills/blob/main/skills/ui%23review/SKILL.md");
+  assert.equal(requested.includes("https://raw.githubusercontent.com/acme/skills/main/skills/ui%23review/SKILL.md"), true);
+});
+
 test("times out a hung public source fetch", async () => {
   const retriever = new GitHubSkillRetriever(["acme/skills"], async () => new Promise<string>(() => {}), "main", 10);
   const startedAt = Date.now();
