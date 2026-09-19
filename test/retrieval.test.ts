@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GitHubSkillRetriever } from "../src/retrieval.js";
+import { GitHubSkillRetriever, readLimitedResponse } from "../src/retrieval.js";
+import { LIMITS } from "../src/limits.js";
 
 test("retrieves and ranks public skills from the GitHub directory adapter", async () => {
   const pages = new Map([
@@ -29,4 +30,11 @@ test("times out a hung public source fetch", async () => {
   const results = await retriever.search("frontend");
   assert.deepEqual(results, []);
   assert.ok(Date.now() - startedAt < 500);
+});
+
+test("caps streamed public response bodies before buffering them", async () => {
+  await assert.rejects(
+    readLimitedResponse(new Response("x".repeat(LIMITS.fetchBytes + 1))),
+    /exceeded/
+  );
 });
