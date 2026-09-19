@@ -30,6 +30,7 @@ async function mapWithConcurrency<T, R>(items: T[], concurrency: number, worker:
 async function fetchText(url: string, signal?: AbortSignal, extraHeaders?: Record<string, string>): Promise<string> {
   const response = await fetch(url, {
     signal,
+    redirect: "error",
     headers: {
       accept: "application/vnd.github+json, text/html, text/plain",
       "user-agent": "task-time-skill-compiler/0.1.0",

@@ -96,6 +96,7 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
           "content-type": "application/json",
           ...(options.modelToken ? { authorization: `Bearer ${options.modelToken}` } : {})
         },
+        redirect: "error",
         body: JSON.stringify(prompt),
         signal: controller.signal
       })).then(async (response) => {
