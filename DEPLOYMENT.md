@@ -28,6 +28,8 @@ The MCP endpoint is `/mcp`. A non-loopback bind requires `MCP_HTTP_AUTH_TOKEN`; 
 
 The server is stateless in v1. Keep it behind a process supervisor or platform service that provides restart behavior, logs, and secret storage. Do not put tokens in the repository or in a client-side bundle. Point Claude Code at `dist/index.js` after the build; use `tsx src/index.ts` only for local iteration.
 
+For private-only testing, set `PUBLIC_SKILL_REPOSITORIES=`. The compiler then skips public retrieval and produces the deterministic local artifact from the approved request context.
+
 ## Documentation site
 
 Build the site from its own package directory:
