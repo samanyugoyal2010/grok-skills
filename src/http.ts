@@ -106,6 +106,9 @@ export function createProtectedHttpHandler(
   };
 
   return (request, response) => {
+    setHeader(response, "cache-control", "no-store");
+    setHeader(response, "x-content-type-options", "nosniff");
+    setHeader(response, "referrer-policy", "no-referrer");
     const requestPath = (request.url ?? "/").split("?", 1)[0];
     if (requestPath !== path && requestPath !== healthPath) {
       reject(response, 404, "Not found");

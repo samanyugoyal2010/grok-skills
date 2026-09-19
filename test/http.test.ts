@@ -58,6 +58,9 @@ test("protects the MCP route with path, origin, and bearer checks", () => {
   handler(request("/mcp", { authorization: "Bearer a-long-test-token", origin: "http://localhost:3000" }, "GET") as never, accepted as never);
   assert.equal(handled, 1);
   assert.equal(accepted.headers["access-control-allow-origin"], "http://localhost:3000");
+  assert.equal(accepted.headers["cache-control"], "no-store");
+  assert.equal(accepted.headers["x-content-type-options"], "nosniff");
+  assert.equal(accepted.headers["referrer-policy"], "no-referrer");
 });
 
 test("rejects invalid origins, disallowed hosts, and oversized requests", () => {
