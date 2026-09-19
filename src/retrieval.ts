@@ -1,45 +1,12 @@
 import { createHash } from "node:crypto";
 import { LIMITS } from "./limits.js";
 import type { SkillRetriever, SkillSource } from "./types.js";
+import { readLimitedResponse } from "./body.js";
+
+export { readLimitedResponse } from "./body.js";
 
 export interface Fetcher {
   (url: string, signal?: AbortSignal, headers?: Record<string, string>): Promise<string>;
-}
-
-export async function readLimitedResponse(response: Response, maxBytes = LIMITS.fetchBytes): Promise<string> {
-  const declaredLength = response.headers.get("content-length");
-  if (declaredLength && /^\d+$/.test(declaredLength) && Number(declaredLength) > maxBytes) {
-    throw new Error(`Public skill response exceeded ${maxBytes} bytes`);
-  }
-
-  if (!response.body) {
-    const bytes = await response.arrayBuffer();
-    if (bytes.byteLength > maxBytes) throw new Error(`Public skill response exceeded ${maxBytes} bytes`);
-    return new TextDecoder().decode(bytes);
-  }
-
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let totalBytes = 0;
-  try {
-    while (true) {
-      const chunk = await reader.read();
-      if (chunk.done) break;
-      totalBytes += chunk.value.byteLength;
-      if (totalBytes > maxBytes) throw new Error(`Public skill response exceeded ${maxBytes} bytes`);
-      chunks.push(chunk.value);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-
-  const bytes = new Uint8Array(totalBytes);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return new TextDecoder().decode(bytes);
 }
 
 async function fetchText(url: string, signal?: AbortSignal, extraHeaders?: Record<string, string>): Promise<string> {
@@ -52,7 +19,7 @@ async function fetchText(url: string, signal?: AbortSignal, extraHeaders?: Recor
     }
   });
   if (!response.ok) throw new Error(`Public skill fetch failed: ${response.status} ${response.statusText}`);
-  return readLimitedResponse(response);
+  return readLimitedResponse(response, LIMITS.fetchBytes);
 }
 
 function tokens(value: string): string[] {

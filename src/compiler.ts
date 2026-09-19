@@ -3,6 +3,7 @@ import { mergeRiskNotes, scanRisk } from "./safety.js";
 import { LIMITS, findSecretKinds } from "./limits.js";
 import { trimText, validateSkillMarkdown } from "./markdown.js";
 import { buildCompilerPrompt } from "./prompt.js";
+import { readLimitedResponse } from "./body.js";
 
 export interface CompilerOptions {
   modelUrl?: string;
@@ -88,9 +89,7 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
       signal: controller.signal
     });
     if (!response.ok) return null;
-    const bodyBytes = await response.arrayBuffer();
-    if (bodyBytes.byteLength > LIMITS.modelResponseBytes) return null;
-    const body = JSON.parse(new TextDecoder().decode(bodyBytes));
+    const body = JSON.parse(await readLimitedResponse(response, LIMITS.modelResponseBytes));
     const markdown = parseModelResponse(body);
     if (!markdown) return null;
     validateSkillMarkdown(markdown);
