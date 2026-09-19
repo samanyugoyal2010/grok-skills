@@ -63,7 +63,7 @@ export function createProtectedHttpHandler(
     if (origin) {
       try {
         const parsedOrigin = new URL(origin);
-        if (!/^https?:$/.test(parsedOrigin.protocol) || parsedOrigin.origin !== origin || (allowedOrigins.size > 0 && !allowedOrigins.has(origin))) {
+        if (!/^https?:$/.test(parsedOrigin.protocol) || parsedOrigin.origin !== origin || !allowedOrigins.has(origin)) {
           reject(response, 403, "Origin not allowed");
           return;
         }

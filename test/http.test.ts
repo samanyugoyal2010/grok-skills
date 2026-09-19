@@ -91,6 +91,13 @@ test("answers browser preflight requests without invoking the MCP handler", () =
   assert.equal(handled, 0);
 });
 
+test("rejects browser origins unless an explicit allowlist is configured", () => {
+  const guarded = createProtectedHttpHandler(() => undefined);
+  const rejected = response();
+  guarded(request("/mcp", { origin: "http://localhost:3000" }) as never, rejected as never);
+  assert.equal(rejected.statusCode, 403);
+});
+
 test("serves the compile_skill tool through the real MCP HTTP client", async () => {
   const mcpHandler = createMcpHandler(
     () => createServer({
