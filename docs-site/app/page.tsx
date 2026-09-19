@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Clipboard,
   FileCode2,
+  Github,
   LockKeyhole,
   Network,
   Radio,
@@ -18,11 +19,13 @@ import {
 const claudeConfig = `{
   "mcpServers": {
     "task-time-skill-compiler": {
-      "command": "npx",
-      "args": ["tsx", "/absolute/path/to/src/index.ts"]
+      "command": "node",
+      "args": ["/absolute/path/to/dist/index.js"]
     }
   }
 }`;
+
+const repositoryUrl = "https://github.com/samanyugoyal2010/grok-skills";
 
 const requestExample = `{
   "task": "Add client-side validation to account settings.",
@@ -144,6 +147,7 @@ export default function Home() {
         </a>
         <div className="topbar-meta">
           <span className="version-pill">v0.1</span>
+          <a className="source-link" href={repositoryUrl} target="_blank" rel="noreferrer">Source <Github size={14} /></a>
           <a href="#quickstart">Quickstart <ArrowUpRight size={14} /></a>
         </div>
       </nav>
@@ -234,7 +238,7 @@ export default function Home() {
             </div>
             <div className="quickstart-grid">
               <div className="quickstart-copy">
-                <div className="install-step"><span>1</span><div><h3>Add the MCP server</h3><p>Place this in your Claude Code MCP configuration. Use an absolute path to the compiler&apos;s entry point.</p></div></div>
+                <div className="install-step"><span>1</span><div><h3>Build and add the server</h3><p>Run <code>npm run build</code>, then point Claude Code at the compiled <code>dist/index.js</code> entry point.</p></div></div>
                 <div className="install-step"><span>2</span><div><h3>Approve the context</h3><p>Ask the agent to list the files it plans to send. Keep the approval narrow and task-specific.</p></div></div>
                 <div className="install-step"><span>3</span><div><h3>Save the output</h3><p>Review the returned Markdown, then save it as a repository-local <code>SKILL.md</code>.</p></div></div>
               </div>
@@ -282,12 +286,19 @@ export default function Home() {
               <div className="reference-panel">
                 <div className="panel-label"><Terminal size={15} /> environment</div>
                 <div className="env-table">
+                  <div><code>MCP_TRANSPORT</code><span><code>stdio</code> by default; set <code>http</code> for the stateless endpoint.</span></div>
+                  <div><code>PORT</code><span>HTTP port; default 3000.</span></div>
+                  <div><code>MCP_HTTP_HOST</code><span>HTTP bind address; default 127.0.0.1.</span></div>
                   <div><code>MCP_HTTP_AUTH_TOKEN</code><span>Required for non-loopback HTTP hosts.</span></div>
                   <div><code>MCP_HTTP_ALLOWED_ORIGINS</code><span>Optional comma-separated origin allowlist.</span></div>
                   <div><code>MCP_HTTP_ALLOWED_HOSTS</code><span>Optional hostnames for DNS-rebinding protection.</span></div>
                   <div><code>MCP_HTTP_MAX_BODY_BYTES</code><span>Request limit; default 256,000 bytes.</span></div>
                   <div><code>PUBLIC_SKILL_REPOSITORIES</code><span>Public GitHub repositories for the first adapter.</span></div>
+                  <div><code>PUBLIC_SKILL_BRANCH</code><span>Branch used by the public-skill adapter; default main.</span></div>
+                  <div><code>PUBLIC_SKILL_FETCH_TIMEOUT_MS</code><span>Per-request retrieval timeout; default 10,000.</span></div>
                   <div><code>SKILL_COMPILER_MODEL_URL</code><span>Optional compatible JSON model endpoint.</span></div>
+                  <div><code>SKILL_COMPILER_MODEL_TOKEN</code><span>Optional bearer token for the model endpoint.</span></div>
+                  <div><code>SKILL_COMPILER_MODEL_TIMEOUT_MS</code><span>Model request timeout; default 20,000.</span></div>
                   <div><code>RATE_LIMIT_PER_MINUTE</code><span>Anonymous per-process request limit; default 10.</span></div>
                 </div>
               </div>

@@ -25,14 +25,14 @@ Add the server to the project or user MCP configuration. Replace the path with t
 {
   "mcpServers": {
     "task-time-skill-compiler": {
-      "command": "npx",
-      "args": ["tsx", "/absolute/path/to/ai-b2b-saas/src/index.ts"]
+      "command": "node",
+      "args": ["/absolute/path/to/ai-b2b-saas/dist/index.js"]
     }
   }
 }
 ```
 
-Before calling `compile_skill`, the agent should show the user the files it plans to send and obtain approval. The server rejects sensitive paths and secret-like values, but that is a heuristic safeguard, not a security guarantee.
+Run `npm run build` before using this configuration. For local iteration, `npx tsx /absolute/path/to/ai-b2b-saas/src/index.ts` is also supported. Before calling `compile_skill`, the agent should show the user the files it plans to send and obtain approval. The server rejects sensitive paths and secret-like values, but that is a heuristic safeguard, not a security guarantee.
 
 ## HTTP mode
 

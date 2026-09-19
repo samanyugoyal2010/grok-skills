@@ -57,6 +57,7 @@ button { font: inherit; }
 .topbar-meta { display: flex; align-items: center; gap: 24px; color: var(--muted); font-size: 14px; }
 .topbar-meta a { display: inline-flex; align-items: center; gap: 5px; transition: color .2s ease; }
 .topbar-meta a:hover { color: var(--cyan); }
+.source-link { color: var(--muted); }
 .version-pill { color: var(--cyan); padding: 3px 8px; border: 1px solid rgba(141,231,219,.3); border-radius: 999px; font-family: var(--mono); font-size: 11px; }
 
 .docs-layout { display: grid; grid-template-columns: 245px minmax(0, 980px); gap: 74px; max-width: 1376px; margin: 0 auto; padding: 0 48px; }
@@ -204,7 +205,7 @@ pre { margin: 0; padding: 19px; overflow-x: auto; color: #c7d5d3; font: 12px/1.8
 
 @media (max-width: 520px) {
   .topbar { height: 62px; padding: 0 18px; }
-  .brand-muted, .topbar-meta .version-pill { display: none; }
+  .brand-muted, .topbar-meta .version-pill, .topbar-meta .source-link { display: none; }
   .topbar-meta { gap: 0; font-size: 13px; }
   .docs-layout { padding: 0 18px; }
   .sidebar-group { margin: 0 -18px; padding: 14px 18px; }

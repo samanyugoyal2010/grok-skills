@@ -26,7 +26,7 @@ npm start
 
 The MCP endpoint is `/mcp`. A non-loopback bind requires `MCP_HTTP_AUTH_TOKEN`; do not expose the server publicly without a token and an appropriate `MCP_HTTP_ALLOWED_ORIGINS` value. Requests are capped at 256,000 bytes by default. Set `MCP_HTTP_ALLOWED_HOSTS` when a proxy or custom hostname is part of the deployment.
 
-The server is stateless in v1. Keep it behind a process supervisor or platform service that provides restart behavior, logs, and secret storage. Do not put tokens in the repository or in a client-side bundle.
+The server is stateless in v1. Keep it behind a process supervisor or platform service that provides restart behavior, logs, and secret storage. Do not put tokens in the repository or in a client-side bundle. Point Claude Code at `dist/index.js` after the build; use `tsx src/index.ts` only for local iteration.
 
 ## Documentation site
 
