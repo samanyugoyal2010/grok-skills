@@ -213,6 +213,7 @@ export default function Home() {
                   <div><code>SKILL_COMPILER_DEADLINE_MS</code><span>End-to-end compile deadline; default 60,000.</span></div>
                   <div><code>MAX_IN_FLIGHT_COMPILATIONS</code><span>Process concurrency cap; default 2.</span></div>
                   <div><code>RATE_LIMIT_PER_MINUTE</code><span>HTTP requests per client address per minute; default 10.</span></div>
+                  <div><code>RATE_LIMIT_MAX_KEYS</code><span>Maximum in-memory client buckets; default 10,000.</span></div>
                 </div>
               </div>
             </div>
