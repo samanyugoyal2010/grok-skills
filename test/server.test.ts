@@ -3,8 +3,19 @@ import assert from "node:assert/strict";
 import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { createServer } from "../src/server.js";
+import { compileSkillInputSchema } from "../src/types.js";
 import type { SkillRetriever } from "../src/types.js";
 import { RateLimiter } from "../src/rate-limit.js";
+
+test("rejects unknown compile_skill input fields", () => {
+  const result = compileSkillInputSchema.safeParse({
+    task: "Add a profile page",
+    search_query: "frontend",
+    approved_context: [],
+    unexpected: true
+  });
+  assert.equal(result.success, false);
+});
 
 test("registers the compile_skill tool", async () => {
   const retriever: SkillRetriever = { search: async () => [] };
