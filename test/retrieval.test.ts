@@ -43,6 +43,20 @@ test("uses public skill content to refine path-based ranking", async () => {
   assert.match(results[0]?.matchReason ?? "", /content/);
 });
 
+test("caches public tree and skill responses within one retriever", async () => {
+  let calls = 0;
+  const retriever = new GitHubSkillRetriever(["acme/skills"], async (url) => {
+    calls += 1;
+    if (url.startsWith("https://api.github.com/")) {
+      return JSON.stringify({ tree: [{ path: "skills/frontend/SKILL.md", type: "blob" }] });
+    }
+    return "# Frontend\nUse the existing components.";
+  });
+  await retriever.search("frontend");
+  await retriever.search("frontend");
+  assert.equal(calls, 2);
+});
+
 test("passes the optional GitHub token as a request header", async () => {
   let receivedHeaders: Record<string, string> | undefined;
   const retriever = new GitHubSkillRetriever(["acme/skills"], async (_url, _signal, headers) => {

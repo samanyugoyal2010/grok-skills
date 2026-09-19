@@ -4,6 +4,9 @@ import type { SkillRetriever, SkillSource } from "./types.js";
 import { readLimitedResponse } from "./body.js";
 import { raceWithAbort } from "./abort.js";
 
+const PUBLIC_RESPONSE_CACHE_TTL_MS = 5 * 60_000;
+const PUBLIC_RESPONSE_CACHE_MAX_BYTES = 8 * 1024 * 1024;
+
 export { readLimitedResponse } from "./body.js";
 
 export interface Fetcher {
@@ -76,6 +79,9 @@ interface GitTreeResponse {
  * URLs and raw Markdown content for the actual compilation request.
  */
 export class GitHubSkillRetriever implements SkillRetriever {
+  private readonly responseCache = new Map<string, { value: string; expiresAt: number }>();
+  private cachedBytes = 0;
+
   constructor(
     private readonly repositories = (process.env.PUBLIC_SKILL_REPOSITORIES ?? "vercel-labs/agent-skills,anthropics/skills").split(",").map((repo) => repo.trim()).filter(Boolean),
     private readonly fetcher: Fetcher = fetchText,
@@ -85,6 +91,16 @@ export class GitHubSkillRetriever implements SkillRetriever {
   ) {}
 
   private async fetchWithTimeout(url: string, signal?: AbortSignal): Promise<string> {
+    const cached = this.responseCache.get(url);
+    if (cached) {
+      if (cached.expiresAt > Date.now()) {
+        this.responseCache.delete(url);
+        this.responseCache.set(url, cached);
+        return cached.value;
+      }
+      this.responseCache.delete(url);
+      this.cachedBytes -= cached.value.length;
+    }
     const timeout = Number.isFinite(this.timeoutMs) && this.timeoutMs >= 1 ? this.timeoutMs : 10_000;
     let timer: NodeJS.Timeout | undefined;
     const controller = new AbortController();
@@ -95,7 +111,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
     }
     try {
       const fetchOperation = Promise.resolve().then(() => this.fetcher(url, controller.signal, this.githubToken ? { authorization: `Bearer ${this.githubToken}` } : undefined));
-      return await raceWithAbort(Promise.race([
+      const value = await raceWithAbort(Promise.race([
         fetchOperation,
         new Promise<string>((_, reject) => {
           timer = setTimeout(() => {
@@ -104,10 +120,28 @@ export class GitHubSkillRetriever implements SkillRetriever {
           }, timeout);
         })
       ]), signal, () => controller.abort(signal?.reason), "Public skill fetch aborted");
+      this.cacheResponse(url, value);
+      return value;
     } finally {
       if (timer) clearTimeout(timer);
       signal?.removeEventListener("abort", abort);
     }
+  }
+
+  private cacheResponse(url: string, value: string): void {
+    if (value.length > PUBLIC_RESPONSE_CACHE_MAX_BYTES) return;
+    const existing = this.responseCache.get(url);
+    if (existing) this.cachedBytes -= existing.value.length;
+    this.responseCache.delete(url);
+    while (this.cachedBytes + value.length > PUBLIC_RESPONSE_CACHE_MAX_BYTES) {
+      const oldestUrl = this.responseCache.keys().next().value as string | undefined;
+      if (oldestUrl === undefined) return;
+      const oldest = this.responseCache.get(oldestUrl);
+      this.responseCache.delete(oldestUrl);
+      if (oldest) this.cachedBytes -= oldest.value.length;
+    }
+    this.responseCache.set(url, { value, expiresAt: Date.now() + PUBLIC_RESPONSE_CACHE_TTL_MS });
+    this.cachedBytes += value.length;
   }
 
   async search(query: string, signal?: AbortSignal): Promise<SkillSource[]> {
