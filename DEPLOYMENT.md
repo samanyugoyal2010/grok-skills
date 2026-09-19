@@ -61,6 +61,7 @@ Run the same checks used by CI before publishing either artifact:
 npm run typecheck
 npm test
 npm run build
+npm audit --omit=dev
 
 cd docs-site
 npm run typecheck
