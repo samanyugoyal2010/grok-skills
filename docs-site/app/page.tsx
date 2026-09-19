@@ -164,8 +164,9 @@ export default function Home() {
                 <div className="companion-card">
                   <span className="eyebrow">Optional companion</span>
                   <h3>Pair it with 21st.dev</h3>
-                  <p>Use Task-Time for repo-aware skill compilation and 21st for UI component discovery. Add this entry beside the server above, then provide <code>API_KEY_21ST</code> through your client environment.</p>
+                  <p>Use Task-Time for repo-aware skill compilation and 21st for UI component discovery. Add this entry beside the server above, then sign in with <code>21st login</code> or provide <code>API_KEY_21ST</code> through your client environment.</p>
                   <CodeBlock label="21st MCP entry" value={companionConfig} />
+                  <a className="companion-link" href="https://docs.21st.dev/mcp" target="_blank" rel="noreferrer">Open the 21st MCP setup guide <ArrowUpRight size={14} aria-hidden="true" /></a>
                 </div>
               </div>
             </div>

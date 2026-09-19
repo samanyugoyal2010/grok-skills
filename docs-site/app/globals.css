@@ -133,6 +133,8 @@ button { font: inherit; }
 .companion-card h3 { font-size: 17px; letter-spacing: -.02em; margin: 9px 0 8px; }
 .companion-card p { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 0 0 15px; }
 .companion-card code { color: var(--cyan); font: 12px var(--mono); }
+.companion-link { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; color: var(--cyan); font-size: 13px; }
+.companion-link:hover { color: var(--paper); }
 .install-step { display: grid; grid-template-columns: 30px 1fr; gap: 14px; margin: 0 0 28px; }
 .install-step > span { width: 25px; height: 25px; display: grid; place-items: center; color: var(--cyan); border: 1px solid var(--cyan-deep); border-radius: 50%; font: 11px var(--mono); }
 .install-step h3 { margin-top: 0; }
