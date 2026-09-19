@@ -110,7 +110,7 @@ function CodeBlock({ label, value }: { label: string; value: string }) {
       <div className="code-head">
         <span>{label}</span>
         <button className="copy-button" onClick={copy} type="button" aria-label={`Copy ${label}`}>
-          {copyStatus === "copied" ? <Check size={14} /> : <Clipboard size={14} />}
+          {copyStatus === "copied" ? <Check size={14} aria-hidden="true" /> : <Clipboard size={14} aria-hidden="true" />}
           {copyStatus === "copied" ? "Copied" : copyStatus === "error" ? "Copy failed" : "Copy"}
         </button>
       </div>
@@ -138,7 +138,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="site-shell">
+    <div className="site-shell">
       <a className="skip-link" href="#main-content">Skip to content</a>
       <nav className="topbar" aria-label="Primary navigation">
         <a className="brand" href="#overview" aria-label="Task-Time Skill Compiler home">
@@ -148,8 +148,8 @@ export default function Home() {
         </a>
         <div className="topbar-meta">
           <span className="version-pill">v0.1</span>
-          <a className="source-link" href={repositoryUrl} target="_blank" rel="noreferrer">Source <Github size={14} /></a>
-          <a href="#quickstart">Quickstart <ArrowUpRight size={14} /></a>
+          <a className="source-link" href={repositoryUrl} target="_blank" rel="noreferrer">Source <Github size={14} aria-hidden="true" /></a>
+          <a href="#quickstart">Quickstart <ArrowUpRight size={14} aria-hidden="true" /></a>
         </div>
       </nav>
 
@@ -173,15 +173,15 @@ export default function Home() {
           </div>
         </aside>
 
-        <div className="content-column" id="main-content">
+        <main className="content-column" id="main-content" tabIndex={-1}>
           <section className="hero section" id="overview">
             <div className="hero-copy">
               <div className="eyebrow accent-eyebrow"><span className="pulse-dot" /> Claude Code MCP server</div>
               <h1>Compile the skill<br /><span>for this task.</span></h1>
               <p className="hero-lede">Generic skills explain a tool. Task-Time compiles guidance for the work in front of you, using only the repository context you approved.</p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#quickstart">Start with the quickstart <ChevronRight size={16} /></a>
-                <a className="text-link" href="#contract">Read the contract <ArrowUpRight size={15} /></a>
+                <a className="button button-primary" href="#quickstart">Start with the quickstart <ChevronRight size={16} aria-hidden="true" /></a>
+                <a className="text-link" href="#contract">Read the contract <ArrowUpRight size={15} aria-hidden="true" /></a>
               </div>
             </div>
             <div className="compiler-card" aria-label="Compiler flow preview">
@@ -198,7 +198,7 @@ export default function Home() {
                   <div className="compile-row"><span className="compile-key">context</span><span className="compile-value">2 approved files</span></div>
                   <div className="compile-row"><span className="compile-key">sources</span><span className="compile-value">frontend-design + 2</span></div>
                   <div className="compile-divider" />
-                  <div className="output-row"><FileCode2 size={17} /><span>SKILL.md</span><strong>compiled</strong></div>
+                  <div className="output-row"><FileCode2 size={17} aria-hidden="true" /><span>SKILL.md</span><strong>compiled</strong></div>
                   <div className="hash-line">sha256 · fcd3fcf389360528…</div>
                 </div>
               </div>
@@ -212,19 +212,19 @@ export default function Home() {
             </div>
             <div className="workflow-grid">
               <article className="workflow-card">
-                <div className="step-icon"><LockKeyhole size={19} /></div>
+                <div className="step-icon"><LockKeyhole size={19} aria-hidden="true" /></div>
                 <span className="step-number">01 / approve</span>
                 <h3>Choose the context</h3>
                 <p>The agent proposes files. You approve the paths before private content crosses the boundary.</p>
               </article>
               <article className="workflow-card featured-step">
-                <div className="step-icon"><Network size={19} /></div>
+                <div className="step-icon"><Network size={19} aria-hidden="true" /></div>
                 <span className="step-number">02 / retrieve</span>
                 <h3>Find public guidance</h3>
                 <p>A focused public-skill adapter retrieves relevant Markdown and records each source URL and hash.</p>
               </article>
               <article className="workflow-card">
-                <div className="step-icon"><Sparkles size={19} /></div>
+                <div className="step-icon"><Sparkles size={19} aria-hidden="true" /></div>
                 <span className="step-number">03 / compile</span>
                 <h3>Generate the artifact</h3>
                 <p>Get a reusable SKILL.md with repository constraints, examples, provenance, and risk notes.</p>
@@ -239,7 +239,7 @@ export default function Home() {
             </div>
             <div className="quickstart-grid">
               <div className="quickstart-copy">
-                <div className="install-step"><span>1</span><div><h3>Build and add the server</h3><p>Run <code>npm run build</code>, then point Claude Code at the compiled <code>dist/index.js</code> entry point.</p></div></div>
+                <div className="install-step"><span>1</span><div><h3>Build and add the server</h3><p>From the repository root, run <code>npm run build</code>, then point Claude Code at the compiled <code>dist/index.js</code> entry point.</p></div></div>
                 <div className="install-step"><span>2</span><div><h3>Approve the context</h3><p>Ask the agent to list the files it plans to send. Keep the approval narrow and task-specific.</p></div></div>
                 <div className="install-step"><span>3</span><div><h3>Save the output</h3><p>Review the returned Markdown, then save it as a repository-local <code>SKILL.md</code>.</p></div></div>
               </div>
@@ -254,7 +254,7 @@ export default function Home() {
             </div>
             <div className="contract-grid">
               <div className="contract-panel">
-                <div className="panel-label"><Terminal size={15} /> input / compile_skill</div>
+                <div className="panel-label"><Terminal size={15} aria-hidden="true" /> input / compile_skill</div>
                 <CodeBlock label="request.json" value={requestExample} />
                 <div className="limit-list">
                   <span>task <b>4,000 chars</b></span>
@@ -263,7 +263,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="contract-panel output-panel">
-                <div className="panel-label"><FileCode2 size={15} /> output / inspectable artifact</div>
+                <div className="panel-label"><FileCode2 size={15} aria-hidden="true" /> output / inspectable artifact</div>
                 <CodeBlock label="response.json" value={outputExample} />
                 <div className="output-tags"><span>sources</span><span>context manifest</span><span>risk notes</span><span>skillMarkdown</span></div>
               </div>
@@ -277,7 +277,7 @@ export default function Home() {
             </div>
             <div className="reference-grid">
               <div className="reference-panel">
-                <div className="panel-label"><Radio size={15} /> transports</div>
+                <div className="panel-label"><Radio size={15} aria-hidden="true" /> transports</div>
                 <CodeBlock label="terminal" value={runtimeExample} />
                 <dl className="reference-list">
                   <div><dt>stdio</dt><dd>Default transport for Claude Code. JSON-RPC stays on stdout; logs go to stderr.</dd></div>
@@ -285,7 +285,7 @@ export default function Home() {
                 </dl>
               </div>
               <div className="reference-panel">
-                <div className="panel-label"><Terminal size={15} /> environment</div>
+                <div className="panel-label"><Terminal size={15} aria-hidden="true" /> environment</div>
                 <div className="env-table">
                   <div><code>MCP_TRANSPORT</code><span><code>stdio</code> by default; set <code>http</code> for the stateless endpoint.</span></div>
                   <div><code>PORT</code><span>HTTP port; default 3000.</span></div>
@@ -316,7 +316,7 @@ export default function Home() {
               <div><h2>Safety boundaries</h2><p>Keep the compiler useful without giving it repository control.</p></div>
             </div>
             <div className="safety-callout">
-              <div className="safety-icon"><ShieldCheck size={21} /></div>
+            <div className="safety-icon"><ShieldCheck size={21} aria-hidden="true" /></div>
               <div>
                 <span className="eyebrow">A deliberate boundary</span>
                 <h2>The compiler proposes. Your agent decides.</h2>
@@ -332,10 +332,10 @@ export default function Home() {
 
           <footer className="footer">
             <div><span className="footer-brand">task-time / compiler</span><p>Task-time guidance for agents that work in real repositories.</p></div>
-            <div className="footer-links"><a href="#overview">Back to top <ArrowUpRight size={14} /></a><span>Built for Claude Code</span></div>
+            <div className="footer-links"><a href="#overview">Back to top <ArrowUpRight size={14} aria-hidden="true" /></a><span>Built for Claude Code</span></div>
           </footer>
-        </div>
+        </main>
       </div>
-    </main>
+    </div>
   );
 }
