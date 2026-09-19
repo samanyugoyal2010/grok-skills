@@ -87,6 +87,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const bearerToken = env.MCP_HTTP_AUTH_TOKEN || undefined;
   const allowedOrigins = parseList(env.MCP_HTTP_ALLOWED_ORIGINS);
   const allowedHosts = parseList(env.MCP_HTTP_ALLOWED_HOSTS);
+  const normalizedAllowedHosts = allowedHosts.map((host) => host.toLowerCase());
   const allowInsecureModelHttp = env.SKILL_COMPILER_ALLOW_INSECURE_HTTP === "true";
   const modelUrl = parseModelUrl(env.SKILL_COMPILER_MODEL_URL, allowInsecureModelHttp);
   const modelToken = env.SKILL_COMPILER_MODEL_TOKEN || undefined;
@@ -97,7 +98,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   if (transport === "http" && !isLoopbackHost(httpHost) && !bearerToken) {
     throw new Error("MCP_HTTP_AUTH_TOKEN is required when MCP_HTTP_HOST is not loopback");
   }
-  if (transport === "http" && !isLoopbackHost(httpHost) && allowedHosts.length === 0) {
+  if (transport === "http" && !isLoopbackHost(httpHost) && normalizedAllowedHosts.length === 0) {
     throw new Error("MCP_HTTP_ALLOWED_HOSTS is required when MCP_HTTP_HOST is not loopback");
   }
   if (modelToken && !modelUrl) throw new Error("SKILL_COMPILER_MODEL_TOKEN requires SKILL_COMPILER_MODEL_URL");
@@ -112,7 +113,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     httpMaxBodyBytes: parsePositiveInteger("MCP_HTTP_MAX_BODY_BYTES", env.MCP_HTTP_MAX_BODY_BYTES, DEFAULT_HTTP_MAX_BODY_BYTES),
     ...(bearerToken ? { bearerToken } : {}),
     allowedOrigins,
-    allowedHosts: allowedHosts.length > 0 || !isLoopbackHost(httpHost) ? allowedHosts : ["localhost", "127.0.0.1", "[::1]"],
+    allowedHosts: normalizedAllowedHosts.length > 0 || !isLoopbackHost(httpHost) ? normalizedAllowedHosts : ["localhost", "127.0.0.1", "[::1]"],
     ...(modelUrl ? { modelUrl } : {}),
     ...(modelToken ? { modelToken } : {}),
     modelTimeoutMs: parsePositiveInteger("SKILL_COMPILER_MODEL_TIMEOUT_MS", env.SKILL_COMPILER_MODEL_TIMEOUT_MS, 20_000),

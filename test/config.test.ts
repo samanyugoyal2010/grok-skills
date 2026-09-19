@@ -32,7 +32,7 @@ test("fails fast for invalid runtime configuration", () => {
     MCP_TRANSPORT: "http",
     MCP_HTTP_HOST: "0.0.0.0",
     MCP_HTTP_AUTH_TOKEN: "token",
-    MCP_HTTP_ALLOWED_HOSTS: "compiler.example.com"
+    MCP_HTTP_ALLOWED_HOSTS: "Compiler.Example.COM"
   });
   assert.deepEqual(remote.allowedHosts, ["compiler.example.com"]);
   assert.throws(() => loadRuntimeConfig({ PUBLIC_SKILL_REPOSITORIES: "not-a-repository" }), /PUBLIC_SKILL_REPOSITORIES/);
