@@ -33,6 +33,7 @@ async function fetchText(url: string, signal?: AbortSignal, extraHeaders?: Recor
     redirect: "error",
     headers: {
       accept: "application/vnd.github+json, text/html, text/plain",
+      "x-github-api-version": "2022-11-28",
       "user-agent": "task-time-skill-compiler/0.1.0",
       ...extraHeaders
     }
