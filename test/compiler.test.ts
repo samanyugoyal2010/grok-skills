@@ -81,3 +81,19 @@ test("falls back before parsing an oversized model response", async () => {
   });
   assert.match(result.skillMarkdown, /No public source skill was found/);
 });
+
+test("withholds secret-like public source content from the model prompt", async () => {
+  let promptBody = "";
+  const result = await compileSkill(input, [{ ...source, content: "password=supersecret123" }], {
+    modelUrl: "https://model.example/compile",
+    fetcher: (async (_url, init) => {
+      promptBody = String(init?.body ?? "");
+      const markdown = "# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nExample";
+      return new Response(JSON.stringify({ output: markdown }), { status: 200 });
+    }) as typeof fetch
+  });
+  assert.doesNotMatch(promptBody, /supersecret123/);
+  assert.match(result.changeSummary.join(" "), /Withheld 1 public source/);
+  assert.equal(result.sources.length, 1);
+  assert.equal(result.riskNotes.some((note) => note.category === "secret-like-value"), true);
+});

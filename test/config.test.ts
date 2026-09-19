@@ -34,5 +34,12 @@ test("fails fast for invalid runtime configuration", () => {
   assert.deepEqual(remote.allowedHosts, ["compiler.example.com"]);
   assert.throws(() => loadRuntimeConfig({ PUBLIC_SKILL_REPOSITORIES: "not-a-repository" }), /PUBLIC_SKILL_REPOSITORIES/);
   assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "file:///tmp/model" }), /SKILL_COMPILER_MODEL_URL/);
+  assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "http://model.example/compile" }), /must use HTTPS/);
+  assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "https://user:pass@model.example/compile" }), /embedded credentials/);
   assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_TOKEN: "token" }), /requires/);
+});
+
+test("allows loopback HTTP for local model development and rejects remote HTTP by default", () => {
+  assert.equal(loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "http://127.0.0.1:8080/compile" }).modelUrl, "http://127.0.0.1:8080/compile");
+  assert.equal(loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "http://model.example/compile", SKILL_COMPILER_ALLOW_INSECURE_HTTP: "true" }).modelUrl, "http://model.example/compile");
 });

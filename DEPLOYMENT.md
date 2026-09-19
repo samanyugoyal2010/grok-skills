@@ -28,6 +28,8 @@ The MCP endpoint is `/mcp`, and `GET /healthz` is a liveness check for process s
 
 The server is stateless in v1. Keep it behind a process supervisor or platform service that provides restart behavior, logs, and secret storage. Do not put tokens in the repository or in a client-side bundle. Point Claude Code at `dist/index.js` after the build; use `tsx src/index.ts` only for local iteration.
 
+The configured model endpoint must use HTTPS outside loopback development. Terminate TLS at the reverse proxy for a remote deployment and pass the model URL as a secret-managed environment value.
+
 For private-only testing, set `PUBLIC_SKILL_REPOSITORIES=`. The compiler then skips public retrieval and produces the deterministic local artifact from the approved request context.
 
 For a public retrieval deployment, set `PUBLIC_SKILL_GITHUB_TOKEN` through the platform's secret manager when anonymous GitHub API limits are insufficient. Do not commit it or pass it to the docs site.

@@ -113,7 +113,9 @@ function riskNotesFor(input: CompileSkillInput, sources: SkillSource[], markdown
 }
 
 export async function compileSkill(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions = {}): Promise<CompileSkillResponse> {
-  const modelMarkdown = await compileWithModel(input, sources, options);
+  const blockedSources = sources.filter((source) => findSecretKinds(source.content).length > 0);
+  const safeSources = sources.filter((source) => findSecretKinds(source.content).length === 0);
+  const modelMarkdown = await compileWithModel(input, safeSources, options);
   const skillMarkdown = modelMarkdown ?? deterministicSkill(input, sources);
   validateSkillMarkdown(skillMarkdown);
 
@@ -129,7 +131,8 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
         : options.modelUrl
           ? "The configured model endpoint did not return valid output; used the deterministic compiler fallback."
           : "Compiled with the deterministic local compiler; no model endpoint was configured.",
-      sources.length ? `Adapted guidance from ${sources.length} public skill source(s).` : "Generated without a public source skill because retrieval returned no matches."
+      sources.length ? `Adapted guidance from ${sources.length} public skill source(s).` : "No public source skill was available; compiled from the approved request context.",
+      ...(blockedSources.length ? [`Withheld ${blockedSources.length} public source(s) containing secret-like material from the model prompt.`] : [])
     ],
     riskNotes: riskNotesFor(input, sources, skillMarkdown),
     skillMarkdown

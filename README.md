@@ -58,6 +58,7 @@ The request fixture at [`examples/compile-skill-request.json`](examples/compile-
 
 - The default compiler is deterministic and intended to make the flow runnable without a model credential.
 - Set `SKILL_COMPILER_MODEL_URL` to use a compatible JSON model endpoint. The endpoint receives `{ system, user }` and should return `{ skillMarkdown }`.
+- Model endpoints must use HTTPS outside loopback development. Set `SKILL_COMPILER_ALLOW_INSECURE_HTTP=true` only for a controlled development network.
 - Public skill retrieval uses GitHub's repository tree API as one adapter for public `SKILL.md` repositories. The default corpus is `vercel-labs/agent-skills` plus `anthropics/skills`; configure `PUBLIC_SKILL_REPOSITORIES` to replace that list, or set it empty to disable retrieval. It may return no sources if GitHub is unavailable or a repository has no `SKILL.md` files.
 - Set `PUBLIC_SKILL_GITHUB_TOKEN` in the runtime environment when the anonymous GitHub API limit is too low. The token is sent only as an Authorization header and is never included in source URLs or responses.
 - Retrieval requests time out after `PUBLIC_SKILL_FETCH_TIMEOUT_MS` (10 seconds by default), and model responses are capped before parsing.

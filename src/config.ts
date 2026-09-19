@@ -34,15 +34,23 @@ function parseList(value: string | undefined): string[] {
   return (value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
 }
 
-function parseHttpUrl(name: string, value: string | undefined): string | undefined {
+function isLoopbackHostname(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]" || hostname === "::1";
+}
+
+function parseModelUrl(value: string | undefined, allowInsecureHttp: boolean): string | undefined {
   if (!value?.trim()) return undefined;
   let parsed: URL;
   try {
     parsed = new URL(value);
   } catch {
-    throw new Error(`${name} must be a valid HTTP or HTTPS URL`);
+    throw new Error("SKILL_COMPILER_MODEL_URL must be a valid HTTP or HTTPS URL");
   }
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") throw new Error(`${name} must be a valid HTTP or HTTPS URL`);
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") throw new Error("SKILL_COMPILER_MODEL_URL must be a valid HTTP or HTTPS URL");
+  if (parsed.username || parsed.password) throw new Error("SKILL_COMPILER_MODEL_URL must not contain embedded credentials");
+  if (parsed.protocol === "http:" && !isLoopbackHostname(parsed.hostname) && !allowInsecureHttp) {
+    throw new Error("SKILL_COMPILER_MODEL_URL must use HTTPS outside loopback development");
+  }
   return parsed.toString();
 }
 
@@ -73,7 +81,8 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const bearerToken = env.MCP_HTTP_AUTH_TOKEN || undefined;
   const allowedOrigins = parseList(env.MCP_HTTP_ALLOWED_ORIGINS);
   const allowedHosts = parseList(env.MCP_HTTP_ALLOWED_HOSTS);
-  const modelUrl = parseHttpUrl("SKILL_COMPILER_MODEL_URL", env.SKILL_COMPILER_MODEL_URL);
+  const allowInsecureModelHttp = env.SKILL_COMPILER_ALLOW_INSECURE_HTTP === "true";
+  const modelUrl = parseModelUrl(env.SKILL_COMPILER_MODEL_URL, allowInsecureModelHttp);
   const modelToken = env.SKILL_COMPILER_MODEL_TOKEN || undefined;
   const publicSkillRepositories = parseList(env.PUBLIC_SKILL_REPOSITORIES === undefined ? "vercel-labs/agent-skills,anthropics/skills" : env.PUBLIC_SKILL_REPOSITORIES);
   const publicSkillBranch = env.PUBLIC_SKILL_BRANCH?.trim() || "main";
