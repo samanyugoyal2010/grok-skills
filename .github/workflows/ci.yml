@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install MCP server dependencies
+        run: npm ci
+
+      - name: Typecheck MCP server
+        run: npm run typecheck
+
+      - name: Test MCP server
+        run: npm test
+
+      - name: Build MCP server
+        run: npm run build
+
+      - name: Install docs dependencies
+        working-directory: docs-site
+        run: npm ci
+
+      - name: Typecheck docs site
+        working-directory: docs-site
+        run: npm run typecheck
+
+      - name: Build docs site
+        working-directory: docs-site
+        run: npm run build
+
+      - name: Audit production dependencies
+        working-directory: docs-site
+        run: npm audit --omit=dev
