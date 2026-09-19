@@ -50,6 +50,7 @@ const outputExample = `{
     "path": "src/account-settings/form.ts",
     "characterCount": 412
   }],
+  "changeSummary": ["Compiled with the deterministic local compiler."],
   "riskNotes": [],
   "skillMarkdown": "# frontend-form-validation..."
 }`;
