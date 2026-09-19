@@ -1,7 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
+import { createServer as createNodeServer } from "node:http";
+import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
+import { createMcpHandler } from "@modelcontextprotocol/server";
+import { toNodeHandler } from "@modelcontextprotocol/node";
 import { createProtectedHttpHandler, isLoopbackHost } from "../src/http.js";
+import { createServer } from "../src/server.js";
+import { RateLimiter } from "../src/rate-limit.js";
 
 function request(url: string, headers: Record<string, string> = {}, method = "POST") {
   return Object.assign(new EventEmitter(), { url, headers, method });
@@ -83,4 +89,42 @@ test("answers browser preflight requests without invoking the MCP handler", () =
   assert.equal(preflight.statusCode, 204);
   assert.equal(preflight.headers["access-control-allow-methods"], "POST, GET, DELETE, OPTIONS");
   assert.equal(handled, 0);
+});
+
+test("serves the compile_skill tool through the real MCP HTTP client", async () => {
+  const mcpHandler = createMcpHandler(
+    () => createServer({
+      retriever: { search: async () => [] },
+      rateLimiter: new RateLimiter(10)
+    }),
+    { responseMode: "json" }
+  );
+  const nodeHandler = toNodeHandler(mcpHandler);
+  const httpServer = createNodeServer(createProtectedHttpHandler(nodeHandler, {
+    allowedHosts: ["127.0.0.1"],
+    maxBodyBytes: 256_000
+  }));
+
+  await new Promise<void>((resolve) => httpServer.listen(0, "127.0.0.1", resolve));
+  const address = httpServer.address();
+  assert.ok(address && typeof address === "object");
+  const client = new Client({ name: "http-test-client", version: "0.1.0" });
+
+  try {
+    await client.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${address.port}/mcp`)));
+    const tools = await client.listTools();
+    assert.ok(tools.tools.some((tool) => tool.name === "compile_skill"));
+    const result = await client.callTool({
+      name: "compile_skill",
+      arguments: { task: "Add a profile page", search_query: "frontend", approved_context: [] }
+    });
+    assert.equal(result.isError, undefined);
+    const textBlock = result.content.find((block) => block.type === "text");
+    assert.ok(textBlock && "text" in textBlock);
+    assert.match(textBlock.text, /skillMarkdown/);
+  } finally {
+    await client.close();
+    await mcpHandler.close();
+    await new Promise<void>((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
+  }
 });
