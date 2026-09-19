@@ -10,6 +10,7 @@ import {
   Github,
   LockKeyhole,
   Network,
+  Radio,
   ShieldCheck,
   Sparkles,
   Terminal,
@@ -52,11 +53,22 @@ const outputExample = `{
   "skillMarkdown": "# frontend-form-validation..."
 }`;
 
+const runtimeExample = `# local stdio (the default)
+npm run dev
+
+# stateless HTTP on /mcp
+MCP_TRANSPORT=http PORT=3000 npm run dev`;
+
+const errorExample = `{
+  "error": "Context path is not allowed: .env"
+}`;
+
 const navItems = [
   ["overview", "Overview"],
   ["workflow", "The compiler loop"],
   ["quickstart", "Quickstart"],
   ["contract", "Tool contract"],
+  ["reference", "Runtime reference"],
   ["safety", "Safety boundaries"]
 ] as const;
 
@@ -235,7 +247,7 @@ export default function Home() {
           <section className="section contract-section" id="contract">
             <div className="section-heading">
               <span className="section-index">04</span>
-              <div><h2>Tool contract</h2><p>Designed to be small enough to understand before the first call.</p></div>
+                <div><h2>Tool contract</h2><p>Designed to be small enough to understand before the first call.</p></div>
             </div>
             <div className="contract-grid">
               <div className="contract-panel">
@@ -255,7 +267,39 @@ export default function Home() {
             </div>
           </section>
 
+          <section className="section reference-section" id="reference">
+            <div className="section-heading">
+              <span className="section-index">05</span>
+              <div><h2>Runtime reference</h2><p>Use stdio locally. Use the protected HTTP endpoint when another process needs the compiler.</p></div>
+            </div>
+            <div className="reference-grid">
+              <div className="reference-panel">
+                <div className="panel-label"><Radio size={15} /> transports</div>
+                <CodeBlock label="terminal" value={runtimeExample} />
+                <dl className="reference-list">
+                  <div><dt>stdio</dt><dd>Default transport for Claude Code. JSON-RPC stays on stdout; logs go to stderr.</dd></div>
+                  <div><dt>HTTP</dt><dd>Stateless MCP at <code>/mcp</code>. It binds to <code>127.0.0.1</code> unless configured otherwise.</dd></div>
+                </dl>
+              </div>
+              <div className="reference-panel">
+                <div className="panel-label"><Terminal size={15} /> environment</div>
+                <div className="env-table">
+                  <div><code>MCP_HTTP_AUTH_TOKEN</code><span>Required for non-loopback HTTP hosts.</span></div>
+                  <div><code>MCP_HTTP_ALLOWED_ORIGINS</code><span>Optional comma-separated origin allowlist.</span></div>
+                  <div><code>PUBLIC_SKILL_REPOSITORIES</code><span>Public GitHub repositories for the first adapter.</span></div>
+                  <div><code>SKILL_COMPILER_MODEL_URL</code><span>Optional compatible JSON model endpoint.</span></div>
+                  <div><code>RATE_LIMIT_PER_MINUTE</code><span>Anonymous per-process request limit; default 10.</span></div>
+                </div>
+              </div>
+            </div>
+            <div className="reference-footnote"><strong>When a call fails</strong><span>The tool returns <code>isError: true</code> with a JSON error message. Retrieval and model timeouts fall back safely; an empty retrieval result still produces a deterministic skill.</span></div>
+          </section>
+
           <section className="section safety-section" id="safety">
+            <div className="section-heading">
+              <span className="section-index">06</span>
+              <div><h2>Safety boundaries</h2><p>Keep the compiler useful without giving it repository control.</p></div>
+            </div>
             <div className="safety-callout">
               <div className="safety-icon"><ShieldCheck size={21} /></div>
               <div>

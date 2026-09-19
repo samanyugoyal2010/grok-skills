@@ -147,6 +147,21 @@ pre { margin: 0; padding: 19px; overflow-x: auto; color: #c7d5d3; font: 12px/1.8
 .output-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 15px; }
 .output-tags span { color: var(--cyan); border-color: rgba(141,231,219,.25); }
 
+.reference-section { padding-bottom: 88px; }
+.reference-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.reference-panel { min-width: 0; background: var(--surface); border: 1px solid var(--rule); padding: 21px; }
+.reference-list { margin: 20px 0 0; }
+.reference-list div { display: grid; grid-template-columns: 72px 1fr; gap: 15px; padding: 13px 0; border-top: 1px solid var(--rule); }
+.reference-list dt { color: var(--cyan); font: 11px var(--mono); }
+.reference-list dd { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0; }
+.reference-list code, .reference-footnote code { color: var(--cyan); font: 12px var(--mono); }
+.env-table { border-top: 1px solid var(--rule); }
+.env-table div { display: grid; grid-template-columns: minmax(180px, .9fr) 1fr; gap: 18px; padding: 13px 0; border-bottom: 1px solid var(--rule); }
+.env-table code { color: var(--paper); font: 11px/1.5 var(--mono); overflow-wrap: anywhere; }
+.env-table span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.reference-footnote { display: grid; grid-template-columns: 170px 1fr; gap: 22px; margin-top: 14px; padding: 18px 21px; border: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+.reference-footnote strong { color: var(--paper); font-weight: 600; }
+
 .safety-section { border-bottom: 0; padding-bottom: 76px; }
 .safety-callout { display: grid; grid-template-columns: 46px 1fr; gap: 22px; padding: 28px; border: 1px solid rgba(243,162,97,.45); background: rgba(243,162,97,.055); }
 .safety-icon { width: 42px; height: 42px; display: grid; place-items: center; color: var(--orange); border: 1px solid rgba(243,162,97,.55); }
@@ -183,7 +198,7 @@ pre { margin: 0; padding: 19px; overflow-x: auto; color: #c7d5d3; font: 12px/1.8
   .section { padding: 76px 0; }
   .workflow-grid, .principles-grid { grid-template-columns: 1fr; }
   .workflow-card { min-height: auto; }
-  .quickstart-grid, .contract-grid { grid-template-columns: 1fr; }
+  .quickstart-grid, .contract-grid, .reference-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 520px) {
@@ -200,6 +215,7 @@ pre { margin: 0; padding: 19px; overflow-x: auto; color: #c7d5d3; font: 12px/1.8
   .section-heading p { font-size: 14px; }
   .compiler-body { padding-right: 14px; }
   .compile-row { grid-template-columns: 64px 1fr; gap: 8px; }
+  .reference-list div, .env-table div, .reference-footnote { grid-template-columns: 1fr; gap: 7px; }
   .safety-callout { grid-template-columns: 1fr; padding: 22px; }
   .footer { flex-direction: column; }
   .footer-links { flex-direction: column; gap: 10px; }
