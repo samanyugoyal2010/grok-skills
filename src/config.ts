@@ -74,7 +74,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const allowedHosts = parseList(env.MCP_HTTP_ALLOWED_HOSTS);
   const modelUrl = parseHttpUrl("SKILL_COMPILER_MODEL_URL", env.SKILL_COMPILER_MODEL_URL);
   const modelToken = env.SKILL_COMPILER_MODEL_TOKEN || undefined;
-  const publicSkillRepositories = parseList(env.PUBLIC_SKILL_REPOSITORIES || "vercel-labs/agent-skills,anthropics/skills");
+  const publicSkillRepositories = parseList(env.PUBLIC_SKILL_REPOSITORIES === undefined ? "vercel-labs/agent-skills,anthropics/skills" : env.PUBLIC_SKILL_REPOSITORIES);
   const publicSkillBranch = env.PUBLIC_SKILL_BRANCH?.trim() || "main";
 
   if (transport === "http" && !isLoopbackHost(httpHost) && !bearerToken) {

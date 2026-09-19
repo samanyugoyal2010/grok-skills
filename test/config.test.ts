@@ -10,6 +10,11 @@ test("loads safe HTTP defaults and loopback host guards", () => {
   assert.deepEqual(config.allowedHosts, ["localhost", "127.0.0.1", "[::1]"]);
 });
 
+test("allows an empty public repository list for deterministic private deployments", () => {
+  const config = loadRuntimeConfig({ PUBLIC_SKILL_REPOSITORIES: "" });
+  assert.deepEqual(config.publicSkillRepositories, []);
+});
+
 test("fails fast for invalid runtime configuration", () => {
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", PORT: "nope" }), /PORT/);
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "wat" }), /MCP_TRANSPORT/);

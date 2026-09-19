@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { timingSafeEqual } from "node:crypto";
 
 export interface HttpSecurityOptions {
   bearerToken?: string;
@@ -10,6 +11,13 @@ export interface HttpSecurityOptions {
 
 export function isLoopbackHost(host: string): boolean {
   return host === "127.0.0.1" || host === "localhost" || host === "::1";
+}
+
+function matchesBearerToken(expected: string, actual: string | undefined): boolean {
+  if (!actual) return false;
+  const expectedBytes = Buffer.from(expected);
+  const actualBytes = Buffer.from(actual);
+  return expectedBytes.length === actualBytes.length && timingSafeEqual(expectedBytes, actualBytes);
 }
 
 export function createProtectedHttpHandler(
@@ -90,7 +98,8 @@ export function createProtectedHttpHandler(
       return;
     }
 
-    if (options.bearerToken && request.headers.authorization !== `Bearer ${options.bearerToken}`) {
+    const suppliedToken = request.headers.authorization?.startsWith("Bearer ") ? request.headers.authorization.slice(7) : undefined;
+    if (options.bearerToken && !matchesBearerToken(options.bearerToken, suppliedToken)) {
       response.writeHead(401, {
         "content-type": "text/plain; charset=utf-8",
         "www-authenticate": "Bearer"
