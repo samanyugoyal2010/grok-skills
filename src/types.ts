@@ -1,0 +1,55 @@
+import * as z from "zod/v4";
+
+export const approvedContextSchema = z.object({
+  path: z.string().min(1).max(500),
+  reason: z.string().min(1).max(500),
+  content: z.string().max(20_000)
+});
+
+export const compileSkillInputSchema = z.object({
+  task: z.string().min(1).max(4_000),
+  search_query: z.string().min(1).max(500),
+  project_brief: z.string().max(20_000).optional(),
+  approved_context: z.array(approvedContextSchema).max(10)
+});
+
+export type CompileSkillInput = z.infer<typeof compileSkillInputSchema>;
+
+export type RiskSeverity = "low" | "medium" | "high";
+
+export interface RiskNote {
+  severity: RiskSeverity;
+  category: string;
+  explanation: string;
+}
+
+export interface SkillSource {
+  url: string;
+  title: string;
+  sourceHash: string;
+  matchReason: string;
+  content: string;
+}
+
+export interface SkillSourceSummary {
+  url: string;
+  title: string;
+  sourceHash: string;
+  matchReason: string;
+}
+
+export interface CompileSkillResponse {
+  sources: SkillSourceSummary[];
+  contextManifest: Array<{
+    path: string;
+    reason: string;
+    characterCount: number;
+  }>;
+  changeSummary: string[];
+  riskNotes: RiskNote[];
+  skillMarkdown: string;
+}
+
+export interface SkillRetriever {
+  search(query: string): Promise<SkillSource[]>;
+}

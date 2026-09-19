@@ -1,0 +1,17 @@
+{
+  "task": "Add a reusable client-side form validation pattern for the account settings page. Keep validation close to the form, preserve the existing API contract, and include tests for invalid and valid submissions.",
+  "search_query": "frontend form validation testing",
+  "project_brief": "This fixture represents a TypeScript web application with an existing account settings form. The generated skill should guide an agent without editing the repository itself.",
+  "approved_context": [
+    {
+      "path": "src/account-settings/form.ts",
+      "reason": "Shows the current form state and submission boundary.",
+      "content": "export type AccountSettings = { displayName: string; email: string };\n\nexport async function submitAccountSettings(input: AccountSettings) {\n  return fetch('/api/account-settings', {\n    method: 'POST',\n    headers: { 'content-type': 'application/json' },\n    body: JSON.stringify(input)\n  });\n}"
+    },
+    {
+      "path": "src/account-settings/form.test.ts",
+      "reason": "Shows the repository's current test style for the feature.",
+      "content": "import { describe, expect, it } from 'vitest';\n\ndescribe('account settings', () => {\n  it('submits the form', async () => {\n    expect(true).toBe(true);\n  });\n});"
+    }
+  ]
+}
