@@ -7,14 +7,12 @@ import {
   ChevronRight,
   Clipboard,
   FileCode2,
-  Github,
   LockKeyhole,
   Network,
   Radio,
   ShieldCheck,
   Sparkles,
-  Terminal,
-  Workflow
+  Terminal
 } from "lucide-react";
 
 const claudeConfig = `{
@@ -175,7 +173,7 @@ export default function Home() {
             <div className="hero-copy">
               <div className="eyebrow accent-eyebrow"><span className="pulse-dot" /> Claude Code MCP server</div>
               <h1>Compile the skill<br /><span>for this task.</span></h1>
-              <p className="hero-lede">Generic skills explain a tool. Task-Time compiles the right guidance for the work in front of you — grounded in the repository context you approved.</p>
+              <p className="hero-lede">Generic skills explain a tool. Task-Time compiles guidance for the work in front of you, using only the repository context you approved.</p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#quickstart">Start with the quickstart <ChevronRight size={16} /></a>
                 <a className="text-link" href="#contract">Read the contract <ArrowUpRight size={15} /></a>
@@ -309,9 +307,9 @@ export default function Home() {
               </div>
             </div>
             <div className="principles-grid">
-              <div><span className="principle-marker">—</span><h3>Private by approval</h3><p>Only context explicitly included in the request is sent to the compiler.</p></div>
-              <div><span className="principle-marker">—</span><h3>Traceable by default</h3><p>Every public source is returned with a URL, title, and content hash.</p></div>
-              <div><span className="principle-marker">—</span><h3>Inspectable output</h3><p>The result is Markdown you can read, edit, and commit like any other file.</p></div>
+              <div><span className="principle-marker">·</span><h3>Private by approval</h3><p>Only context explicitly included in the request is sent to the compiler.</p></div>
+              <div><span className="principle-marker">·</span><h3>Traceable by default</h3><p>Every public source is returned with a URL, title, and content hash.</p></div>
+              <div><span className="principle-marker">·</span><h3>Inspectable output</h3><p>The result is Markdown you can read, edit, and commit like any other file.</p></div>
             </div>
           </section>
 
