@@ -4,29 +4,31 @@ import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { toNodeHandler } from "@modelcontextprotocol/node";
 import { createServer } from "./server.js";
 import { RateLimiter } from "./rate-limit.js";
-import { createProtectedHttpHandler, isLoopbackHost } from "./http.js";
+import { createProtectedHttpHandler } from "./http.js";
+import { loadRuntimeConfig } from "./config.js";
 
 const dependencies = { rateLimiter: new RateLimiter() };
+const config = loadRuntimeConfig();
 
-if (process.env.MCP_TRANSPORT === "http") {
+if (config.transport === "http") {
   const handler = createMcpHandler(() => createServer(dependencies), { responseMode: "json" });
   const nodeHandler = toNodeHandler(handler);
-  const port = Number(process.env.PORT ?? 3000);
-  const host = process.env.MCP_HTTP_HOST ?? "127.0.0.1";
-  const bearerToken = process.env.MCP_HTTP_AUTH_TOKEN;
-  const allowedOrigins = (process.env.MCP_HTTP_ALLOWED_ORIGINS ?? "").split(",").map((origin) => origin.trim()).filter(Boolean);
-  if (!isLoopbackHost(host) && !bearerToken) {
-    throw new Error("MCP_HTTP_AUTH_TOKEN is required when MCP_HTTP_HOST is not loopback");
-  }
-  const protectedHandler = createProtectedHttpHandler(nodeHandler, { bearerToken, allowedOrigins });
-  const httpServer = createNodeServer(protectedHandler);
-  httpServer.listen(port, host, () => {
-    console.error(`task-time-skill-compiler MCP listening on http://${host}:${port}/mcp`);
+  const protectedHandler = createProtectedHttpHandler(nodeHandler, {
+    bearerToken: config.bearerToken,
+    allowedOrigins: config.allowedOrigins,
+    allowedHosts: config.allowedHosts,
+    maxBodyBytes: config.httpMaxBodyBytes
   });
-  process.on("SIGINT", async () => {
+  const httpServer = createNodeServer(protectedHandler);
+  httpServer.listen(config.port, config.httpHost, () => {
+    console.error(`task-time-skill-compiler MCP listening on http://${config.httpHost}:${config.port}/mcp`);
+  });
+  const shutdown = async () => {
     await handler.close();
     httpServer.close();
-  });
+  };
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 } else {
   const handle = serveStdio(() => createServer(dependencies));
   console.error("task-time-skill-compiler MCP running over stdio");
