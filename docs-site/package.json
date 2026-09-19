@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "node scripts/serve-static.mjs",
+    "test": "node --test scripts/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

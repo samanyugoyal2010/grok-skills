@@ -42,6 +42,10 @@ jobs:
         working-directory: docs-site
         run: npm run typecheck
 
+      - name: Test docs static server
+        working-directory: docs-site
+        run: npm test
+
       - name: Build docs site
         working-directory: docs-site
         run: npm run build

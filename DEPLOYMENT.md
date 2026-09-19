@@ -64,6 +64,7 @@ npm run build
 npm audit --omit=dev
 
 cd docs-site
+npm test
 npm run typecheck
 npm run build
 npm audit --omit=dev
