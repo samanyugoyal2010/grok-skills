@@ -82,6 +82,9 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   if (transport === "http" && !isLoopbackHost(httpHost) && !bearerToken) {
     throw new Error("MCP_HTTP_AUTH_TOKEN is required when MCP_HTTP_HOST is not loopback");
   }
+  if (transport === "http" && !isLoopbackHost(httpHost) && allowedHosts.length === 0) {
+    throw new Error("MCP_HTTP_ALLOWED_HOSTS is required when MCP_HTTP_HOST is not loopback");
+  }
   if (modelToken && !modelUrl) throw new Error("SKILL_COMPILER_MODEL_TOKEN requires SKILL_COMPILER_MODEL_URL");
   validateOrigins(allowedOrigins);
   validateRepositories(publicSkillRepositories);

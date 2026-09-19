@@ -24,6 +24,14 @@ test("fails fast for invalid runtime configuration", () => {
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", PORT: "nope" }), /PORT/);
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "wat" }), /MCP_TRANSPORT/);
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", MCP_HTTP_HOST: "0.0.0.0" }), /MCP_HTTP_AUTH_TOKEN/);
+  assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", MCP_HTTP_HOST: "0.0.0.0", MCP_HTTP_AUTH_TOKEN: "token" }), /MCP_HTTP_ALLOWED_HOSTS/);
+  const remote = loadRuntimeConfig({
+    MCP_TRANSPORT: "http",
+    MCP_HTTP_HOST: "0.0.0.0",
+    MCP_HTTP_AUTH_TOKEN: "token",
+    MCP_HTTP_ALLOWED_HOSTS: "compiler.example.com"
+  });
+  assert.deepEqual(remote.allowedHosts, ["compiler.example.com"]);
   assert.throws(() => loadRuntimeConfig({ PUBLIC_SKILL_REPOSITORIES: "not-a-repository" }), /PUBLIC_SKILL_REPOSITORIES/);
   assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "file:///tmp/model" }), /SKILL_COMPILER_MODEL_URL/);
   assert.throws(() => loadRuntimeConfig({ SKILL_COMPILER_MODEL_TOKEN: "token" }), /requires/);

@@ -292,7 +292,7 @@ export default function Home() {
                   <div><code>MCP_HTTP_HOST</code><span>HTTP bind address; default 127.0.0.1.</span></div>
                   <div><code>MCP_HTTP_AUTH_TOKEN</code><span>Required for non-loopback HTTP hosts.</span></div>
                   <div><code>MCP_HTTP_ALLOWED_ORIGINS</code><span>Optional comma-separated origin allowlist.</span></div>
-                  <div><code>MCP_HTTP_ALLOWED_HOSTS</code><span>Optional hostnames for DNS-rebinding protection.</span></div>
+                  <div><code>MCP_HTTP_ALLOWED_HOSTS</code><span>Required for non-loopback binds; hostnames for DNS-rebinding protection.</span></div>
                   <div><code>MCP_HTTP_MAX_BODY_BYTES</code><span>Request limit; default 256,000 bytes.</span></div>
                   <div><code>PUBLIC_SKILL_REPOSITORIES</code><span>Public GitHub repositories for the first adapter.</span></div>
                   <div><code>PUBLIC_SKILL_BRANCH</code><span>Branch used by the public-skill adapter; default main.</span></div>

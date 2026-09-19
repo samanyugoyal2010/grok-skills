@@ -42,7 +42,7 @@ MCP_TRANSPORT=http npm run dev
 
 The stateless MCP endpoint is exposed at `/mcp`. V1 has no persistence; HTTP authentication is opt-in through `MCP_HTTP_AUTH_TOKEN`. Do not send private repository context until the model provider's retention and no-training behavior has been verified.
 
-HTTP mode binds to `127.0.0.1` by default. Set `MCP_HTTP_AUTH_TOKEN` to require a bearer token, and provide `MCP_HTTP_ALLOWED_ORIGINS` when browser-origin filtering is needed. If you bind with `MCP_HTTP_HOST=0.0.0.0` or another non-loopback host, a bearer token is required at startup.
+HTTP mode binds to `127.0.0.1` by default. Set `MCP_HTTP_AUTH_TOKEN` to require a bearer token, and provide `MCP_HTTP_ALLOWED_ORIGINS` when browser-origin filtering is needed. If you bind with `MCP_HTTP_HOST=0.0.0.0` or another non-loopback host, both a bearer token and `MCP_HTTP_ALLOWED_HOSTS` are required at startup. List hostnames without ports.
 
 HTTP requests are capped at 256,000 bytes by default. Set `MCP_HTTP_MAX_BODY_BYTES` to change the limit, and `MCP_HTTP_ALLOWED_HOSTS` to add hostnames for DNS-rebinding protection. Invalid ports, transports, and non-loopback hosts without a token fail during startup.
 
