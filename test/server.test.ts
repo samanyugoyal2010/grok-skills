@@ -13,7 +13,16 @@ test("registers the compile_skill tool", async () => {
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
   const tools = await client.listTools();
-  assert.equal(tools.tools.some((tool) => tool.name === "compile_skill"), true);
+  const tool = tools.tools.find((candidate) => candidate.name === "compile_skill");
+  assert.ok(tool);
+  assert.equal(tool.title, "Compile a task-specific skill");
+  assert.deepEqual(tool.annotations, {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true
+  });
+  assert.ok(tool.outputSchema);
   const result = await client.callTool({
     name: "compile_skill",
     arguments: { task: "Add a profile page", search_query: "frontend", approved_context: [] }

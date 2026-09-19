@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import type { SkillRetriever } from "./types.js";
 import { compileSkill } from "./compiler.js";
-import { compileSkillInputSchema } from "./types.js";
+import { compileSkillInputSchema, compileSkillOutputSchema } from "./types.js";
 import { validateCompileInput } from "./limits.js";
 import { RateLimiter } from "./rate-limit.js";
 import { GitHubSkillRetriever } from "./retrieval.js";
@@ -27,8 +27,16 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
   server.registerTool(
     "compile_skill",
     {
+      title: "Compile a task-specific skill",
       description: "Find public agent skills and compile one into a repo-aware, reusable SKILL.md using only user-approved context.",
-      inputSchema: compileSkillInputSchema
+      inputSchema: compileSkillInputSchema,
+      outputSchema: compileSkillOutputSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true
+      }
     },
     async (input) => {
       try {
