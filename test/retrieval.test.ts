@@ -24,6 +24,25 @@ test("retrieves and ranks public skills from the GitHub directory adapter", asyn
   assert.match(results[0].content, /Review code/);
 });
 
+test("uses public skill content to refine path-based ranking", async () => {
+  const pages = new Map([
+    ["https://api.github.com/repos/acme/skills/git/trees/main?recursive=1", JSON.stringify({ tree: [
+      { path: "skills/general/SKILL.md", type: "blob" },
+      { path: "skills/other/SKILL.md", type: "blob" }
+    ] })],
+    ["https://raw.githubusercontent.com/acme/skills/main/skills/general/SKILL.md", "# General\nA generic workflow."],
+    ["https://raw.githubusercontent.com/acme/skills/main/skills/other/SKILL.md", "# Other\nUse the graphql resolver pattern for this task."]
+  ]);
+  const retriever = new GitHubSkillRetriever(["acme/skills"], async (url) => {
+    const value = pages.get(url);
+    if (!value) throw new Error("missing fixture");
+    return value;
+  });
+  const results = await retriever.search("graphql resolver");
+  assert.equal(results[0]?.title, "other");
+  assert.match(results[0]?.matchReason ?? "", /content/);
+});
+
 test("passes the optional GitHub token as a request header", async () => {
   let receivedHeaders: Record<string, string> | undefined;
   const retriever = new GitHubSkillRetriever(["acme/skills"], async (_url, _signal, headers) => {

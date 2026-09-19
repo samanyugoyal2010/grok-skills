@@ -41,9 +41,16 @@ function tokens(value: string): string[] {
   return value.toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length > 2);
 }
 
-function score(query: string, candidate: string): number {
+function score(query: string, candidate: string, content = ""): number {
   const queryTokens = new Set(tokens(query));
-  return tokens(candidate).reduce((total, token) => total + (queryTokens.has(token) ? 2 : 0), 0);
+  const normalizedQuery = query.trim().toLowerCase();
+  const pathTokens = tokens(candidate);
+  const contentTokens = new Set(tokens(content.slice(0, 20_000)));
+  const pathScore = pathTokens.reduce((total, token) => total + (queryTokens.has(token) ? 4 : 0), 0);
+  const contentScore = [...contentTokens].reduce((total, token) => total + (queryTokens.has(token) ? 1 : 0), 0);
+  const phraseScore = normalizedQuery.length > 2 && candidate.toLowerCase().includes(normalizedQuery) ? 6 : 0;
+  const contentPhraseScore = normalizedQuery.length > 2 && content.toLowerCase().includes(normalizedQuery) ? 3 : 0;
+  return pathScore + contentScore + phraseScore + contentPhraseScore;
 }
 
 function hash(value: string): string {
@@ -119,26 +126,36 @@ export class GitHubSkillRetriever implements SkillRetriever {
     const candidates = candidateGroups.flat();
 
     candidates.sort((a, b) => b.score - a.score);
-    const selected = candidates.slice(0, LIMITS.sources);
-    const sources = await mapWithConcurrency(selected, 3, async (candidate) => {
+    const selected = candidates.slice(0, Math.min(LIMITS.sources * 3, candidates.length));
+    const retrieved = await mapWithConcurrency(selected, 3, async (candidate) => {
       const encodedPath = encodeRepositoryPath(candidate.path);
       const rawUrl = `https://raw.githubusercontent.com/${candidate.repository}/${encodeURIComponent(this.branch)}/${encodedPath}`;
       const sourceUrl = `https://github.com/${candidate.repository}/blob/${encodeURIComponent(this.branch)}/${encodedPath}`;
       try {
         const content = await this.fetchWithTimeout(rawUrl, signal);
-        const title = candidate.path.split("/").at(-2) ?? candidate.path;
-        return {
-          url: sourceUrl,
-          title,
-          sourceHash: hash(content),
-          matchReason: candidate.score > 0 ? "Matched query tokens against a public SKILL.md path." : "Selected as the first available public SKILL.md candidate.",
-          content
-        } satisfies SkillSource;
+        return { candidate, sourceUrl, content };
       } catch {
         // A single stale public entry must not make the whole compile fail.
         return null;
       }
     });
-    return sources.filter((source): source is SkillSource => source !== null);
+    return retrieved
+      .filter((source): source is { candidate: typeof candidates[number]; sourceUrl: string; content: string } => source !== null)
+      .sort((a, b) => {
+        const scoreDifference = score(query, b.candidate.path, b.content) - score(query, a.candidate.path, a.content);
+        return scoreDifference || a.candidate.path.localeCompare(b.candidate.path);
+      })
+      .slice(0, LIMITS.sources)
+      .map(({ candidate, sourceUrl, content }) => {
+        const title = candidate.path.split("/").at(-2) ?? candidate.path;
+        const matchScore = score(query, candidate.path, content);
+        return {
+          url: sourceUrl,
+          title,
+          sourceHash: hash(content),
+          matchReason: matchScore > 0 ? "Matched query tokens against the public SKILL.md path and content." : "Selected as the first available public SKILL.md candidate.",
+          content
+        } satisfies SkillSource;
+      });
   }
 }
