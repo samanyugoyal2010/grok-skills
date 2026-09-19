@@ -7,6 +7,7 @@ import { buildCompilerPrompt } from "./prompt.js";
 export interface CompilerOptions {
   modelUrl?: string;
   modelToken?: string;
+  modelTimeoutMs?: number;
   fetcher?: typeof fetch;
 }
 
@@ -74,7 +75,8 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
   const fetcher = options.fetcher ?? fetch;
   const prompt = buildCompilerPrompt(input, sources);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20_000);
+  const timeoutMs = Number.isFinite(options.modelTimeoutMs) && (options.modelTimeoutMs ?? 0) >= 1 ? options.modelTimeoutMs! : 20_000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetcher(options.modelUrl, {
       method: "POST",

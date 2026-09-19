@@ -6,9 +6,18 @@ import { createServer } from "./server.js";
 import { RateLimiter } from "./rate-limit.js";
 import { createProtectedHttpHandler } from "./http.js";
 import { loadRuntimeConfig } from "./config.js";
+import { GitHubSkillRetriever } from "./retrieval.js";
 
-const dependencies = { rateLimiter: new RateLimiter() };
 const config = loadRuntimeConfig();
+const dependencies = {
+  rateLimiter: new RateLimiter(config.rateLimitPerMinute),
+  retriever: new GitHubSkillRetriever(config.publicSkillRepositories, undefined, config.publicSkillBranch, config.publicSkillFetchTimeoutMs),
+  compilerOptions: {
+    modelUrl: config.modelUrl,
+    modelToken: config.modelToken,
+    modelTimeoutMs: config.modelTimeoutMs
+  }
+};
 
 if (config.transport === "http") {
   const handler = createMcpHandler(() => createServer(dependencies), { responseMode: "json" });

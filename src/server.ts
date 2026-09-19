@@ -5,10 +5,12 @@ import { compileSkillInputSchema } from "./types.js";
 import { validateCompileInput } from "./limits.js";
 import { RateLimiter } from "./rate-limit.js";
 import { GitHubSkillRetriever } from "./retrieval.js";
+import type { CompilerOptions } from "./compiler.js";
 
 export interface ServerDependencies {
   retriever?: SkillRetriever;
   rateLimiter?: RateLimiter;
+  compilerOptions?: CompilerOptions;
 }
 
 export function createServer(dependencies: ServerDependencies = {}): McpServer {
@@ -33,9 +35,10 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
         validateCompileInput(input);
         rateLimiter.consume("anonymous");
         const sources = await retriever.search(input.search_query);
-        const result = await compileSkill(input, sources, {
+        const result = await compileSkill(input, sources, dependencies.compilerOptions ?? {
           modelUrl: process.env.SKILL_COMPILER_MODEL_URL,
-          modelToken: process.env.SKILL_COMPILER_MODEL_TOKEN
+          modelToken: process.env.SKILL_COMPILER_MODEL_TOKEN,
+          modelTimeoutMs: Number(process.env.SKILL_COMPILER_MODEL_TIMEOUT_MS ?? 20_000)
         });
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
