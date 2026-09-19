@@ -1,11 +1,6 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
-  Check,
   ChevronRight,
-  Clipboard,
   FileCode2,
   Github,
   LockKeyhole,
@@ -15,6 +10,8 @@ import {
   Sparkles,
   Terminal
 } from "lucide-react";
+import { CodeBlock } from "./components/code-block";
+import { DocsSidebar } from "./components/docs-sidebar";
 
 const claudeConfig = `{
   "mcpServers": {
@@ -65,78 +62,7 @@ const errorExample = `{
   "error": "Context path is not allowed: .env"
 }`;
 
-const navItems = [
-  ["overview", "Overview"],
-  ["workflow", "The compiler loop"],
-  ["quickstart", "Quickstart"],
-  ["contract", "Tool contract"],
-  ["reference", "Runtime reference"],
-  ["safety", "Safety boundaries"]
-] as const;
-
-function CodeBlock({ label, value }: { label: string; value: string }) {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
-
-  async function copy() {
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(value);
-      } else {
-        throw new Error("Clipboard API unavailable");
-      }
-      setCopyStatus("copied");
-    } catch {
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = value;
-        textarea.setAttribute("readonly", "");
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.select();
-        const copied = document.execCommand("copy");
-        textarea.remove();
-        if (!copied) throw new Error("Copy command failed");
-        setCopyStatus("copied");
-      } catch {
-        setCopyStatus("error");
-      }
-    }
-    window.setTimeout(() => setCopyStatus("idle"), 1800);
-  }
-
-  return (
-    <div className="code-block">
-      <div className="code-head">
-        <span>{label}</span>
-        <button className="copy-button" onClick={copy} type="button" aria-label={`Copy ${label}`}>
-          {copyStatus === "copied" ? <Check size={14} aria-hidden="true" /> : <Clipboard size={14} aria-hidden="true" />}
-          {copyStatus === "copied" ? "Copied" : copyStatus === "error" ? "Copy failed" : "Copy"}
-        </button>
-      </div>
-      <pre><code>{value}</code></pre>
-      <span className="sr-only" aria-live="polite">
-        {copyStatus === "copied" ? `${label} copied to clipboard.` : copyStatus === "error" ? `Could not copy ${label}.` : ""}
-      </span>
-    </div>
-  );
-}
-
 export default function Home() {
-  const [activeSection, setActiveSection] = useState("overview");
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-      if (visible[0]) setActiveSection(visible[0].target.id);
-    }, { rootMargin: "-18% 0px -66% 0px", threshold: 0 });
-    navItems.forEach(([id]) => {
-      const section = document.getElementById(id);
-      if (section) observer.observe(section);
-    });
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <div className="site-shell">
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -154,24 +80,7 @@ export default function Home() {
       </nav>
 
       <div className="docs-layout">
-        <aside className="sidebar">
-          <div className="sidebar-intro">
-            <span className="eyebrow">Documentation</span>
-            <p>Turn a task, approved context, and public guidance into one inspectable skill.</p>
-          </div>
-          <div className="sidebar-group">
-            <span className="sidebar-label">On this page</span>
-            {navItems.map(([id, label], index) => (
-              <a className={`sidebar-link${activeSection === id ? " active" : ""}`} href={`#${id}`} key={id} aria-current={activeSection === id ? "location" : undefined}>
-                <span>{String(index + 1).padStart(2, "0")}</span> {label}
-              </a>
-            ))}
-          </div>
-          <div className="sidebar-footer">
-            <div className="status-line"><span className="status-dot" /> Developer preview</div>
-            <p>No accounts. No persistence. No repository writes.</p>
-          </div>
-        </aside>
+        <DocsSidebar />
 
         <main className="content-column" id="main-content" tabIndex={-1}>
           <section className="hero section" id="overview">
