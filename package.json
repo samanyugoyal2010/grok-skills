@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "description": "A Claude Code MCP server that compiles public agent skills into repo-aware SKILL.md files.",
   "scripts": {
     "dev": "tsx src/index.ts",
