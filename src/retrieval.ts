@@ -3,7 +3,7 @@ import { LIMITS } from "./limits.js";
 import type { SkillRetriever, SkillSource } from "./types.js";
 
 export interface Fetcher {
-  (url: string, signal?: AbortSignal): Promise<string>;
+  (url: string, signal?: AbortSignal, headers?: Record<string, string>): Promise<string>;
 }
 
 export async function readLimitedResponse(response: Response, maxBytes = LIMITS.fetchBytes): Promise<string> {
@@ -42,12 +42,13 @@ export async function readLimitedResponse(response: Response, maxBytes = LIMITS.
   return new TextDecoder().decode(bytes);
 }
 
-async function fetchText(url: string, signal?: AbortSignal): Promise<string> {
+async function fetchText(url: string, signal?: AbortSignal, extraHeaders?: Record<string, string>): Promise<string> {
   const response = await fetch(url, {
     signal,
     headers: {
       accept: "application/vnd.github+json, text/html, text/plain",
-      "user-agent": "task-time-skill-compiler/0.1.0"
+      "user-agent": "task-time-skill-compiler/0.1.0",
+      ...extraHeaders
     }
   });
   if (!response.ok) throw new Error(`Public skill fetch failed: ${response.status} ${response.statusText}`);
@@ -86,7 +87,8 @@ export class GitHubSkillRetriever implements SkillRetriever {
     private readonly repositories = (process.env.PUBLIC_SKILL_REPOSITORIES ?? "vercel-labs/agent-skills,anthropics/skills").split(",").map((repo) => repo.trim()).filter(Boolean),
     private readonly fetcher: Fetcher = fetchText,
     private readonly branch = process.env.PUBLIC_SKILL_BRANCH ?? "main",
-    private readonly timeoutMs = Number(process.env.PUBLIC_SKILL_FETCH_TIMEOUT_MS ?? 10_000)
+    private readonly timeoutMs = Number(process.env.PUBLIC_SKILL_FETCH_TIMEOUT_MS ?? 10_000),
+    private readonly githubToken = process.env.PUBLIC_SKILL_GITHUB_TOKEN
   ) {}
 
   private async fetchWithTimeout(url: string): Promise<string> {
@@ -95,7 +97,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
     const controller = new AbortController();
     try {
       return await Promise.race([
-        this.fetcher(url, controller.signal),
+        this.fetcher(url, controller.signal, this.githubToken ? { authorization: `Bearer ${this.githubToken}` } : undefined),
         new Promise<string>((_, reject) => {
           timer = setTimeout(() => {
             controller.abort();

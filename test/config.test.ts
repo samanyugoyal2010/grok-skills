@@ -15,6 +15,11 @@ test("allows an empty public repository list for deterministic private deploymen
   assert.deepEqual(config.publicSkillRepositories, []);
 });
 
+test("keeps the optional GitHub retrieval token in runtime configuration", () => {
+  const config = loadRuntimeConfig({ PUBLIC_SKILL_GITHUB_TOKEN: "github-token" });
+  assert.equal(config.publicSkillGithubToken, "github-token");
+});
+
 test("fails fast for invalid runtime configuration", () => {
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", PORT: "nope" }), /PORT/);
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "wat" }), /MCP_TRANSPORT/);

@@ -24,6 +24,16 @@ test("retrieves and ranks public skills from the GitHub directory adapter", asyn
   assert.match(results[0].content, /Review code/);
 });
 
+test("passes the optional GitHub token as a request header", async () => {
+  let receivedHeaders: Record<string, string> | undefined;
+  const retriever = new GitHubSkillRetriever(["acme/skills"], async (_url, _signal, headers) => {
+    receivedHeaders = headers;
+    return JSON.stringify({ tree: [] });
+  }, "main", 10, "github-token");
+  await retriever.search("frontend");
+  assert.deepEqual(receivedHeaders, { authorization: "Bearer github-token" });
+});
+
 test("times out a hung public source fetch", async () => {
   const retriever = new GitHubSkillRetriever(["acme/skills"], async () => new Promise<string>(() => {}), "main", 10);
   const startedAt = Date.now();

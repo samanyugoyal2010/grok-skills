@@ -11,7 +11,7 @@ import { GitHubSkillRetriever } from "./retrieval.js";
 const config = loadRuntimeConfig();
 const dependencies = {
   rateLimiter: new RateLimiter(config.rateLimitPerMinute),
-  retriever: new GitHubSkillRetriever(config.publicSkillRepositories, undefined, config.publicSkillBranch, config.publicSkillFetchTimeoutMs),
+  retriever: new GitHubSkillRetriever(config.publicSkillRepositories, undefined, config.publicSkillBranch, config.publicSkillFetchTimeoutMs, config.publicSkillGithubToken),
   compilerOptions: {
     modelUrl: config.modelUrl,
     modelToken: config.modelToken,

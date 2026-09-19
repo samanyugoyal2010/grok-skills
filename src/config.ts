@@ -18,6 +18,7 @@ export interface RuntimeConfig {
   publicSkillRepositories: string[];
   publicSkillBranch: string;
   publicSkillFetchTimeoutMs: number;
+  publicSkillGithubToken?: string;
   rateLimitPerMinute: number;
 }
 
@@ -76,6 +77,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const modelToken = env.SKILL_COMPILER_MODEL_TOKEN || undefined;
   const publicSkillRepositories = parseList(env.PUBLIC_SKILL_REPOSITORIES === undefined ? "vercel-labs/agent-skills,anthropics/skills" : env.PUBLIC_SKILL_REPOSITORIES);
   const publicSkillBranch = env.PUBLIC_SKILL_BRANCH?.trim() || "main";
+  const publicSkillGithubToken = env.PUBLIC_SKILL_GITHUB_TOKEN || undefined;
 
   if (transport === "http" && !isLoopbackHost(httpHost) && !bearerToken) {
     throw new Error("MCP_HTTP_AUTH_TOKEN is required when MCP_HTTP_HOST is not loopback");
@@ -99,6 +101,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     publicSkillRepositories,
     publicSkillBranch,
     publicSkillFetchTimeoutMs: parsePositiveInteger("PUBLIC_SKILL_FETCH_TIMEOUT_MS", env.PUBLIC_SKILL_FETCH_TIMEOUT_MS, 10_000),
+    ...(publicSkillGithubToken ? { publicSkillGithubToken } : {}),
     rateLimitPerMinute: parsePositiveInteger("RATE_LIMIT_PER_MINUTE", env.RATE_LIMIT_PER_MINUTE, 10)
   };
 }
