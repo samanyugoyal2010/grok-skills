@@ -51,6 +51,7 @@ HTTP requests are capped at 256,000 bytes by default. Set `MCP_HTTP_MAX_BODY_BYT
 ## Tool input
 
 `compile_skill` accepts `task`, `search_query`, optional `project_brief`, and up to ten approved text files. It returns source provenance, a context manifest, transformation notes, risk notes, and `skillMarkdown`.
+The generated `skillMarkdown` is capped at 16,000 characters; oversized model output falls back to the bounded deterministic compiler.
 
 ## Reproducible example
 

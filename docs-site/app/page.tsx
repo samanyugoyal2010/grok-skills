@@ -185,6 +185,7 @@ export default function Home() {
                   <span>task <b>4,000 chars</b></span>
                   <span>search_query <b>500 chars</b></span>
                   <span>approved_context <b>10 files / 50k chars</b></span>
+                  <span>skillMarkdown <b>16,000 chars max</b></span>
                 </div>
               </div>
               <div className="contract-panel output-panel">
