@@ -30,6 +30,8 @@ The server is stateless in v1. Keep it behind a process supervisor or platform s
 
 For private-only testing, set `PUBLIC_SKILL_REPOSITORIES=`. The compiler then skips public retrieval and produces the deterministic local artifact from the approved request context.
 
+For a public retrieval deployment, set `PUBLIC_SKILL_GITHUB_TOKEN` through the platform's secret manager when anonymous GitHub API limits are insufficient. Do not commit it or pass it to the docs site.
+
 ## Documentation site
 
 Build the site from its own package directory:
