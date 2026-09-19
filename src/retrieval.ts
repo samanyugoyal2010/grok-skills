@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { LIMITS } from "./limits.js";
 import type { SkillRetriever, SkillSource } from "./types.js";
 import { readLimitedResponse } from "./body.js";
-import { raceWithAbort } from "./abort.js";
+import { abortReason, raceWithAbort } from "./abort.js";
 
 const PUBLIC_RESPONSE_CACHE_TTL_MS = 5 * 60_000;
 const PUBLIC_RESPONSE_CACHE_MAX_BYTES = 8 * 1024 * 1024;
@@ -91,6 +91,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
   ) {}
 
   private async fetchWithTimeout(url: string, signal?: AbortSignal): Promise<string> {
+    if (signal?.aborted) throw abortReason(signal, "Public skill fetch aborted");
     const cached = this.responseCache.get(url);
     if (cached) {
       if (cached.expiresAt > Date.now()) {
