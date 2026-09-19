@@ -125,6 +125,11 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
     changeSummary: [
       "Added a task-specific procedure based on the approved task and repository context.",
       "Added repository constraints and approved-context references.",
+      modelMarkdown
+        ? "Compiled with the configured model endpoint."
+        : options.modelUrl
+          ? "The configured model endpoint did not return valid output; used the deterministic compiler fallback."
+          : "Compiled with the deterministic local compiler; no model endpoint was configured.",
       sources.length ? `Adapted guidance from ${sources.length} public skill source(s).` : "Generated without a public source skill because retrieval returned no matches."
     ],
     riskNotes: riskNotesFor(input, sources, skillMarkdown),

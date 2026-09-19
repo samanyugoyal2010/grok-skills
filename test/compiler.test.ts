@@ -34,6 +34,16 @@ test("uses the model endpoint only when configured and falls back on invalid out
     fetcher: (async () => new Response(JSON.stringify({ output: "not markdown" }), { status: 200 })) as typeof fetch
   });
   assert.match(result.skillMarkdown, /## Procedure/);
+  assert.match(result.changeSummary.join(" "), /deterministic compiler fallback/);
+});
+
+test("reports model compilation in the change summary", async () => {
+  const markdown = "# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nExample";
+  const result = await compileSkill(input, [], {
+    modelUrl: "https://model.example/compile",
+    fetcher: (async () => new Response(JSON.stringify({ output: markdown }), { status: 200 })) as typeof fetch
+  });
+  assert.match(result.changeSummary.join(" "), /configured model endpoint/);
 });
 
 test("falls back when the model endpoint times out or fails", async () => {
