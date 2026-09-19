@@ -6,6 +6,10 @@ import { scanRisk } from "../src/safety.js";
 
 test("rejects credentials and sensitive paths", () => {
   assert.equal(isForbiddenPath(".env.local"), true);
+  assert.equal(isForbiddenPath(".envrc"), true);
+  assert.equal(isForbiddenPath("config.env"), true);
+  assert.equal(isForbiddenPath("config/service.credentials.json"), true);
+  assert.equal(isForbiddenPath("src/env.ts"), false);
   assert.equal(isForbiddenPath("src/index.ts"), false);
   assert.equal(isForbiddenPath("assets/logo.png"), true);
   assert.equal(isForbiddenPath(".git/config"), true);

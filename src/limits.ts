@@ -13,16 +13,17 @@ export const LIMITS = {
   sources: 5
 } as const;
 
-const forbiddenPath = /(^|\/)(\.env(?:\.|$)|\.git(?:\/|$)|\.ssh(?:\/|$)|credentials?(?:\.|$)|secrets?(?:\.|$)|id_rsa(?:\.|$)|id_ed25519(?:\.|$)|\.npmrc$|\.netrc$|(?:\.docker|docker)\/config\.json$)/i;
+const forbiddenPath = /(^|\/)(\.git(?:\/|$)|\.ssh(?:\/|$)|id_rsa(?:\.|$)|id_ed25519(?:\.|$)|\.npmrc$|\.netrc$|(?:\.docker|docker)\/config\.json$)/i;
+const forbiddenFileName = /^(?:\.env(?:\.[^/]+)*|\.envrc|[^/]+\.env(?:\.[^/]+)*|(?:[^/]*[._-])?(?:credentials?|secrets?)(?:[._-][^/]*)?)$/i;
 const forbiddenExtension = /\.(pem|key|p12|pfx|crt|der)$/i;
-const binaryExtension = /\.(7z|avif|bin|dll|dylib|exe|gif|gz|ico|jpeg|jpg|mov|mp3|mp4|pdf|png|so|tar|wasm|webp|woff2|zip)$/i;
+const binaryExtension = /\.(7z|avif|bin|class|dll|dylib|exe|gif|gz|ico|jpeg|jpg|mov|mp3|mp4|pdf|png|so|sqlite|tar|wasm|webp|woff2|zip)$/i;
 
 export function isForbiddenPath(path: string): boolean {
   const normalizedPath = path.replaceAll("\\", "/");
   if (normalizedPath.includes("\0") || normalizedPath.startsWith("/") || normalizedPath.startsWith("~") || /^[A-Za-z]:\//.test(normalizedPath)) return true;
   const segments = normalizedPath.split("/");
   if (segments.includes("..")) return true;
-  return forbiddenPath.test(normalizedPath) || forbiddenExtension.test(normalizedPath) || binaryExtension.test(normalizedPath);
+  return forbiddenPath.test(normalizedPath) || segments.some((segment) => forbiddenFileName.test(segment)) || forbiddenExtension.test(normalizedPath) || binaryExtension.test(normalizedPath);
 }
 
 export function isLikelyBinaryContent(value: string): boolean {
