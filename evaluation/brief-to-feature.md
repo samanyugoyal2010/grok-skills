@@ -20,6 +20,8 @@ The compiler request also included this project brief: “Node 20 TypeScript ser
 
 The generated artifact was produced with no public source matches. It still names the approved files, preserves the task constraints, and adds a review/test loop.
 
+Deterministic replay against the current repository passed input validation with the two approved files and reproduced the tracked artifact byte-for-byte: 1,665 characters, four required sections, zero public sources, and SHA-256 `95a76b858c3908ff8e2964fc80af3fdeb21174e303bab9c1ed70b8bcdad78ba8`. The only advisory risk was `network-access`, caused by URLs in the approved HTTP context.
+
 ## Live agent comparison
 
 | Run | Wall time | Correction turns | Accuracy checklist | Status |
