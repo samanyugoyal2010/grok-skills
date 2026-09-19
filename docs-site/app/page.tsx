@@ -284,13 +284,15 @@ export default function Home() {
                 <div className="env-table">
                   <div><code>MCP_HTTP_AUTH_TOKEN</code><span>Required for non-loopback HTTP hosts.</span></div>
                   <div><code>MCP_HTTP_ALLOWED_ORIGINS</code><span>Optional comma-separated origin allowlist.</span></div>
+                  <div><code>MCP_HTTP_ALLOWED_HOSTS</code><span>Optional hostnames for DNS-rebinding protection.</span></div>
+                  <div><code>MCP_HTTP_MAX_BODY_BYTES</code><span>Request limit; default 256,000 bytes.</span></div>
                   <div><code>PUBLIC_SKILL_REPOSITORIES</code><span>Public GitHub repositories for the first adapter.</span></div>
                   <div><code>SKILL_COMPILER_MODEL_URL</code><span>Optional compatible JSON model endpoint.</span></div>
                   <div><code>RATE_LIMIT_PER_MINUTE</code><span>Anonymous per-process request limit; default 10.</span></div>
                 </div>
               </div>
             </div>
-            <div className="reference-footnote"><strong>When a call fails</strong><span>The tool returns <code>isError: true</code> with a JSON error message. Retrieval and model timeouts fall back safely; an empty retrieval result still produces a deterministic skill.</span></div>
+            <div className="reference-footnote"><strong>When a call fails</strong><div><span>The tool returns <code>isError: true</code> with a JSON error message. Retrieval and model timeouts fall back safely; an empty retrieval result still produces a deterministic skill.</span><CodeBlock label="error.json" value={errorExample} /></div></div>
           </section>
 
           <section className="section safety-section" id="safety">

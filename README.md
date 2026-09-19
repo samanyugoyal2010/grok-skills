@@ -44,6 +44,8 @@ The stateless MCP endpoint is exposed at `/mcp`. V1 has no persistence; HTTP aut
 
 HTTP mode binds to `127.0.0.1` by default. Set `MCP_HTTP_AUTH_TOKEN` to require a bearer token, and provide `MCP_HTTP_ALLOWED_ORIGINS` when browser-origin filtering is needed. If you bind with `MCP_HTTP_HOST=0.0.0.0` or another non-loopback host, a bearer token is required at startup.
 
+HTTP requests are capped at 256,000 bytes by default. Set `MCP_HTTP_MAX_BODY_BYTES` to change the limit, and `MCP_HTTP_ALLOWED_HOSTS` to add hostnames for DNS-rebinding protection. Invalid ports, transports, and non-loopback hosts without a token fail during startup.
+
 ## Tool input
 
 `compile_skill` accepts `task`, `search_query`, optional `project_brief`, and up to ten approved text files. It returns source provenance, a context manifest, transformation notes, risk notes, and `skillMarkdown`.

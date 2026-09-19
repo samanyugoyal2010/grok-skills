@@ -161,6 +161,7 @@ pre { margin: 0; padding: 19px; overflow-x: auto; color: #c7d5d3; font: 12px/1.8
 .env-table span { color: var(--muted); font-size: 13px; line-height: 1.5; }
 .reference-footnote { display: grid; grid-template-columns: 170px 1fr; gap: 22px; margin-top: 14px; padding: 18px 21px; border: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
 .reference-footnote strong { color: var(--paper); font-weight: 600; }
+.reference-footnote > div { display: grid; gap: 14px; min-width: 0; }
 
 .safety-section { border-bottom: 0; padding-bottom: 76px; }
 .safety-callout { display: grid; grid-template-columns: 46px 1fr; gap: 22px; padding: 28px; border: 1px solid rgba(243,162,97,.45); background: rgba(243,162,97,.055); }
