@@ -42,6 +42,11 @@ test("registers the compile_skill tool", async () => {
   const textBlock = result.content.find((block) => block.type === "text");
   assert.ok(textBlock && "text" in textBlock);
   assert.match(textBlock.text, /skillMarkdown/);
+  const invalid = await client.callTool({
+    name: "compile_skill",
+    arguments: { task: "Add a profile page", search_query: "frontend", approved_context: [], unexpected: true }
+  });
+  assert.equal(invalid.isError, true);
   await client.close();
   await server.close();
 });
