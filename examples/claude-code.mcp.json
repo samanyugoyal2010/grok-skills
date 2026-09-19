@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "task-time-skill-compiler": {
+      "command": "node",
+      "args": ["/absolute/path/to/ai-b2b-saas/dist/index.js"]
+    },
+    "21st": {
+      "url": "https://21st.dev/api/mcp",
+      "headers": {
+        "x-api-key": "${API_KEY_21ST}"
+      }
+    }
+  }
+}

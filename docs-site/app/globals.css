@@ -128,6 +128,11 @@ button { font: inherit; }
 .workflow-card p, .install-step p, .principles-grid p { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0; }
 
 .quickstart-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 42px; align-items: start; }
+.quickstart-configs { display: grid; gap: 14px; min-width: 0; }
+.companion-card { min-width: 0; padding: 20px; border: 1px solid rgba(141,231,219,.25); background: rgba(141,231,219,.045); }
+.companion-card h3 { font-size: 17px; letter-spacing: -.02em; margin: 9px 0 8px; }
+.companion-card p { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 0 0 15px; }
+.companion-card code { color: var(--cyan); font: 12px var(--mono); }
 .install-step { display: grid; grid-template-columns: 30px 1fr; gap: 14px; margin: 0 0 28px; }
 .install-step > span { width: 25px; height: 25px; display: grid; place-items: center; color: var(--cyan); border: 1px solid var(--cyan-deep); border-radius: 50%; font: 11px var(--mono); }
 .install-step h3 { margin-top: 0; }

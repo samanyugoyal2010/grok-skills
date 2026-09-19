@@ -34,6 +34,8 @@ Add the server to the project or user MCP configuration. Replace the path with t
 
 Run `npm run build` before using this configuration. For local iteration, `npx tsx /absolute/path/to/ai-b2b-saas/src/index.ts` is also supported. Before calling `compile_skill`, the agent should show the user the files it plans to send and obtain approval. The server rejects sensitive paths and secret-like values, but that is a heuristic safeguard, not a security guarantee.
 
+An optional companion configuration is available at [`examples/claude-code.mcp.json`](examples/claude-code.mcp.json). It runs Task-Time alongside 21st's component MCP so an agent can use Task-Time for repo-aware skill compilation and 21st for UI component discovery. 21st authentication is external to this project; set `API_KEY_21ST` only in the client environment and never commit the key.
+
 ## HTTP mode
 
 ```bash

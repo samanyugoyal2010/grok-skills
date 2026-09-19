@@ -22,6 +22,11 @@ const claudeConfig = `{
   }
 }`;
 
+const companionConfig = `"21st": {
+  "url": "https://21st.dev/api/mcp",
+  "headers": { "x-api-key": "\${API_KEY_21ST}" }
+}`;
+
 const repositoryUrl = "https://github.com/samanyugoyal2010/grok-skills";
 
 const requestExample = `{
@@ -152,7 +157,15 @@ export default function Home() {
                 <div className="install-step"><span>2</span><div><h3>Approve the context</h3><p>Ask the agent to list the files it plans to send. Keep the approval narrow and task-specific.</p></div></div>
                 <div className="install-step"><span>3</span><div><h3>Save the output</h3><p>Review the returned Markdown, then save it as a repository-local <code>SKILL.md</code>.</p></div></div>
               </div>
-              <CodeBlock label=".mcp.json" value={claudeConfig} />
+              <div className="quickstart-configs">
+                <CodeBlock label=".mcp.json" value={claudeConfig} />
+                <div className="companion-card">
+                  <span className="eyebrow">Optional companion</span>
+                  <h3>Pair it with 21st.dev</h3>
+                  <p>Use Task-Time for repo-aware skill compilation and 21st for UI component discovery. Add this entry beside the server above, then provide <code>API_KEY_21ST</code> through your client environment.</p>
+                  <CodeBlock label="21st MCP entry" value={companionConfig} />
+                </div>
+              </div>
             </div>
           </section>
 
