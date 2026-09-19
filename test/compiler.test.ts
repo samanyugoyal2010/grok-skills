@@ -66,6 +66,17 @@ test("does not wait for a model fetcher that ignores the parent deadline", async
   await assert.rejects(compilation, /deadline/i);
 });
 
+test("cancels a model response body that never finishes", async () => {
+  const controller = new AbortController();
+  const result = await compileSkill(input, [], {
+    modelUrl: "https://model.example/compile",
+    modelTimeoutMs: 10,
+    signal: controller.signal,
+    fetcher: (async () => new Response(new ReadableStream({ pull: () => new Promise<void>(() => {}) }))) as typeof fetch
+  });
+  assert.match(result.changeSummary.join(" "), /deterministic compiler fallback/);
+});
+
 test("falls back when the model returns secret-like output", async () => {
   const markdown = "# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\npassword=supersecret123";
   const result = await compileSkill(input, [], {

@@ -34,7 +34,7 @@ async function fetchText(url: string, signal?: AbortSignal, extraHeaders?: Recor
     }
   });
   if (!response.ok) throw new Error(`Public skill fetch failed: ${response.status} ${response.statusText}`);
-  return readLimitedResponse(response, LIMITS.fetchBytes);
+  return readLimitedResponse(response, LIMITS.fetchBytes, signal);
 }
 
 function tokens(value: string): string[] {

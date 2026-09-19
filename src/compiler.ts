@@ -80,7 +80,7 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
   const prompt = buildCompilerPrompt(input, sources);
   const controller = new AbortController();
   const timeoutMs = Number.isFinite(options.modelTimeoutMs) && (options.modelTimeoutMs ?? 0) >= 1 ? options.modelTimeoutMs! : 20_000;
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  let timeout: NodeJS.Timeout | undefined;
   const abortFromParent = () => controller.abort(options.signal?.reason);
   if (options.signal) {
     if (options.signal.aborted) abortFromParent();
@@ -95,19 +95,26 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
         },
         body: JSON.stringify(prompt),
         signal: controller.signal
-      }));
-    const response = await raceWithAbort(request, options.signal, abortFromParent, "Skill compilation deadline exceeded");
-    if (!response.ok) return null;
-    const body = JSON.parse(await readLimitedResponse(response, LIMITS.modelResponseBytes));
-    const markdown = parseModelResponse(body);
-    if (!markdown) return null;
-    validateSkillMarkdown(markdown);
-    if (findSecretKinds(markdown).length > 0) return null;
-    return markdown;
+      })).then(async (response) => {
+        if (!response.ok) return null;
+        const body = JSON.parse(await readLimitedResponse(response, LIMITS.modelResponseBytes, controller.signal));
+        const markdown = parseModelResponse(body);
+        if (!markdown) return null;
+        validateSkillMarkdown(markdown);
+        if (findSecretKinds(markdown).length > 0) return null;
+        return markdown;
+      });
+    const timeoutOperation = new Promise<null>((_, reject) => {
+      timeout = setTimeout(() => {
+        controller.abort(new Error(`Model request timed out after ${timeoutMs}ms`));
+        reject(new Error(`Model request timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+    });
+    return await raceWithAbort(Promise.race([request, timeoutOperation]), options.signal, abortFromParent, "Skill compilation deadline exceeded");
   } catch {
     return null;
   } finally {
-    clearTimeout(timeout);
+    if (timeout) clearTimeout(timeout);
     options.signal?.removeEventListener("abort", abortFromParent);
   }
 }
