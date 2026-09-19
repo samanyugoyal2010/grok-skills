@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { compileSkill } from "../src/compiler.js";
+import { LIMITS } from "../src/limits.js";
 import type { CompileSkillInput, SkillSource } from "../src/types.js";
 
 const input: CompileSkillInput = {
@@ -25,6 +26,28 @@ test("compiles a valid reusable skill with provenance", async () => {
   assert.match(result.skillMarkdown, /## Description/);
   assert.match(result.skillMarkdown, /## Procedure/);
   assert.match(result.skillMarkdown, /## Repository Constraints/);
+  assert.match(result.skillMarkdown, /## Examples/);
+});
+
+test("keeps the deterministic fallback within the output limit for maximum valid input", async () => {
+  const result = await compileSkill({
+    task: "Implement the requested feature. ".repeat(100),
+    search_query: "frontend validation testing",
+    project_brief: "Use the existing repository conventions. ".repeat(500),
+    approved_context: Array.from({ length: 10 }, (_, index) => ({
+      path: `src/file-${index}.ts`,
+      reason: "Approved context for the requested task. ".repeat(10),
+      content: "const value = 1;\n".repeat(250)
+    }))
+  }, Array.from({ length: 5 }, (_, index) => ({
+    url: `https://example.com/${"source-".repeat(80)}/${index}`,
+    title: "Public source title ".repeat(30),
+    sourceHash: "a".repeat(64),
+    matchReason: "Matched the request",
+    content: "Use the repository conventions."
+  })));
+
+  assert.ok(result.skillMarkdown.length <= LIMITS.outputChars);
   assert.match(result.skillMarkdown, /## Examples/);
 });
 
