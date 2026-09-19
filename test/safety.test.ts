@@ -21,6 +21,9 @@ test("rejects secret-like values in task and context metadata", () => {
   assert.throws(() => validateCompileInput({ task: "x", search_query: "frontend", approved_context: [{ path: "src/file.ts", reason: "token=ghp_abcdefghijklmnopqrstuvwxyz123456", content: "x" }] }), /Context/);
   assert.deepEqual(findSecretKinds("sk-ant-abcdefghijklmnopqrstuvwxyz123456"), ["anthropic-token"]);
   assert.deepEqual(findSecretKinds("glpat-abcdefghijklmnopqrstuvwxyz123456"), ["gitlab-token"]);
+  assert.equal(findSecretKinds("AWS_SECRET_ACCESS_KEY=abcdefghijklmnop").includes("aws-secret-assignment"), true);
+  assert.equal(findSecretKinds("DATABASE_URL=postgres://user:password@example.com/db").includes("database-url"), true);
+  assert.equal(findSecretKinds("const accessToken = getToken();").length, 0);
 });
 
 test("rejects binary context", () => {

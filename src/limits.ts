@@ -46,7 +46,9 @@ const secretPatterns: Array<[string, RegExp]> = [
   ["stripe-secret-key", /\bsk_(?:live|test)_[A-Za-z0-9]{16,}\b/],
   ["npm-token", /\bnpm_[A-Za-z0-9]{20,}\b/],
   ["bearer-token", /\bBearer\s+[A-Za-z0-9._-]{20,}\b/i],
-  ["credential-assignment", /\b(?:api[_-]?key|secret|password|token)\s*[:=]\s*[^\s]{8,}/i]
+  ["aws-secret-assignment", /\bAWS_(?:SECRET_ACCESS_KEY|SESSION_TOKEN)\s*[:=]\s*[^\s"'`]{12,}/i],
+  ["database-url", /\b(?:DATABASE_URL|REDIS_URL|MONGODB_URI)\s*[:=]\s*(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis):\/\/[^\s"'`]+/i],
+  ["credential-assignment", /\b(?:[A-Z0-9_]*(?:API[_-]?KEY|SECRET|PASSWORD|TOKEN)[A-Z0-9_]*)\s*[:=]\s*["']?[A-Z0-9_./+=-]{8,}["']?(?=\s|$|[;,])/i]
 ];
 
 export function findSecretKinds(value: string): string[] {
