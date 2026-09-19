@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { createServer as createNodeServer } from "node:http";
+import { createServer as createNodeServer, request as nodeRequest } from "node:http";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { createMcpHandler } from "@modelcontextprotocol/server";
 import { toNodeHandler } from "@modelcontextprotocol/node";
@@ -55,7 +55,7 @@ test("protects the MCP route with path, origin, and bearer checks", () => {
   assert.equal(forbidden.statusCode, 403);
 
   const accepted = response();
-  handler(request("/mcp", { authorization: "Bearer a-long-test-token", origin: "http://localhost:3000" }) as never, accepted as never);
+  handler(request("/mcp", { authorization: "Bearer a-long-test-token", origin: "http://localhost:3000" }, "GET") as never, accepted as never);
   assert.equal(handled, 1);
   assert.equal(accepted.headers["access-control-allow-origin"], "http://localhost:3000");
 });
@@ -96,6 +96,56 @@ test("rejects browser origins unless an explicit allowlist is configured", () =>
   const rejected = response();
   guarded(request("/mcp", { origin: "http://localhost:3000" }) as never, rejected as never);
   assert.equal(rejected.statusCode, 403);
+});
+
+test("serves a cache-disabled health response without invoking MCP", () => {
+  let handled = 0;
+  const guarded = createProtectedHttpHandler(() => { handled += 1; }, { allowedHosts: ["localhost"] });
+  const healthy = response();
+  guarded(request("/healthz", { host: "localhost:3000" }, "GET") as never, healthy as never);
+  assert.equal(healthy.statusCode, 200);
+  assert.equal(healthy.headers["cache-control"], "no-store");
+  assert.equal(healthy.body, JSON.stringify({ status: "ok" }));
+  assert.equal(handled, 0);
+
+  const wrongMethod = response();
+  guarded(request("/healthz", { host: "localhost:3000" }, "POST") as never, wrongMethod as never);
+  assert.equal(wrongMethod.statusCode, 405);
+});
+
+test("rejects oversized chunked bodies before invoking the MCP handler", async () => {
+  let handled = 0;
+  const httpServer = createNodeServer(createProtectedHttpHandler(() => { handled += 1; }, {
+    allowedHosts: ["127.0.0.1"],
+    maxBodyBytes: 32
+  }));
+  await new Promise<void>((resolve) => httpServer.listen(0, "127.0.0.1", resolve));
+  const address = httpServer.address();
+  assert.ok(address && typeof address === "object");
+
+  try {
+    const result = await new Promise<{ statusCode: number; body: string }>((resolve, reject) => {
+      const request = nodeRequest({
+        host: "127.0.0.1",
+        port: address.port,
+        method: "POST",
+        path: "/mcp",
+        headers: { host: "127.0.0.1" }
+      }, (response) => {
+        const chunks: Buffer[] = [];
+        response.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+        response.on("end", () => resolve({ statusCode: response.statusCode ?? 0, body: Buffer.concat(chunks).toString("utf8") }));
+      });
+      request.on("error", reject);
+      request.write("x".repeat(64));
+      request.end();
+    });
+    assert.equal(result.statusCode, 413);
+    assert.match(result.body, /Request body too large/);
+    assert.equal(handled, 0);
+  } finally {
+    await new Promise<void>((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
+  }
 });
 
 test("serves the compile_skill tool through the real MCP HTTP client", async () => {

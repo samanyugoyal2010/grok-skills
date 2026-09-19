@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
+import { PassThrough } from "node:stream";
 
 export interface HttpSecurityOptions {
   bearerToken?: string;
@@ -7,6 +8,7 @@ export interface HttpSecurityOptions {
   allowedHosts?: string[];
   maxBodyBytes?: number;
   path?: string;
+  healthPath?: string;
 }
 
 export function isLoopbackHost(host: string): boolean {
@@ -20,11 +22,64 @@ function matchesBearerToken(expected: string, actual: string | undefined): boole
   return expectedBytes.length === actualBytes.length && timingSafeEqual(expectedBytes, actualBytes);
 }
 
+function bufferedRequest(request: IncomingMessage, body: Buffer): IncomingMessage {
+  const stream = new PassThrough();
+  Object.defineProperties(stream, {
+    url: { value: request.url, enumerable: true },
+    method: { value: request.method, enumerable: true },
+    headers: { value: request.headers, enumerable: true },
+    rawHeaders: { value: request.rawHeaders, enumerable: true },
+    httpVersion: { value: request.httpVersion, enumerable: true },
+    httpVersionMajor: { value: request.httpVersionMajor, enumerable: true },
+    httpVersionMinor: { value: request.httpVersionMinor, enumerable: true },
+    socket: { value: request.socket, enumerable: true },
+    complete: { value: true, enumerable: true }
+  });
+  queueMicrotask(() => stream.end(body));
+  return stream as unknown as IncomingMessage;
+}
+
+function readRequestBody(request: IncomingMessage, maxBytes: number): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let totalBytes = 0;
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      request.removeListener("data", onData);
+      request.removeListener("end", onEnd);
+      request.removeListener("aborted", onAborted);
+      request.removeListener("error", onError);
+      if (error) reject(error);
+      else resolve(Buffer.concat(chunks, totalBytes));
+    };
+    const onData = (chunk: Buffer | string) => {
+      const value = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+      totalBytes += value.byteLength;
+      if (totalBytes > maxBytes) {
+        request.resume();
+        finish(new Error("Request body too large"));
+        return;
+      }
+      chunks.push(value);
+    };
+    const onEnd = () => finish();
+    const onAborted = () => finish(new Error("Request was aborted"));
+    const onError = (error: Error) => finish(error);
+    request.on("data", onData);
+    request.on("end", onEnd);
+    request.on("aborted", onAborted);
+    request.on("error", onError);
+  });
+}
+
 export function createProtectedHttpHandler(
   handler: (request: IncomingMessage, response: ServerResponse) => void,
   options: HttpSecurityOptions = {}
 ): (request: IncomingMessage, response: ServerResponse) => void {
   const path = options.path ?? "/mcp";
+  const healthPath = options.healthPath ?? "/healthz";
   const allowedOrigins = new Set(options.allowedOrigins ?? []);
   const allowedHosts = new Set((options.allowedHosts ?? []).map((host) => host.toLowerCase()));
   const maxBodyBytes = options.maxBodyBytes ?? 256_000;
@@ -49,7 +104,7 @@ export function createProtectedHttpHandler(
 
   return (request, response) => {
     const requestPath = (request.url ?? "/").split("?", 1)[0];
-    if (requestPath !== path) {
+    if (requestPath !== path && requestPath !== healthPath) {
       reject(response, 404, "Not found");
       return;
     }
@@ -88,6 +143,20 @@ export function createProtectedHttpHandler(
       setHeader(response, "vary", "Origin");
     }
 
+    if (requestPath === healthPath) {
+      if (request.method?.toUpperCase() !== "GET" && request.method?.toUpperCase() !== "HEAD") {
+        reject(response, 405, "Method not allowed", { allow: "GET, HEAD" });
+        return;
+      }
+      const body = JSON.stringify({ status: "ok" });
+      setHeader(response, "cache-control", "no-store");
+      setHeader(response, "content-type", "application/json; charset=utf-8");
+      setHeader(response, "content-length", String(Buffer.byteLength(body)));
+      response.writeHead(200);
+      response.end(request.method?.toUpperCase() === "HEAD" ? undefined : body);
+      return;
+    }
+
     if (request.method?.toUpperCase() === "OPTIONS") {
       if (origin) setHeader(response, "access-control-allow-origin", origin);
       setHeader(response, "access-control-allow-methods", "POST, GET, DELETE, OPTIONS");
@@ -108,15 +177,13 @@ export function createProtectedHttpHandler(
       return;
     }
 
-    if (maxBodyBytes > 0 && typeof request.on === "function" && typeof request.destroy === "function") {
-      let receivedBytes = 0;
-      request.on("data", (chunk: Buffer | string) => {
-        receivedBytes += typeof chunk === "string" ? Buffer.byteLength(chunk) : chunk.byteLength;
-        if (receivedBytes > maxBodyBytes && !response.writableEnded) {
-          reject(response, 413, "Request body too large");
-          request.destroy();
-        }
-      });
+    if (maxBodyBytes > 0 && request.method?.toUpperCase() === "POST") {
+      void readRequestBody(request, maxBodyBytes)
+        .then((body) => handler(bufferedRequest(request, body), response))
+        .catch((error: unknown) => {
+          if (!response.writableEnded) reject(response, error instanceof Error && error.message === "Request was aborted" ? 400 : 413, error instanceof Error ? error.message : "Request body too large");
+        });
+      return;
     }
 
     handler(request, response);

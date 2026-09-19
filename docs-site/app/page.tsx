@@ -281,7 +281,7 @@ export default function Home() {
                 <CodeBlock label="terminal" value={runtimeExample} />
                 <dl className="reference-list">
                   <div><dt>stdio</dt><dd>Default transport for Claude Code. JSON-RPC stays on stdout; logs go to stderr.</dd></div>
-                  <div><dt>HTTP</dt><dd>Stateless MCP at <code>/mcp</code>. It binds to <code>127.0.0.1</code> unless configured otherwise.</dd></div>
+                <div><dt>HTTP</dt><dd>Stateless MCP at <code>/mcp</code>, with a liveness check at <code>/healthz</code>. It binds to <code>127.0.0.1</code> unless configured otherwise.</dd></div>
                 </dl>
               </div>
               <div className="reference-panel">

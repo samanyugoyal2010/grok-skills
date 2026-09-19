@@ -40,7 +40,7 @@ Run `npm run build` before using this configuration. For local iteration, `npx t
 MCP_TRANSPORT=http npm run dev
 ```
 
-The stateless MCP endpoint is exposed at `/mcp`. V1 has no persistence; HTTP authentication is opt-in through `MCP_HTTP_AUTH_TOKEN`. Do not send private repository context until the model provider's retention and no-training behavior has been verified.
+The stateless MCP endpoint is exposed at `/mcp`; `GET /healthz` returns a small liveness response for process supervisors. V1 has no persistence; HTTP authentication is opt-in through `MCP_HTTP_AUTH_TOKEN`. Do not send private repository context until the model provider's retention and no-training behavior has been verified.
 
 HTTP mode binds to `127.0.0.1` by default. Set `MCP_HTTP_AUTH_TOKEN` to require a bearer token, and set `MCP_HTTP_ALLOWED_ORIGINS` for browser clients. Requests with an `Origin` header are rejected unless that origin is explicitly listed; non-browser MCP clients can omit the header. If you bind with `MCP_HTTP_HOST=0.0.0.0` or another non-loopback host, both a bearer token and `MCP_HTTP_ALLOWED_HOSTS` are required at startup. List hostnames without ports.
 
