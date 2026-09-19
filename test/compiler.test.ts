@@ -55,6 +55,17 @@ test("falls back when the model endpoint times out or fails", async () => {
   assert.match(result.skillMarkdown, /No public source skill was found/);
 });
 
+test("does not wait for a model fetcher that ignores the parent deadline", async () => {
+  const controller = new AbortController();
+  const compilation = compileSkill(input, [], {
+    modelUrl: "https://model.example/compile",
+    signal: controller.signal,
+    fetcher: (async () => new Promise<Response>(() => {})) as typeof fetch
+  });
+  setTimeout(() => controller.abort(new Error("deadline")), 10);
+  await assert.rejects(compilation, /deadline/i);
+});
+
 test("falls back when the model returns secret-like output", async () => {
   const markdown = "# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\npassword=supersecret123";
   const result = await compileSkill(input, [], {

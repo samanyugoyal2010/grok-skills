@@ -42,6 +42,20 @@ test("times out a hung public source fetch", async () => {
   assert.ok(Date.now() - startedAt < 500);
 });
 
+test("stops a hanging public source fetch when the parent deadline aborts", async () => {
+  const controller = new AbortController();
+  const retriever = new GitHubSkillRetriever(["acme/skills"], async (_url, signal) => {
+    await new Promise<void>((resolve) => signal?.addEventListener("abort", () => resolve(), { once: true }));
+    throw new Error("aborted");
+  }, "main", 10_000);
+  const search = retriever.search("frontend", controller.signal);
+  setTimeout(() => controller.abort(new Error("deadline")), 10);
+  const startedAt = Date.now();
+  const results = await search;
+  assert.deepEqual(results, []);
+  assert.ok(Date.now() - startedAt < 500);
+});
+
 test("caps streamed public response bodies before buffering them", async () => {
   await assert.rejects(
     readLimitedResponse(new Response("x".repeat(LIMITS.fetchBytes + 1))),

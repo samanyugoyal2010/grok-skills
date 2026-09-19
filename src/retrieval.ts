@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { LIMITS } from "./limits.js";
 import type { SkillRetriever, SkillSource } from "./types.js";
 import { readLimitedResponse } from "./body.js";
+import { raceWithAbort } from "./abort.js";
 
 export { readLimitedResponse } from "./body.js";
 
@@ -82,15 +83,16 @@ export class GitHubSkillRetriever implements SkillRetriever {
       else signal.addEventListener("abort", abort, { once: true });
     }
     try {
-      return await Promise.race([
-        this.fetcher(url, controller.signal, this.githubToken ? { authorization: `Bearer ${this.githubToken}` } : undefined),
+      const fetchOperation = Promise.resolve().then(() => this.fetcher(url, controller.signal, this.githubToken ? { authorization: `Bearer ${this.githubToken}` } : undefined));
+      return await raceWithAbort(Promise.race([
+        fetchOperation,
         new Promise<string>((_, reject) => {
           timer = setTimeout(() => {
             controller.abort();
             reject(new Error(`Public skill fetch timed out after ${timeout}ms`));
           }, timeout);
         })
-      ]);
+      ]), signal, () => controller.abort(signal?.reason), "Public skill fetch aborted");
     } finally {
       if (timer) clearTimeout(timer);
       signal?.removeEventListener("abort", abort);

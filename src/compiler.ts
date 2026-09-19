@@ -4,6 +4,7 @@ import { LIMITS, findSecretKinds } from "./limits.js";
 import { trimText, validateSkillMarkdown } from "./markdown.js";
 import { buildCompilerPrompt } from "./prompt.js";
 import { readLimitedResponse } from "./body.js";
+import { raceWithAbort } from "./abort.js";
 
 export interface CompilerOptions {
   modelUrl?: string;
@@ -74,6 +75,7 @@ function parseModelResponse(value: unknown): string | null {
 
 async function compileWithModel(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions): Promise<string | null> {
   if (!options.modelUrl) return null;
+  if (options.signal?.aborted) return null;
   const fetcher = options.fetcher ?? fetch;
   const prompt = buildCompilerPrompt(input, sources);
   const controller = new AbortController();
@@ -85,15 +87,16 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
     else options.signal.addEventListener("abort", abortFromParent, { once: true });
   }
   try {
-    const response = await fetcher(options.modelUrl, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        ...(options.modelToken ? { authorization: `Bearer ${options.modelToken}` } : {})
-      },
-      body: JSON.stringify(prompt),
-      signal: controller.signal
-    });
+    const request = Promise.resolve().then(() => fetcher(options.modelUrl!, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(options.modelToken ? { authorization: `Bearer ${options.modelToken}` } : {})
+        },
+        body: JSON.stringify(prompt),
+        signal: controller.signal
+      }));
+    const response = await raceWithAbort(request, options.signal, abortFromParent, "Skill compilation deadline exceeded");
     if (!response.ok) return null;
     const body = JSON.parse(await readLimitedResponse(response, LIMITS.modelResponseBytes));
     const markdown = parseModelResponse(body);
