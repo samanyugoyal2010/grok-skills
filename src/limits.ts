@@ -48,11 +48,19 @@ const secretPatterns: Array<[string, RegExp]> = [
   ["bearer-token", /\bBearer\s+[A-Za-z0-9._-]{20,}\b/i],
   ["aws-secret-assignment", /\bAWS_(?:SECRET_ACCESS_KEY|SESSION_TOKEN)\s*[:=]\s*[^\s"'`]{12,}/i],
   ["database-url", /\b(?:DATABASE_URL|REDIS_URL|MONGODB_URI)\s*[:=]\s*(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis):\/\/[^\s"'`]+/i],
-  ["credential-assignment", /\b(?:[A-Z0-9_]*(?:API[_-]?KEY|SECRET|PASSWORD|TOKEN)[A-Z0-9_]*)\s*[:=]\s*["']?[A-Z0-9_./+=-]{8,}["']?(?=\s|$|[;,])/i]
 ];
 
+const credentialAssignmentPattern = /\b(?:[A-Z0-9_]*(?:API[_-]?KEY|SECRET|PASSWORD|TOKEN)[A-Z0-9_]*)\s*[:=]\s*["']?([A-Z0-9_./+=-]{8,})["']?(?=\s|$|[;,])/i;
+
+function isPlaceholderCredential(value: string): boolean {
+  return /(?:test|dummy|example|placeholder|fake|sample|replace[-_ ]?me)/i.test(value);
+}
+
 export function findSecretKinds(value: string): string[] {
-  return secretPatterns.filter(([, pattern]) => pattern.test(value)).map(([kind]) => kind);
+  const kinds = secretPatterns.filter(([, pattern]) => pattern.test(value)).map(([kind]) => kind);
+  const assignment = credentialAssignmentPattern.exec(value);
+  if (assignment && !isPlaceholderCredential(assignment[1])) kinds.push("credential-assignment");
+  return [...new Set(kinds)];
 }
 
 export function validateCompileInput(input: CompileSkillInput): void {

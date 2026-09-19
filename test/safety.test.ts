@@ -24,6 +24,8 @@ test("rejects secret-like values in task and context metadata", () => {
   assert.equal(findSecretKinds("AWS_SECRET_ACCESS_KEY=abcdefghijklmnop").includes("aws-secret-assignment"), true);
   assert.equal(findSecretKinds("DATABASE_URL=postgres://user:password@example.com/db").includes("database-url"), true);
   assert.equal(findSecretKinds("const accessToken = getToken();").length, 0);
+  assert.equal(findSecretKinds('bearerToken: "a-long-test-token"').includes("credential-assignment"), false);
+  assert.equal(findSecretKinds("password=supersecret123").includes("credential-assignment"), true);
 });
 
 test("rejects binary context", () => {
