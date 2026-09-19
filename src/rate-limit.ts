@@ -1,3 +1,13 @@
+export class RateLimitError extends Error {
+  readonly retryAfterSeconds: number;
+
+  constructor(retryAfterMs: number) {
+    super("rate limit exceeded; retry later");
+    this.name = "RateLimitError";
+    this.retryAfterSeconds = Math.max(1, Math.ceil(retryAfterMs / 1_000));
+  }
+}
+
 export class RateLimiter {
   private readonly buckets = new Map<string, { startedAt: number; count: number }>();
 
@@ -14,7 +24,7 @@ export class RateLimiter {
       this.buckets.set(key, { startedAt: now, count: 1 });
       return;
     }
-    if (bucket.count >= this.limit) throw new Error("Anonymous rate limit exceeded; retry after the current minute");
+    if (bucket.count >= this.limit) throw new RateLimitError(this.windowMs - (now - bucket.startedAt));
     bucket.count += 1;
   }
 }

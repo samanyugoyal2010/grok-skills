@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { findSecretKinds, isForbiddenPath, validateCompileInput } from "../src/limits.js";
-import { InFlightLimiter, RateLimiter } from "../src/rate-limit.js";
+import { InFlightLimiter, RateLimitError, RateLimiter } from "../src/rate-limit.js";
 import { scanRisk } from "../src/safety.js";
 
 test("rejects credentials and sensitive paths", () => {
@@ -51,6 +51,12 @@ test("uses a safe default for invalid rate-limit configuration", () => {
   const limiter = new RateLimiter(Number.NaN);
   for (let index = 0; index < 10; index += 1) limiter.consume("test");
   assert.throws(() => limiter.consume("test"), /rate limit/);
+});
+
+test("reports a retry window when a rate limit is exceeded", () => {
+  const limiter = new RateLimiter(1, 60_000);
+  limiter.consume("client");
+  assert.throws(() => limiter.consume("client"), (error: unknown) => error instanceof RateLimitError && error.retryAfterSeconds === 60);
 });
 
 test("rejects work above the in-flight compilation cap", async () => {

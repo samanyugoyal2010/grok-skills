@@ -9,8 +9,8 @@ import { createProtectedHttpHandler, isLoopbackHost } from "../src/http.js";
 import { createServer } from "../src/server.js";
 import { RateLimiter } from "../src/rate-limit.js";
 
-function request(url: string, headers: Record<string, string> = {}, method = "POST") {
-  return Object.assign(new EventEmitter(), { url, headers, method });
+function request(url: string, headers: Record<string, string> = {}, method = "POST", remoteAddress = "127.0.0.1") {
+  return Object.assign(new EventEmitter(), { url, headers, method, socket: { remoteAddress } });
 }
 
 function response() {
@@ -96,6 +96,22 @@ test("rejects browser origins unless an explicit allowlist is configured", () =>
   const rejected = response();
   guarded(request("/mcp", { origin: "http://localhost:3000" }) as never, rejected as never);
   assert.equal(rejected.statusCode, 403);
+});
+
+test("enforces HTTP rate limits per client with Retry-After", () => {
+  let handled = 0;
+  const guarded = createProtectedHttpHandler(() => { handled += 1; }, { rateLimiter: new RateLimiter(1, 60_000) });
+  const first = response();
+  guarded(request("/mcp", {}, "GET", "127.0.0.1") as never, first as never);
+  const second = response();
+  guarded(request("/mcp", {}, "GET", "127.0.0.1") as never, second as never);
+  const otherClient = response();
+  guarded(request("/mcp", {}, "GET", "127.0.0.2") as never, otherClient as never);
+  assert.equal(first.statusCode, 200);
+  assert.equal(second.statusCode, 429);
+  assert.equal(second.headers["retry-after"], "60");
+  assert.equal(otherClient.statusCode, 200);
+  assert.equal(handled, 2);
 });
 
 test("serves a cache-disabled health response without invoking MCP", () => {

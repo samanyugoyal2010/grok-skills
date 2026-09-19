@@ -10,7 +10,7 @@ import type { CompilerOptions } from "./compiler.js";
 
 export interface ServerDependencies {
   retriever?: SkillRetriever;
-  rateLimiter?: RateLimiter;
+  rateLimiter?: RateLimiter | null;
   inFlightLimiter?: InFlightLimiter;
   compilerOptions?: CompilerOptions;
   compileDeadlineMs?: number;
@@ -18,7 +18,7 @@ export interface ServerDependencies {
 
 export function createServer(dependencies: ServerDependencies = {}): McpServer {
   const retriever = dependencies.retriever ?? new GitHubSkillRetriever();
-  const rateLimiter = dependencies.rateLimiter ?? new RateLimiter();
+  const rateLimiter = dependencies.rateLimiter === undefined ? new RateLimiter() : dependencies.rateLimiter;
   const inFlightLimiter = dependencies.inFlightLimiter ?? new InFlightLimiter();
   const compilerOptions = dependencies.compilerOptions ?? {
     modelUrl: process.env.SKILL_COMPILER_MODEL_URL,
@@ -51,7 +51,7 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
     async (input) => {
       try {
         validateCompileInput(input);
-        rateLimiter.consume("anonymous");
+        rateLimiter?.consume("anonymous");
         return await inFlightLimiter.run(async () => {
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(new Error("Skill compilation deadline exceeded")), Number.isFinite(compileDeadlineMs) && compileDeadlineMs >= 1 ? compileDeadlineMs : 60_000);

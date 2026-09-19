@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import { PassThrough } from "node:stream";
+import { RateLimitError, RateLimiter } from "./rate-limit.js";
 
 export interface HttpSecurityOptions {
   bearerToken?: string;
@@ -9,6 +10,7 @@ export interface HttpSecurityOptions {
   maxBodyBytes?: number;
   path?: string;
   healthPath?: string;
+  rateLimiter?: RateLimiter;
 }
 
 export function isLoopbackHost(host: string): boolean {
@@ -83,6 +85,7 @@ export function createProtectedHttpHandler(
   const allowedOrigins = new Set(options.allowedOrigins ?? []);
   const allowedHosts = new Set((options.allowedHosts ?? []).map((host) => host.toLowerCase()));
   const maxBodyBytes = options.maxBodyBytes ?? 256_000;
+  const rateLimiter = options.rateLimiter;
 
   const setHeader = (response: ServerResponse, name: string, value: string) => {
     response.setHeader?.(name, value);
@@ -175,6 +178,18 @@ export function createProtectedHttpHandler(
       });
       response.end("Unauthorized");
       return;
+    }
+
+    if (rateLimiter) {
+      try {
+        rateLimiter.consume(request.socket?.remoteAddress ?? "anonymous");
+      } catch (error) {
+        if (error instanceof RateLimitError) {
+          reject(response, 429, "Too many requests", { "retry-after": String(error.retryAfterSeconds) });
+          return;
+        }
+        throw error;
+      }
     }
 
     if (maxBodyBytes > 0 && request.method?.toUpperCase() === "POST") {

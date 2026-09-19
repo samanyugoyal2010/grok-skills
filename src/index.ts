@@ -11,7 +11,7 @@ import { GitHubSkillRetriever } from "./retrieval.js";
 
 const config = loadRuntimeConfig();
 const dependencies = {
-  rateLimiter: new RateLimiter(config.rateLimitPerMinute),
+  rateLimiter: config.transport === "http" ? null : new RateLimiter(config.rateLimitPerMinute),
   inFlightLimiter: new InFlightLimiter(config.maxInFlightCompilations),
   retriever: new GitHubSkillRetriever(config.publicSkillRepositories, undefined, config.publicSkillBranch, config.publicSkillFetchTimeoutMs, config.publicSkillGithubToken),
   compilerOptions: {
@@ -29,7 +29,8 @@ if (config.transport === "http") {
     bearerToken: config.bearerToken,
     allowedOrigins: config.allowedOrigins,
     allowedHosts: config.allowedHosts,
-    maxBodyBytes: config.httpMaxBodyBytes
+    maxBodyBytes: config.httpMaxBodyBytes,
+    rateLimiter: new RateLimiter(config.rateLimitPerMinute)
   });
   const httpServer = createNodeServer(protectedHandler);
   httpServer.requestTimeout = 120_000;
