@@ -4,6 +4,7 @@ import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { toNodeHandler } from "@modelcontextprotocol/node";
 import { createServer } from "./server.js";
 import { RateLimiter } from "./rate-limit.js";
+import { InFlightLimiter } from "./rate-limit.js";
 import { createProtectedHttpHandler } from "./http.js";
 import { loadRuntimeConfig } from "./config.js";
 import { GitHubSkillRetriever } from "./retrieval.js";
@@ -11,12 +12,14 @@ import { GitHubSkillRetriever } from "./retrieval.js";
 const config = loadRuntimeConfig();
 const dependencies = {
   rateLimiter: new RateLimiter(config.rateLimitPerMinute),
+  inFlightLimiter: new InFlightLimiter(config.maxInFlightCompilations),
   retriever: new GitHubSkillRetriever(config.publicSkillRepositories, undefined, config.publicSkillBranch, config.publicSkillFetchTimeoutMs, config.publicSkillGithubToken),
   compilerOptions: {
     modelUrl: config.modelUrl,
     modelToken: config.modelToken,
     modelTimeoutMs: config.modelTimeoutMs
-  }
+  },
+  compileDeadlineMs: config.compileDeadlineMs
 };
 
 if (config.transport === "http") {

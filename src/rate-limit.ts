@@ -18,3 +18,22 @@ export class RateLimiter {
     bucket.count += 1;
   }
 }
+
+export class InFlightLimiter {
+  private active = 0;
+  private readonly limit: number;
+
+  constructor(limit = Number(process.env.MAX_IN_FLIGHT_COMPILATIONS ?? 2)) {
+    this.limit = Number.isSafeInteger(limit) && limit >= 1 ? limit : 2;
+  }
+
+  async run<T>(task: () => Promise<T>): Promise<T> {
+    if (this.active >= this.limit) throw new Error("Too many compilations in flight; retry later");
+    this.active += 1;
+    try {
+      return await task();
+    } finally {
+      this.active -= 1;
+    }
+  }
+}

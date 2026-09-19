@@ -4,18 +4,28 @@ import { compileSkill } from "./compiler.js";
 import { compileSkillInputSchema, compileSkillOutputSchema } from "./types.js";
 import { validateCompileInput } from "./limits.js";
 import { RateLimiter } from "./rate-limit.js";
+import { InFlightLimiter } from "./rate-limit.js";
 import { GitHubSkillRetriever } from "./retrieval.js";
 import type { CompilerOptions } from "./compiler.js";
 
 export interface ServerDependencies {
   retriever?: SkillRetriever;
   rateLimiter?: RateLimiter;
+  inFlightLimiter?: InFlightLimiter;
   compilerOptions?: CompilerOptions;
+  compileDeadlineMs?: number;
 }
 
 export function createServer(dependencies: ServerDependencies = {}): McpServer {
   const retriever = dependencies.retriever ?? new GitHubSkillRetriever();
   const rateLimiter = dependencies.rateLimiter ?? new RateLimiter();
+  const inFlightLimiter = dependencies.inFlightLimiter ?? new InFlightLimiter();
+  const compilerOptions = dependencies.compilerOptions ?? {
+    modelUrl: process.env.SKILL_COMPILER_MODEL_URL,
+    modelToken: process.env.SKILL_COMPILER_MODEL_TOKEN,
+    modelTimeoutMs: Number(process.env.SKILL_COMPILER_MODEL_TIMEOUT_MS ?? 20_000)
+  };
+  const compileDeadlineMs = dependencies.compileDeadlineMs ?? Number(process.env.SKILL_COMPILER_DEADLINE_MS ?? 60_000);
 
   const server = new McpServer(
     { name: "task-time-skill-compiler", version: "0.1.0" },
@@ -42,16 +52,24 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
       try {
         validateCompileInput(input);
         rateLimiter.consume("anonymous");
-        const sources = await retriever.search(input.search_query);
-        const result = await compileSkill(input, sources, dependencies.compilerOptions ?? {
-          modelUrl: process.env.SKILL_COMPILER_MODEL_URL,
-          modelToken: process.env.SKILL_COMPILER_MODEL_TOKEN,
-          modelTimeoutMs: Number(process.env.SKILL_COMPILER_MODEL_TIMEOUT_MS ?? 20_000)
+        return await inFlightLimiter.run(async () => {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(new Error("Skill compilation deadline exceeded")), Number.isFinite(compileDeadlineMs) && compileDeadlineMs >= 1 ? compileDeadlineMs : 60_000);
+          try {
+            const sources = await retriever.search(input.search_query, controller.signal);
+            if (controller.signal.aborted) throw new Error("Skill compilation deadline exceeded");
+            const result = await compileSkill(input, sources, {
+              ...compilerOptions,
+              signal: controller.signal
+            });
+            return {
+              content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+              structuredContent: result
+            };
+          } finally {
+            clearTimeout(timeout);
+          }
         });
-        return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-          structuredContent: result
-        };
       } catch (error) {
         return {
           isError: true,

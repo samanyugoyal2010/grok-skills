@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { findSecretKinds, isForbiddenPath, validateCompileInput } from "../src/limits.js";
-import { RateLimiter } from "../src/rate-limit.js";
+import { InFlightLimiter, RateLimiter } from "../src/rate-limit.js";
 import { scanRisk } from "../src/safety.js";
 
 test("rejects credentials and sensitive paths", () => {
@@ -48,4 +48,14 @@ test("uses a safe default for invalid rate-limit configuration", () => {
   const limiter = new RateLimiter(Number.NaN);
   for (let index = 0; index < 10; index += 1) limiter.consume("test");
   assert.throws(() => limiter.consume("test"), /rate limit/);
+});
+
+test("rejects work above the in-flight compilation cap", async () => {
+  const limiter = new InFlightLimiter(1);
+  let release!: () => void;
+  const first = limiter.run(() => new Promise<void>((resolve) => { release = resolve; }));
+  await assert.rejects(limiter.run(async () => undefined), /Too many compilations/);
+  release();
+  await first;
+  await limiter.run(async () => undefined);
 });

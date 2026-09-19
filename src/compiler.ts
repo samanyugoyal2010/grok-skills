@@ -10,6 +10,7 @@ export interface CompilerOptions {
   modelToken?: string;
   modelTimeoutMs?: number;
   fetcher?: typeof fetch;
+  signal?: AbortSignal;
 }
 
 function contextManifest(input: CompileSkillInput): CompileSkillResponse["contextManifest"] {
@@ -78,6 +79,11 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
   const controller = new AbortController();
   const timeoutMs = Number.isFinite(options.modelTimeoutMs) && (options.modelTimeoutMs ?? 0) >= 1 ? options.modelTimeoutMs! : 20_000;
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const abortFromParent = () => controller.abort(options.signal?.reason);
+  if (options.signal) {
+    if (options.signal.aborted) abortFromParent();
+    else options.signal.addEventListener("abort", abortFromParent, { once: true });
+  }
   try {
     const response = await fetcher(options.modelUrl, {
       method: "POST",
@@ -99,6 +105,7 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
     return null;
   } finally {
     clearTimeout(timeout);
+    options.signal?.removeEventListener("abort", abortFromParent);
   }
 }
 
@@ -116,6 +123,7 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
   const blockedSources = sources.filter((source) => findSecretKinds(source.content).length > 0);
   const safeSources = sources.filter((source) => findSecretKinds(source.content).length === 0);
   const modelMarkdown = await compileWithModel(input, safeSources, options);
+  if (options.signal?.aborted) throw new Error("Skill compilation deadline exceeded");
   const skillMarkdown = modelMarkdown ?? deterministicSkill(input, sources);
   validateSkillMarkdown(skillMarkdown);
 

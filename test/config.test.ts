@@ -7,6 +7,8 @@ test("loads safe HTTP defaults and loopback host guards", () => {
   assert.equal(config.port, 3_000);
   assert.equal(config.httpHost, "127.0.0.1");
   assert.equal(config.httpMaxBodyBytes, 256_000);
+  assert.equal(config.compileDeadlineMs, 60_000);
+  assert.equal(config.maxInFlightCompilations, 2);
   assert.deepEqual(config.allowedHosts, ["localhost", "127.0.0.1", "[::1]"]);
 });
 

@@ -3,6 +3,8 @@ import { isLoopbackHost } from "./http.js";
 export const DEFAULT_HTTP_PORT = 3_000;
 export const DEFAULT_HTTP_HOST = "127.0.0.1";
 export const DEFAULT_HTTP_MAX_BODY_BYTES = 256_000;
+export const DEFAULT_COMPILE_DEADLINE_MS = 60_000;
+export const DEFAULT_MAX_IN_FLIGHT_COMPILATIONS = 2;
 
 export interface RuntimeConfig {
   transport: "stdio" | "http";
@@ -15,6 +17,8 @@ export interface RuntimeConfig {
   modelUrl?: string;
   modelToken?: string;
   modelTimeoutMs: number;
+  compileDeadlineMs: number;
+  maxInFlightCompilations: number;
   publicSkillRepositories: string[];
   publicSkillBranch: string;
   publicSkillFetchTimeoutMs: number;
@@ -110,6 +114,8 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     ...(modelUrl ? { modelUrl } : {}),
     ...(modelToken ? { modelToken } : {}),
     modelTimeoutMs: parsePositiveInteger("SKILL_COMPILER_MODEL_TIMEOUT_MS", env.SKILL_COMPILER_MODEL_TIMEOUT_MS, 20_000),
+    compileDeadlineMs: parsePositiveInteger("SKILL_COMPILER_DEADLINE_MS", env.SKILL_COMPILER_DEADLINE_MS, DEFAULT_COMPILE_DEADLINE_MS),
+    maxInFlightCompilations: parsePositiveInteger("MAX_IN_FLIGHT_COMPILATIONS", env.MAX_IN_FLIGHT_COMPILATIONS, DEFAULT_MAX_IN_FLIGHT_COMPILATIONS),
     publicSkillRepositories,
     publicSkillBranch,
     publicSkillFetchTimeoutMs: parsePositiveInteger("PUBLIC_SKILL_FETCH_TIMEOUT_MS", env.PUBLIC_SKILL_FETCH_TIMEOUT_MS, 10_000),
