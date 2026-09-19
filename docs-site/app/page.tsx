@@ -155,7 +155,7 @@ export default function Home() {
             </div>
             <div className="quickstart-grid">
               <div className="quickstart-copy">
-                <div className="install-step"><span>1</span><div><h3>Build and add the server</h3><p>From the repository root, run <code>npm run build</code>, then point Claude Code at the compiled <code>dist/index.js</code> entry point.</p></div></div>
+                <div className="install-step"><span>1</span><div><h3>Clone, build, and add the server</h3><p>Clone the repository, run <code>npm ci</code> and <code>npm run build</code>, then point Claude Code at the compiled <code>dist/index.js</code> entry point.</p></div></div>
                 <div className="install-step"><span>2</span><div><h3>Approve the context</h3><p>Ask the agent to list the files it plans to send. Keep the approval narrow and task-specific.</p></div></div>
                 <div className="install-step"><span>3</span><div><h3>Save the output</h3><p>Review the returned Markdown, then save it as a repository-local <code>SKILL.md</code>.</p></div></div>
               </div>
