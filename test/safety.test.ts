@@ -8,6 +8,8 @@ test("rejects credentials and sensitive paths", () => {
   assert.equal(isForbiddenPath(".env.local"), true);
   assert.equal(isForbiddenPath("src/index.ts"), false);
   assert.equal(isForbiddenPath("assets/logo.png"), true);
+  assert.equal(isForbiddenPath(".git/config"), true);
+  assert.equal(isForbiddenPath(".docker/config.json"), true);
   assert.equal(isForbiddenPath(String.raw`src\\.env.local`), true);
   assert.equal(isForbiddenPath(String.raw`C:\\Users\\sam\\repo`), true);
   assert.deepEqual(findSecretKinds("token=ghp_abcdefghijklmnopqrstuvwxyz123456"), ["github-token", "credential-assignment"]);
@@ -17,6 +19,8 @@ test("rejects credentials and sensitive paths", () => {
 test("rejects secret-like values in task and context metadata", () => {
   assert.throws(() => validateCompileInput({ task: "Use token=ghp_abcdefghijklmnopqrstuvwxyz123456", search_query: "frontend", approved_context: [] }), /task/);
   assert.throws(() => validateCompileInput({ task: "x", search_query: "frontend", approved_context: [{ path: "src/file.ts", reason: "token=ghp_abcdefghijklmnopqrstuvwxyz123456", content: "x" }] }), /Context/);
+  assert.deepEqual(findSecretKinds("sk-ant-abcdefghijklmnopqrstuvwxyz123456"), ["anthropic-token"]);
+  assert.deepEqual(findSecretKinds("glpat-abcdefghijklmnopqrstuvwxyz123456"), ["gitlab-token"]);
 });
 
 test("rejects binary context", () => {

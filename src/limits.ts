@@ -11,7 +11,7 @@ export const LIMITS = {
   modelResponseBytes: 128_000
 } as const;
 
-const forbiddenPath = /(^|\/)(\.env(?:\.|$)|credentials?(?:\.|$)|secrets?(?:\.|$)|id_rsa(?:\.|$)|id_ed25519(?:\.|$)|\.npmrc$|\.netrc$)/i;
+const forbiddenPath = /(^|\/)(\.env(?:\.|$)|\.git(?:\/|$)|\.ssh(?:\/|$)|credentials?(?:\.|$)|secrets?(?:\.|$)|id_rsa(?:\.|$)|id_ed25519(?:\.|$)|\.npmrc$|\.netrc$|(?:\.docker|docker)\/config\.json$)/i;
 const forbiddenExtension = /\.(pem|key|p12|pfx|crt|der)$/i;
 const binaryExtension = /\.(7z|avif|bin|dll|dylib|exe|gif|gz|ico|jpeg|jpg|mov|mp3|mp4|pdf|png|so|tar|wasm|webp|woff2|zip)$/i;
 
@@ -36,6 +36,13 @@ const secretPatterns: Array<[string, RegExp]> = [
   ["private-key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/i],
   ["aws-access-key", /\bAKIA[0-9A-Z]{16}\b/],
   ["github-token", /\b(?:ghp|gho|ghs|github_pat)_[A-Za-z0-9_]{20,}\b/],
+  ["gitlab-token", /\bglpat-[A-Za-z0-9_-]{20,}\b/],
+  ["slack-token", /\bxox[baprs]-[A-Za-z0-9-]{20,}\b/],
+  ["anthropic-token", /\bsk-ant-[A-Za-z0-9_-]{20,}\b/],
+  ["openai-token", /\bsk-(?!ant-)[A-Za-z0-9_-]{20,}\b/],
+  ["google-api-key", /\bAIza[0-9A-Za-z_-]{20,}\b/],
+  ["stripe-secret-key", /\bsk_(?:live|test)_[A-Za-z0-9]{16,}\b/],
+  ["npm-token", /\bnpm_[A-Za-z0-9]{20,}\b/],
   ["bearer-token", /\bBearer\s+[A-Za-z0-9._-]{20,}\b/i],
   ["credential-assignment", /\b(?:api[_-]?key|secret|password|token)\s*[:=]\s*[^\s]{8,}/i]
 ];

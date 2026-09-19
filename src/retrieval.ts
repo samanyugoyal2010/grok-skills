@@ -30,7 +30,7 @@ function score(query: string, candidate: string): number {
 }
 
 function hash(value: string): string {
-  return createHash("sha256").update(value).digest("hex").slice(0, 16);
+  return createHash("sha256").update(value).digest("hex");
 }
 
 interface GitTreeEntry {

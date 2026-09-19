@@ -19,6 +19,7 @@ test("retrieves and ranks public skills from the GitHub directory adapter", asyn
   const results = await retriever.search("code review");
   assert.equal(results.length, 2);
   assert.equal(results[0].url, "https://github.com/acme/skills/blob/main/skills/code-review/SKILL.md");
+  assert.match(results[0].sourceHash, /^[a-f0-9]{64}$/);
   assert.match(results[0].content, /Review code/);
 });
 
