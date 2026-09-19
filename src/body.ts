@@ -4,6 +4,7 @@ export async function readLimitedResponse(response: Response, maxBytes = 1_000_0
   if (signal?.aborted) throw abortReason(signal);
   const declaredLength = response.headers.get("content-length");
   if (declaredLength && /^\d+$/.test(declaredLength) && Number(declaredLength) > maxBytes) {
+    if (response.body) void response.body.cancel().catch(() => undefined);
     throw new Error(`Response exceeded ${maxBytes} bytes`);
   }
 

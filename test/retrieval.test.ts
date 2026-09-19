@@ -86,3 +86,12 @@ test("caps streamed public response bodies before buffering them", async () => {
     /exceeded/
   );
 });
+
+test("cancels a response body when its declared length is oversized", async () => {
+  let canceled = false;
+  const response = new Response(new ReadableStream({ cancel: () => { canceled = true; } }), {
+    headers: { "content-length": String(LIMITS.fetchBytes + 1) }
+  });
+  await assert.rejects(readLimitedResponse(response, LIMITS.fetchBytes), /exceeded/);
+  assert.equal(canceled, true);
+});
