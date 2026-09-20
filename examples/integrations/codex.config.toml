@@ -1,0 +1,3 @@
+[mcp_servers.task_time_skill_compiler]
+command = "node"
+args = ["/absolute/path/to/ai-b2b-saas/dist/index.js"]

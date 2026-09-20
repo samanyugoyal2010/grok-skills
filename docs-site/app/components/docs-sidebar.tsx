@@ -6,6 +6,7 @@ const navItems = [
   ["overview", "Overview"],
   ["workflow", "The compiler loop"],
   ["quickstart", "Quickstart"],
+  ["platforms", "Coding platforms"],
   ["contract", "Tool contract"],
   ["reference", "Runtime reference"],
   ["safety", "Safety boundaries"]

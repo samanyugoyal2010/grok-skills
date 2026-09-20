@@ -19,7 +19,7 @@ The default transport is stdio. Logs go to stderr so stdout remains available fo
 
 ## MCP client setup
 
-Task-Time does not require a Claude account, a 21st login, or a product account. Claude Code is the reference client below, but any MCP client that supports stdio or the documented HTTP transport can use the server.
+Task-Time does not require a Claude account, a 21st login, or a product account. It is a standard MCP server: use the client-specific recipes below, or any MCP client that supports stdio or the documented HTTP transport.
 
 Add the server to the project or user MCP configuration. Replace the path with this repository's absolute path:
 
@@ -35,6 +35,20 @@ Add the server to the project or user MCP configuration. Replace the path with t
 ```
 
 Run `npm run build` before using this configuration. For local iteration, `npx tsx /absolute/path/to/ai-b2b-saas/src/index.ts` is also supported. Before calling `compile_skill`, the agent should show the user the files it plans to send and obtain approval. The server rejects sensitive paths and secret-like values, but that is a heuristic safeguard, not a security guarantee.
+
+### Client recipes
+
+The checked-in templates in [`examples/integrations`](examples/integrations) cover the current local MCP setup for:
+
+- Claude Code: `.mcp.json` or `claude mcp add`
+- Cursor: `.cursor/mcp.json`
+- Codex CLI and IDE extension: `.codex/config.toml` or `codex mcp add`
+- Windsurf: `mcp_config.json`
+- VS Code and GitHub Copilot: `.vscode/mcp.json`, `.mcp.json`, or `~/.copilot/mcp-config.json`
+- Gemini CLI: `.gemini/settings.json`
+- Cline and Roo Code: their standard `mcpServers` JSON configuration
+
+Each recipe starts the same local `dist/index.js` process. No client-specific server implementation is required. For a deployed instance, use the same client’s HTTP/Streamable HTTP configuration with the `/mcp` URL and bearer token.
 
 ## HTTP mode
 
@@ -55,7 +69,7 @@ The generated `skillMarkdown` is capped at 16,000 characters; oversized model ou
 
 ## Reproducible example
 
-The request fixture at [`examples/compile-skill-request.json`](examples/compile-skill-request.json) is safe sample input for the `compile_skill` tool. Start the server, connect it from Claude Code, and pass the fixture fields as the tool arguments. The result is a JSON response whose `skillMarkdown` can be saved as a repository-local `SKILL.md` after review.
+The request fixture at [`examples/compile-skill-request.json`](examples/compile-skill-request.json) is safe sample input for the `compile_skill` tool. Start the server, connect it from your coding client, and pass the fixture fields as the tool arguments. The result is a JSON response whose `skillMarkdown` can be saved as a repository-local `SKILL.md` after review.
 
 ## Limitations
 

@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "task-time-skill-compiler": {
+      "type": "local",
       "command": "node",
       "args": ["/absolute/path/to/ai-b2b-saas/dist/index.js"]
     }

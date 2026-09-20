@@ -6,18 +6,18 @@ const socialImages = siteUrl ? [{ url: "/og.svg", width: 1_200, height: 630, alt
 
 export const metadata: Metadata = {
   title: "Task-Time Skill Compiler — Documentation",
-  description: "Compile public agent guidance into a repo-aware SKILL.md for Claude Code.",
+  description: "Compile public agent guidance into a repo-aware SKILL.md for coding agents.",
   ...(siteUrl ? { metadataBase: new URL(siteUrl), alternates: { canonical: "/" } } : {}),
   openGraph: {
     title: "Task-Time Skill Compiler — Documentation",
-    description: "Compile public agent guidance into a repo-aware SKILL.md for Claude Code.",
+    description: "Compile public agent guidance into a repo-aware SKILL.md for coding agents.",
     type: "website",
     ...(socialImages ? { images: socialImages } : {})
   },
   twitter: {
     card: "summary_large_image",
     title: "Task-Time Skill Compiler — Documentation",
-    description: "Compile public agent guidance into a repo-aware SKILL.md for Claude Code.",
+    description: "Compile public agent guidance into a repo-aware SKILL.md for coding agents.",
     ...(siteUrl ? { images: ["/og.svg"] } : {})
   },
   icons: { icon: "/favicon.svg" }

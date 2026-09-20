@@ -8,7 +8,7 @@
   <text x="278" y="116" fill="#8B9AA0" font-family="Arial, Helvetica, sans-serif" font-size="25">/ compiler</text>
   <text x="72" y="292" fill="#F2F5F4" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700" letter-spacing="-4">Compile the skill</text>
   <text x="72" y="382" fill="#8DE7DB" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700" letter-spacing="-4">for this task.</text>
-  <text x="76" y="454" fill="#9AA7AC" font-family="Arial, Helvetica, sans-serif" font-size="23">Repo-aware SKILL.md guidance for Claude Code.</text>
-  <text x="72" y="570" fill="#8B9AA0" font-family="monospace" font-size="16" letter-spacing="2">CLAUDE CODE MCP SERVER</text>
+  <text x="76" y="454" fill="#9AA7AC" font-family="Arial, Helvetica, sans-serif" font-size="23">Repo-aware SKILL.md guidance for coding agents.</text>
+  <text x="72" y="570" fill="#8B9AA0" font-family="monospace" font-size="16" letter-spacing="2">MCP CODING AGENT SERVER</text>
   <circle cx="52" cy="564" r="6" fill="#8DE7DB"/>
 </svg>

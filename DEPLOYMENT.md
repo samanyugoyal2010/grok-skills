@@ -15,7 +15,7 @@ npm run build
 npm start
 ```
 
-For local Claude Code use, keep the default stdio transport. For a process that needs HTTP, bind the server explicitly:
+For local coding-agent clients, keep the default stdio transport. For a process that needs HTTP, bind the server explicitly:
 
 ```bash
 MCP_TRANSPORT=http \
@@ -26,7 +26,7 @@ npm start
 
 The MCP endpoint is `/mcp`, and `GET /healthz` is a liveness check for process supervisors. A non-loopback bind requires both `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_ALLOWED_HOSTS`; do not expose the server publicly without a token and an appropriate `MCP_HTTP_ALLOWED_ORIGINS` value. Requests with an `Origin` header are rejected unless the origin is explicitly listed. Requests are capped at 256,000 bytes by default. List allowed hostnames without ports.
 
-The server is stateless in v1. Keep it behind a process supervisor or platform service that provides restart behavior, logs, and secret storage. Public GitHub tree and source responses are cached only in process memory for up to five minutes; no private context is persisted. HTTP rate limiting is keyed by the connecting client address and returns `429` with `Retry-After`; expired buckets are pruned and retained client keys are capped by `RATE_LIMIT_MAX_KEYS` (10,000 by default). Put a trusted edge limiter in front of a multi-instance deployment. HTTP connections have explicit request and header timeouts, and shutdown drains for up to ten seconds before closing active sockets. Do not put tokens in the repository or in a client-side bundle. Point Claude Code at `dist/index.js` after the build; use `tsx src/index.ts` only for local iteration.
+The server is stateless in v1. Keep it behind a process supervisor or platform service that provides restart behavior, logs, and secret storage. Public GitHub tree and source responses are cached only in process memory for up to five minutes; no private context is persisted. HTTP rate limiting is keyed by the connecting client address and returns `429` with `Retry-After`; expired buckets are pruned and retained client keys are capped by `RATE_LIMIT_MAX_KEYS` (10,000 by default). Put a trusted edge limiter in front of a multi-instance deployment. HTTP connections have explicit request and header timeouts, and shutdown drains for up to ten seconds before closing active sockets. Do not put tokens in the repository or in a client-side bundle. Point the client at `dist/index.js` after the build; use `tsx src/index.ts` only for local iteration.
 
 The configured model endpoint must use HTTPS outside loopback development. Terminate TLS at the reverse proxy for a remote deployment and pass the model URL as a secret-managed environment value.
 
