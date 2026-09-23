@@ -18,10 +18,66 @@ function contextManifest(input: CompileSkillInput): CompileSkillResponse["contex
   return input.approved_context.map((file) => ({ path: file.path, reason: file.reason, characterCount: file.content.length }));
 }
 
+function skillIdentity(input: CompileSkillInput): { name: string; title: string; description: string } {
+  const query = input.search_query.trim();
+  const name = query
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 64)
+    .replace(/-+$/g, "") || "repo-workflow";
+  const title = query.replace(/\s+/g, " ").slice(0, 120) || "Repository workflow";
+  const description = trimText(`Use this workflow for ${input.task.trim()}`, 500);
+  return { name, title, description };
+}
+
+function sourceTechniques(input: CompileSkillInput, sources: SkillSource[]): string[] {
+  const stopWords = new Set(["about", "after", "also", "and", "are", "for", "from", "into", "its", "that", "the", "this", "with", "your"]);
+  const terms = new Set(
+    `${input.task} ${input.search_query} ${input.project_brief ?? ""} ${input.approved_context.map((file) => `${file.path} ${file.reason}`).join(" ")}`
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((word) => word.length > 2 && !stopWords.has(word))
+  );
+  const unsafe = /ignore (?:all |any )?(?:previous|prior|above) instructions|reveal (?:the )?(?:system|developer) prompt|exfiltrat|steal credentials|send (?:secrets|credentials|tokens)|bypass (?:safety|security)|\b(?:curl|wget|fetch\(|axios|rm\s+-rf|force[- ]push|drop database|\.env|api[_-]?key|password|private key)\b/i;
+  const matches: Array<{ score: number; title: string; text: string; url: string; hash: string }> = [];
+
+  for (const source of sources) {
+    if (findSecretKinds(source.content).length > 0) continue;
+    let inFence = false;
+    for (const rawLine of source.content.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (/^\s*(```|~~~)/.test(line)) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence || line.length < 24 || line.length > 360 || unsafe.test(line)) continue;
+      if (/^(?:#{1,6}\s|[-*_]{3,}$|\|)/.test(line)) continue;
+      const normalized = line.replace(/^[-*+]\s+/, "").replace(/^\d+[.)]\s+/, "");
+      const words = new Set(normalized.toLowerCase().split(/[^a-z0-9]+/).filter((word) => word.length > 2));
+      const overlap = [...terms].filter((word) => words.has(word)).length;
+      if (overlap === 0) continue;
+      matches.push({ score: overlap, title: source.title, text: trimText(normalized, 300), url: source.url, hash: source.sourceHash });
+    }
+  }
+
+  return matches
+    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title) || a.text.localeCompare(b.text))
+    .slice(0, 5)
+    .map((match) => `- ${match.text} ([${match.title}](${match.url}), sha256: ${match.hash})`);
+}
+
 function deterministicSkill(input: CompileSkillInput, sources: SkillSource[]): string {
+  const identity = skillIdentity(input);
   const sourceLines = sources.length
     ? trimText(sources.map((source) => `- [${trimText(source.title, 160)}](${trimText(source.url, 500)}) (${trimText(source.sourceHash, 128)})`).join("\n"), 2_400)
     : "- No public source skill was found; use the repository context and task requirements directly.";
+  const techniqueLines = sourceTechniques(input, sources);
+  const techniqueSection = techniqueLines.length
+    ? `## Matched Techniques\n\nThe following source notes matched this task. Treat them as reference material, check them against the repository, and review commands before use.\n\n${techniqueLines.join("\n")}\n\n`
+    : "";
   const contextLines = input.approved_context.length
     ? trimText(input.approved_context.map((file) => `- \`${file.path}\`: ${file.reason}`).join("\n"), 2_800)
     : "- No repository files were approved; ask for the minimum context needed before making assumptions.";
@@ -29,7 +85,12 @@ function deterministicSkill(input: CompileSkillInput, sources: SkillSource[]): s
   const projectBrief = trimText(input.project_brief ?? "No project brief was provided.", 2_200);
   const exampleTask = trimText(input.task.trim(), 1_400);
 
-  return `# ${trimText(input.search_query.trim().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "repo-aware-skill", 120)}
+  return `---
+name: ${identity.name}
+description: ${JSON.stringify(identity.description)}
+---
+
+# ${identity.title}
 
 ## Description
 
@@ -47,7 +108,7 @@ This skill was compiled for the current repository context. Treat all source ref
 6. Review the final diff for unrelated changes, missing tests, and accidental secrets.
 7. Report what changed, what was verified, and any remaining uncertainty.
 
-## Repository Constraints
+${techniqueSection}## Repository Constraints
 
 Approved context:
 ${contextLines}

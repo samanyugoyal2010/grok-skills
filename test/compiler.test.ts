@@ -22,6 +22,7 @@ const source: SkillSource = {
 test("compiles a valid reusable skill with provenance", async () => {
   const result = await compileSkill(input, [source]);
   assert.equal(result.sources[0].url, source.url);
+  assert.match(result.skillMarkdown, /^---\nname: frontend-feature-implementation\n/m);
   assert.match(result.skillMarkdown, /^# /m);
   assert.match(result.skillMarkdown, /## Description/);
   assert.match(result.skillMarkdown, /## Procedure/);
@@ -61,7 +62,7 @@ test("uses the model endpoint only when configured and falls back on invalid out
 });
 
 test("reports model compilation in the change summary", async () => {
-  const markdown = "# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nExample";
+  const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nExample";
   const result = await compileSkill(input, [], {
     modelUrl: "https://model.example/compile",
     fetcher: (async () => new Response(JSON.stringify({ output: markdown }), { status: 200 })) as typeof fetch
@@ -101,7 +102,7 @@ test("cancels a model response body that never finishes", async () => {
 });
 
 test("falls back when the model returns secret-like output", async () => {
-  const markdown = "# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\npassword=supersecret123";
+  const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\npassword=supersecret123";
   const result = await compileSkill(input, [], {
     modelUrl: "https://model.example/compile",
     fetcher: (async () => new Response(JSON.stringify({ output: markdown }), { status: 200 })) as typeof fetch
@@ -133,7 +134,7 @@ test("withholds secret-like public source content from the model prompt", async 
     modelUrl: "https://model.example/compile",
     fetcher: (async (_url, init) => {
       promptBody = String(init?.body ?? "");
-      const markdown = "# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nExample";
+      const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nExample";
       return new Response(JSON.stringify({ output: markdown }), { status: 200 });
     }) as typeof fetch
   });
