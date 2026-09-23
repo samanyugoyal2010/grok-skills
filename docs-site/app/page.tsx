@@ -6,6 +6,7 @@ import {
   Github,
   ShieldCheck
 } from "lucide-react";
+import Image from "next/image";
 import { CodeBlock } from "./components/code-block";
 import { DocsSidebar } from "./components/docs-sidebar";
 import { RecipeStation } from "./components/recipe-station";
@@ -60,6 +61,7 @@ export default function Home() {
         <main className="content-column" id="main-content" tabIndex={-1}>
           <section className="hero section" id="overview">
             <div className="hero-copy">
+              <span className="hero-ribbon">A little prep. A much better workflow.</span>
               <h1>Turn repeat work into a repo-specific skill.</h1>
               <p className="hero-lede">Give SkillChef a task, project brief, and files you approve. It finds relevant public skills and returns a reviewable <code>SKILL.md</code> with sources and risk notes. Your agent decides whether to save it.</p>
               <div className="hero-actions">
@@ -69,10 +71,15 @@ export default function Home() {
               <div className="hero-facts"><span><Check size={14} aria-hidden="true" /> no repository access</span><span><Check size={14} aria-hidden="true" /> approved files only</span><span><Check size={14} aria-hidden="true" /> inspect before saving</span></div>
             </div>
 
-            <figure className="skill-specimen">
-              <figcaption className="specimen-head"><span><FileText size={15} aria-hidden="true" /> Example output</span><span>review before saving</span></figcaption>
-              <div className="specimen-path">.agents/skills/account-form-validation/SKILL.md</div>
-              <pre className="specimen-body"><code>{`---
+            <div className="hero-workbench">
+              <div className="hero-illustration" aria-label="Illustration of a recipe sheet, tomato, basil, spoon, and a wooden prep board">
+                <Image src="/skillchef-prep-art.webp" alt="A recipe sheet, tomato, basil, wooden spoon, and cutting board" width={760} height={507} priority />
+                <span>Gather the good bits</span>
+              </div>
+              <figure className="skill-specimen">
+                <figcaption className="specimen-head"><span><FileText size={15} aria-hidden="true" /> Example output</span><span>review before saving</span></figcaption>
+                <div className="specimen-path">.agents/skills/account-form-validation/SKILL.md</div>
+                <pre className="specimen-body"><code>{`---
 name: account-form-validation
 description: Add and verify client-side validation in account settings.
 ---
@@ -87,8 +94,9 @@ description: Add and verify client-side validation in account settings.
 ## Repository constraints
 - Use the shared form components.
 - Do not add a validation dependency.`}</code></pre>
-              <div className="specimen-evidence"><span><b>Context</b> src/account/form.ts · approved</span><span><b>Sources</b> 2 public skills · linked</span></div>
-            </figure>
+                <div className="specimen-evidence"><span><b>Context</b> src/account/form.ts · approved</span><span><b>Sources</b> 2 public skills · linked</span></div>
+              </figure>
+            </div>
           </section>
 
           <section className="promise-strip" aria-label="Workflow summary">
