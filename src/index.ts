@@ -37,17 +37,17 @@ if (config.transport === "http") {
   httpServer.keepAliveTimeout = 5_000;
   httpServer.maxRequestsPerSocket = 100;
   httpServer.on("error", (error) => {
-    console.error(`task-time-skill-compiler MCP HTTP error: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`skillchef MCP HTTP error: ${error instanceof Error ? error.message : String(error)}`);
     process.exitCode = 1;
   });
   httpServer.listen(config.port, config.httpHost, () => {
-    console.error(`task-time-skill-compiler MCP listening on http://${config.httpHost}:${config.port}/mcp`);
+    console.error(`skillchef MCP listening on http://${config.httpHost}:${config.port}/mcp`);
   });
   let shutdownStarted = false;
   const shutdown = async () => {
     if (shutdownStarted) return;
     shutdownStarted = true;
-    console.error("task-time-skill-compiler MCP shutting down");
+    console.error("skillchef MCP shutting down");
     try {
       const closePromise = new Promise<void>((resolve, reject) => {
         httpServer.close((error) => error ? reject(error) : resolve());
@@ -66,7 +66,7 @@ if (config.transport === "http") {
       if (forceTimer) clearTimeout(forceTimer);
       await handler.close();
     } catch (error) {
-      console.error(`task-time-skill-compiler MCP shutdown error: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`skillchef MCP shutdown error: ${error instanceof Error ? error.message : String(error)}`);
       process.exitCode = 1;
     }
   };
@@ -74,13 +74,13 @@ if (config.transport === "http") {
   process.once("SIGTERM", () => void shutdown());
 } else {
   const handle = serveStdio(() => createServer(dependencies));
-  console.error("task-time-skill-compiler MCP running over stdio");
+  console.error("skillchef MCP running over stdio");
   let shutdownStarted = false;
   const shutdown = () => {
     if (shutdownStarted) return;
     shutdownStarted = true;
     void Promise.resolve(handle.close()).catch((error: unknown) => {
-      console.error(`task-time-skill-compiler MCP shutdown error: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`skillchef MCP shutdown error: ${error instanceof Error ? error.message : String(error)}`);
       process.exitCode = 1;
     });
   };

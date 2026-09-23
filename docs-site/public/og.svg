@@ -1,14 +1,18 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="630" fill="#10161B"/>
-  <path d="M0 504H1200" stroke="#2A373E"/>
-  <rect x="72" y="76" width="58" height="58" rx="14" fill="#111820" stroke="#8DE7DB" stroke-width="2"/>
-  <path d="M91 91H111V98H97V103H107V110H97V120H91V91Z" fill="#8DE7DB"/>
-  <path d="M109 112L115 118L109 124" stroke="#F3A261" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="150" y="116" fill="#F2F5F4" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700">task-time</text>
-  <text x="278" y="116" fill="#8B9AA0" font-family="Arial, Helvetica, sans-serif" font-size="25">/ compiler</text>
-  <text x="72" y="292" fill="#F2F5F4" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700" letter-spacing="-4">Compile the skill</text>
-  <text x="72" y="382" fill="#8DE7DB" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700" letter-spacing="-4">for this task.</text>
-  <text x="76" y="454" fill="#9AA7AC" font-family="Arial, Helvetica, sans-serif" font-size="23">Repo-aware SKILL.md guidance for coding agents.</text>
-  <text x="72" y="570" fill="#8B9AA0" font-family="monospace" font-size="16" letter-spacing="2">MCP CODING AGENT SERVER</text>
-  <circle cx="52" cy="564" r="6" fill="#8DE7DB"/>
+  <rect width="1200" height="630" fill="#E8ECE7"/>
+  <circle cx="1090" cy="93" r="270" fill="#D8EE62" fill-opacity=".55"/>
+  <path d="M0 493H1200" stroke="#CBD3C9"/>
+  <rect x="76" y="66" width="54" height="54" rx="15" fill="#244333"/>
+  <path d="M89 91H117M93 91C93 83 98 78 103 78C108 78 113 83 113 91M97 77V73M103 76V71M109 77V73M95 97V104C95 108 98 111 103 111C108 111 111 108 111 104V97" stroke="#F7F8F2" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="148" y="103" fill="#1E2C25" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">SkillChef</text>
+  <text x="76" y="269" fill="#1E2C25" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Make your repo’s way</text>
+  <text x="76" y="353" fill="#1E2C25" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700" letter-spacing="-3">of working a skill.</text>
+  <text x="80" y="416" fill="#627169" font-family="Arial, Helvetica, sans-serif" font-size="22">A workbench for repeatable coding workflows.</text>
+  <rect x="76" y="527" width="176" height="42" rx="3" fill="#244333"/>
+  <text x="96" y="553" fill="#F7F8F2" font-family="monospace" font-size="14" letter-spacing="1">PREP · COMPILE · REVIEW</text>
+  <rect x="820" y="349" width="292" height="128" fill="#F7F8F2" stroke="#A8B4A9"/>
+  <rect x="820" y="349" width="292" height="27" fill="#244333"/>
+  <text x="838" y="367" fill="#D8EE62" font-family="monospace" font-size="10" letter-spacing="1">THE RECIPE</text>
+  <text x="841" y="416" fill="#1E2C25" font-family="monospace" font-size="18" font-weight="700">account-form-validation</text>
+  <text x="841" y="448" fill="#627169" font-family="Arial, Helvetica, sans-serif" font-size="14">SKILL.md · ready to review</text>
 </svg>

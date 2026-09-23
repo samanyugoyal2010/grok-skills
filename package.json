@@ -1,12 +1,12 @@
 {
-  "name": "task-time-skill-compiler",
+  "name": "skillchef",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=20"
   },
-  "description": "An MCP server for coding agents that compiles public agent skills into repo-aware SKILL.md files.",
+  "description": "A coding agent skill compiler that turns task context and public techniques into portable SKILL.md files.",
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc -p tsconfig.build.json",

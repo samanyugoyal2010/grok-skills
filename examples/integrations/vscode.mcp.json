@@ -1,6 +1,6 @@
 {
   "servers": {
-    "task-time-skill-compiler": {
+    "skillchef": {
       "type": "stdio",
       "command": "node",
       "args": ["/absolute/path/to/ai-b2b-saas/dist/index.js"]

@@ -7,7 +7,7 @@ npm ci
 npm run build
 ```
 
-Replace `/absolute/path/to/ai-b2b-saas` in each file with the absolute path to this checkout. These recipes start the local stdio server. Task-Time does not require a client login, product account, or OAuth flow.
+Replace `/absolute/path/to/ai-b2b-saas` in each file with the absolute path to this checkout. These recipes start the local stdio server. SkillChef does not require a product account or OAuth flow.
 
 ## Recipes
 
@@ -21,25 +21,25 @@ Replace `/absolute/path/to/ai-b2b-saas` in each file with the absolute path to t
 | GitHub Copilot CLI | `.mcp.json` or `~/.copilot/mcp-config.json` | [`copilot.mcp.json`](copilot.mcp.json) |
 | Gemini CLI | `.gemini/settings.json` | [`gemini.settings.json`](gemini.settings.json) |
 
-Cline and Roo Code use the same `mcpServers` JSON shape as the Claude Code and Cursor examples. Their UI can write the same server entry to the client-managed configuration file.
+For Cline, Roo Code, Zed, and other MCP clients, use the configuration shape shown in that client’s current MCP settings. The server itself uses standard stdio or Streamable HTTP.
 
 ## CLI shortcuts
 
 ```bash
 # Claude Code, project scope
-claude mcp add --scope project task-time-skill-compiler -- \
+claude mcp add --scope project skillchef -- \
   node /absolute/path/to/ai-b2b-saas/dist/index.js
 
 # Codex
-codex mcp add task-time-skill-compiler -- \
+codex mcp add skillchef -- \
   node /absolute/path/to/ai-b2b-saas/dist/index.js
 
 # Gemini CLI, project scope
-gemini mcp add --scope project task-time-skill-compiler \
+gemini mcp add --scope project skillchef \
   node /absolute/path/to/ai-b2b-saas/dist/index.js
 
 # GitHub Copilot CLI
-copilot mcp add task-time-skill-compiler -- \
+copilot mcp add skillchef -- \
   node /absolute/path/to/ai-b2b-saas/dist/index.js
 ```
 

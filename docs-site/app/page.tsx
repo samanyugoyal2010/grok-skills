@@ -1,91 +1,43 @@
 import {
   ArrowUpRight,
-  ChevronRight,
-  FileCode2,
+  Check,
+  ChefHat,
+  CircleDot,
   Github,
-  LockKeyhole,
-  Network,
-  Radio,
   ShieldCheck,
   Sparkles,
-  Terminal
+  UtensilsCrossed
 } from "lucide-react";
 import { CodeBlock } from "./components/code-block";
 import { DocsSidebar } from "./components/docs-sidebar";
-
-const claudeConfig = `{
-  "mcpServers": {
-    "task-time-skill-compiler": {
-      "command": "node",
-      "args": ["/absolute/path/to/dist/index.js"]
-    }
-  }
-}`;
-
-const codexConfig = `[mcp_servers.task_time_skill_compiler]
-command = "node"
-args = ["/absolute/path/to/ai-b2b-saas/dist/index.js"]`;
-
-const vscodeConfig = `{
-  "servers": {
-    "task-time-skill-compiler": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/ai-b2b-saas/dist/index.js"]
-    }
-  }
-}`;
-
-const copilotConfig = `{
-  "mcpServers": {
-    "task-time-skill-compiler": {
-      "type": "local",
-      "command": "node",
-      "args": ["/absolute/path/to/ai-b2b-saas/dist/index.js"]
-    }
-  }
-}`;
+import { RecipeStation } from "./components/recipe-station";
 
 const repositoryUrl = "https://github.com/samanyugoyal2010/grok-skills";
+
+const buildExample = `npm ci
+npm run build`;
+
+const skillFrontmatter = `---
+name: account-form-validation
+description: Add and verify client-side validation in the account settings form.
+---
+
+# Account form validation
+
+## Procedure
+...`;
 
 const requestExample = `{
   "task": "Add client-side validation to account settings.",
   "search_query": "frontend form validation testing",
-  "project_brief": "TypeScript web app with Vitest.",
+  "project_brief": "TypeScript app; use Vitest.",
   "approved_context": [
     {
-      "path": "src/account-settings/form.ts",
+      "path": "src/account/form.ts",
       "reason": "Current form boundary.",
       "content": "..."
     }
   ]
-}`;
-
-const outputExample = `{
-  "sources": [{
-    "url": "https://github.com/.../SKILL.md",
-    "title": "frontend-design",
-    "sourceHash": "fcd3fcf3893605287a54c62e3923958dc854f3bad53754cff331cfd69510ecf5",
-    "matchReason": "Matched query tokens against the public skill path and content."
-  }],
-  "contextManifest": [{
-    "path": "src/account-settings/form.ts",
-    "reason": "Current form boundary.",
-    "characterCount": 412
-  }],
-  "changeSummary": ["Compiled with the deterministic local compiler."],
-  "riskNotes": [],
-  "skillMarkdown": "# frontend-form-validation..."
-}`;
-
-const runtimeExample = `# local stdio (the default)
-npm run dev
-
-# stateless HTTP on /mcp
-MCP_TRANSPORT=http PORT=3000 npm run dev`;
-
-const errorExample = `{
-  "error": "Context path is not allowed: .env"
 }`;
 
 export default function Home() {
@@ -93,158 +45,112 @@ export default function Home() {
     <div className="site-shell">
       <a className="skip-link" href="#main-content">Skip to content</a>
       <nav className="topbar" aria-label="Primary navigation">
-        <a className="brand" href="#overview" aria-label="Task-Time Skill Compiler home">
-          <span className="brand-mark" aria-hidden="true">tt</span>
-          <span>task-time</span>
-          <span className="brand-muted">/ compiler</span>
+        <a className="brand" href="#overview" aria-label="SkillChef home">
+          <span className="brand-mark" aria-hidden="true"><ChefHat size={19} /></span>
+          <span>SkillChef</span>
         </a>
         <div className="topbar-meta">
-          <span className="topbar-context">Documentation <span>/</span> v0.1</span>
+          <span className="topbar-context">The agent skill workbench</span>
           <a className="source-link" href={repositoryUrl} target="_blank" rel="noreferrer">Source <Github size={14} aria-hidden="true" /></a>
-          <a href="#quickstart">Quickstart <ArrowUpRight size={14} aria-hidden="true" /></a>
+          <a className="topbar-cta" href="#station">Set up SkillChef <ArrowUpRight size={14} aria-hidden="true" /></a>
         </div>
       </nav>
 
       <div className="docs-layout">
         <DocsSidebar />
-
         <main className="content-column" id="main-content" tabIndex={-1}>
           <section className="hero section" id="overview">
             <div className="hero-copy">
-              <div className="eyebrow accent-eyebrow"><span className="pulse-dot" /> Task-time documentation</div>
-              <h1>Turn a hard-to-explain task into a skill your repo can use.</h1>
-              <p className="hero-lede">Task-Time combines the work in front of you, the repository context you approve, and focused public guidance into one inspectable <code>SKILL.md</code>.</p>
+              <div className="eyebrow"><span className="eyebrow-rule" />A workbench for repeatable coding work</div>
+              <h1>Make your repo’s way of working a skill.</h1>
+              <p className="hero-lede">Lay out a workflow you repeat, the project files you approve, and useful public techniques. SkillChef turns that mise en place (the prep before cooking) into a portable, reviewable <code>SKILL.md</code>.</p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#quickstart">Start with the quickstart <ChevronRight size={16} aria-hidden="true" /></a>
-                <a className="text-link" href="#contract">Read the contract <ArrowUpRight size={15} aria-hidden="true" /></a>
+                <a className="button button-primary" href="#station">Connect your agent <ArrowUpRight size={15} aria-hidden="true" /></a>
+                <a className="text-link" href="#how-it-works">See how it cooks</a>
               </div>
-              <div className="hero-note"><span>Made for</span><strong>coding agents + MCP</strong><span>·</span><span>deterministic by default</span><span>·</span><span>no repository writes</span></div>
+              <div className="hero-facts"><span><Check size={13} aria-hidden="true" /> local compiler by default</span><span><Check size={13} aria-hidden="true" /> context by approval</span><span><Check size={13} aria-hidden="true" /> human-reviewed output</span></div>
             </div>
 
-            <div className="trace-card" aria-label="Compiler flow preview">
-              <div className="trace-header"><span>compile_skill</span><span>local by default</span></div>
-              <div className="trace-stack">
-                <div className="trace-step"><span className="trace-number">01</span><div><span className="trace-label">task</span><strong>"Add form validation"</strong></div></div>
-                <div className="trace-connector" aria-hidden="true" />
-                <div className="trace-step"><span className="trace-number">02</span><div><span className="trace-label">context</span><strong>2 approved files</strong></div></div>
-                <div className="trace-connector" aria-hidden="true" />
-                <div className="trace-step"><span className="trace-number">03</span><div><span className="trace-label">sources</span><strong>frontend-design + 2</strong></div></div>
-                <div className="trace-connector" aria-hidden="true" />
-                <div className="trace-result"><FileCode2 size={18} aria-hidden="true" /><div><span className="trace-label">output</span><strong>SKILL.md</strong></div><span className="result-status">deterministic</span></div>
+            <div className="ticket-scene" aria-label="A task and its ingredients becoming an agent skill">
+              <div className="ticket-topline"><span>THE PREP BOARD</span><span className="ticket-live"><CircleDot size={11} aria-hidden="true" /> READY TO COOK</span></div>
+              <div className="ticket-main">
+                <div className="ticket-row"><span className="ticket-kicker">THE REPEATABLE JOB</span><strong>Add form validation to account settings</strong></div>
+                <div className="ticket-divider"><span>mise en place</span><i /></div>
+                <div className="ingredient-list">
+                  <div className="ingredient"><span className="ingredient-mark herb-mark" /><span><b>Repo context</b><small>2 files, approved</small></span></div>
+                  <div className="ingredient"><span className="ingredient-mark citrus-mark" /><span><b>Public techniques</b><small>Matched and cited</small></span></div>
+                  <div className="ingredient"><span className="ingredient-mark plum-mark" /><span><b>Project brief</b><small>TypeScript · Vitest</small></span></div>
+                </div>
+                <div className="ticket-action"><Sparkles size={15} aria-hidden="true" /><span>compile_skill</span><span className="action-note">local MCP tool</span></div>
               </div>
-              <div className="trace-footer"><span className="status-dot" /> provenance and risk notes included</div>
+              <div className="recipe-output"><div className="recipe-stamp"><UtensilsCrossed size={16} aria-hidden="true" /><span>THE RECIPE</span></div><strong>account-form-validation</strong><span className="recipe-path">SKILL.md <span>·</span> ready to review</span></div>
             </div>
           </section>
 
-          <section className="proof-strip" aria-label="Product boundary">
-            <p>The useful boundary is simple: the compiler proposes, your agent decides.</p>
-            <div className="proof-items"><span><b>01</b> approve private context</span><span><b>02</b> retrieve public guidance</span><span><b>03</b> inspect the result</span></div>
+          <section className="promise-strip" aria-label="Product boundary">
+            <p>Built for work you’ll do again.</p>
+            <div><span>Collect</span><b>→</b><span>Match</span><b>→</b><span>Compile</span><b>→</b><span>Review</span></div>
           </section>
 
-          <section className="section workflow-section" id="workflow">
+          <section className="section method-section" id="how-it-works">
             <div className="section-heading">
-              <span className="section-index">02</span>
-              <div><h2>From task to artifact</h2><p>Three deliberate steps keep the useful context visible and the boundary narrow.</p></div>
+              <span className="section-kicker">THE METHOD</span>
+              <div><h2>Good recipes start with what’s already in the kitchen.</h2><p>SkillChef draws from approved repo context and a small set of public skill sources. You inspect the result before saving it.</p></div>
             </div>
-            <div className="workflow-grid">
-              <article className="workflow-card">
-                <div className="step-icon"><LockKeyhole size={19} aria-hidden="true" /></div>
-                <span className="step-number">Approve</span>
-                <h3>Choose the context</h3>
-                <p>The agent proposes files. You approve the paths before private content crosses the boundary.</p>
-              </article>
-              <article className="workflow-card featured-step">
-                <div className="step-icon"><Network size={19} aria-hidden="true" /></div>
-                <span className="step-number">Retrieve</span>
-                <h3>Find public guidance</h3>
-                <p>A focused public-skill adapter retrieves relevant Markdown and records each source URL and hash.</p>
-              </article>
-              <article className="workflow-card">
-                <div className="step-icon"><Sparkles size={19} aria-hidden="true" /></div>
-                <span className="step-number">Compile</span>
-                <h3>Generate the artifact</h3>
-                <p>Get a reusable SKILL.md with repository constraints, examples, provenance, and risk notes.</p>
-              </article>
+            <div className="method-line">
+              <article className="method-step"><span className="method-index">01 / GATHER</span><h3>Choose the workflow</h3><p>Start with something your team repeats, like reviewing migrations or shipping a UI change.</p><span className="ingredient-tag">workflow</span></article>
+              <article className="method-step method-step-accent"><span className="method-index">02 / PREP</span><h3>Approve the ingredients</h3><p>Your agent lists files first. Include only context that helps define the workflow.</p><span className="ingredient-tag">approved files</span></article>
+              <article className="method-step"><span className="method-index">03 / PLATE</span><h3>Review the skill</h3><p>Get a standard skill file with its sources, matched techniques, and risk notes.</p><span className="ingredient-tag">SKILL.md</span></article>
             </div>
           </section>
 
-          <section className="section quickstart-section" id="quickstart">
+          <section className="section station-section" id="station">
             <div className="section-heading">
-              <span className="section-index">03</span>
-              <div><h2>Quickstart</h2><p>Get a first result without adding an account, database, or repository integration.</p></div>
+              <span className="section-kicker">YOUR STATION</span>
+              <div><h2>Pick an agent. Get the right setup.</h2><p>Connect the compiler once, then place its reviewed recipe where your agent discovers skills.</p></div>
             </div>
-            <div className="quickstart-grid">
-              <div className="quickstart-copy">
-                <div className="install-step"><span>1</span><div><h3>Clone and build</h3><p>From the repository root, run <code>npm ci</code> and <code>npm run build</code>, then point your coding client at <code>dist/index.js</code>.</p></div></div>
-                <div className="install-step"><span>2</span><div><h3>Approve the context</h3><p>Ask the agent to list the files it plans to send. Keep the approval narrow and task-specific.</p></div></div>
-                <div className="install-step"><span>3</span><div><h3>Save the output</h3><p>Review the returned Markdown, then save it as a repository-local <code>SKILL.md</code>.</p></div></div>
-              </div>
-              <div className="quickstart-configs">
-                <CodeBlock label=".mcp.json" value={claudeConfig} />
-                <aside className="quiet-note"><span className="eyebrow">Review before install</span><p>Task-Time never edits or executes your repository. The default compiler is deterministic, and private context is sent only after approval.</p></aside>
-              </div>
-            </div>
+            <div className="build-row"><div><span className="tiny-label">FIRST, BUILD LOCALLY</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
+            <RecipeStation />
           </section>
 
-          <section className="section platforms-section" id="platforms">
+          <section className="section recipe-section" id="the-recipe">
             <div className="section-heading">
-              <span className="section-index">04</span>
-              <div><h2>One compiler, your coding agent</h2><p>Task-Time speaks standard MCP. Pick the configuration shape your client expects, then call the same <code>compile_skill</code> tool.</p></div>
+              <span className="section-kicker">ON THE CARD</span>
+              <div><h2>A skill your agent can actually find.</h2><p>The output uses standard Agent Skills metadata, with a folder name that must match the skill’s <code>name</code>.</p></div>
             </div>
-            <div className="platform-grid">
-              <article className="platform-card platform-card-featured"><div className="platform-topline"><span>Claude Code</span><span className="platform-state">verified recipe</span></div><h3><code>.mcp.json</code></h3><p>Project or user scope. Use <code>claude mcp add</code> for a guided setup.</p><a href="https://docs.anthropic.com/en/docs/claude-code/mcp" target="_blank" rel="noreferrer">Anthropic MCP docs <ArrowUpRight size={14} aria-hidden="true" /></a></article>
-              <article className="platform-card"><div className="platform-topline"><span>Cursor</span><span className="platform-state">verified recipe</span></div><h3><code>.cursor/mcp.json</code></h3><p>Use the same <code>mcpServers</code> entry in project or global configuration.</p><a href="https://docs.cursor.com/context/model-context-protocol" target="_blank" rel="noreferrer">Cursor MCP docs <ArrowUpRight size={14} aria-hidden="true" /></a></article>
-              <article className="platform-card"><div className="platform-topline"><span>Codex</span><span className="platform-state">verified recipe</span></div><h3><code>.codex/config.toml</code></h3><p>Shared by Codex CLI, the desktop app, and the IDE extension.</p><a href="https://learn.chatgpt.com/docs/extend/mcp" target="_blank" rel="noreferrer">OpenAI MCP docs <ArrowUpRight size={14} aria-hidden="true" /></a></article>
-              <article className="platform-card"><div className="platform-topline"><span>Windsurf</span><span className="platform-state">verified recipe</span></div><h3><code>mcp_config.json</code></h3><p>Use the standard <code>mcpServers</code> JSON shape in Cascade’s MCP settings.</p><a href="https://docs.windsurf.com/windsurf/cascade/mcp" target="_blank" rel="noreferrer">Windsurf MCP docs <ArrowUpRight size={14} aria-hidden="true" /></a></article>
-              <article className="platform-card"><div className="platform-topline"><span>VS Code</span><span className="platform-state">verified recipe</span></div><h3><code>.vscode/mcp.json</code></h3><p>Workspace and user profiles use the <code>servers</code> object and trust prompt.</p><a href="https://code.visualstudio.com/docs/agent-customization/mcp-servers" target="_blank" rel="noreferrer">VS Code MCP docs <ArrowUpRight size={14} aria-hidden="true" /></a></article>
-              <article className="platform-card"><div className="platform-topline"><span>Copilot CLI + Gemini CLI</span><span className="platform-state">verified recipe</span></div><h3><code>mcpServers</code></h3><p>Copilot uses <code>~/.copilot/mcp-config.json</code>; Gemini uses <code>.gemini/settings.json</code>.</p><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers" target="_blank" rel="noreferrer">Copilot MCP docs <ArrowUpRight size={14} aria-hidden="true" /></a></article>
+            <div className="recipe-layout">
+              <div className="recipe-copy">
+                <div className="recipe-detail"><span className="detail-mark detail-green" /><div><strong>Clear name and description</strong><p>Help the agent recognize when this workflow applies.</p></div></div>
+                <div className="recipe-detail"><span className="detail-mark detail-yellow" /><div><strong>Repo-specific constraints</strong><p>Carry forward the conventions in the context you approved.</p></div></div>
+                <div className="recipe-detail"><span className="detail-mark detail-purple" /><div><strong>Sources to inspect</strong><p>See matched excerpts with source links and content hashes.</p></div></div>
+              </div>
+              <CodeBlock label="SKILL.md · Agent Skills format" value={skillFrontmatter} />
             </div>
-            <div className="platform-snippets">
-              <div><span className="platform-snippet-label">Codex / TOML</span><CodeBlock label="config.toml" value={codexConfig} /></div>
-              <div><span className="platform-snippet-label">VS Code / JSON</span><CodeBlock label="mcp.json" value={vscodeConfig} /></div>
-              <div><span className="platform-snippet-label">Copilot / JSON</span><CodeBlock label="mcp-config.json" value={copilotConfig} /></div>
-            </div>
-            <div className="platform-note"><strong>Other MCP clients</strong><span>Cline and Roo Code accept the same <code>mcpServers</code> JSON shape. For any client that supports Streamable HTTP, point it at your deployed <code>/mcp</code> endpoint instead of starting the local process.</span></div>
           </section>
 
           <section className="section contract-section" id="contract">
             <div className="section-heading">
-              <span className="section-index">05</span>
-              <div><h2>Tool contract</h2><p>Designed to be small enough to understand before the first call.</p></div>
+              <span className="section-kicker">THE INPUT</span>
+              <div><h2>The agent sends the request. You stay in control.</h2><p>SkillChef never crawls a working tree. The client must pass the paths and file contents the user approved.</p></div>
             </div>
-            <div className="contract-grid">
-              <div className="contract-panel">
-                <div className="panel-label"><Terminal size={15} aria-hidden="true" /> input / compile_skill</div>
-                <CodeBlock label="request.json" value={requestExample} />
-                <div className="limit-list"><span>task <b>4,000 chars</b></span><span>search_query <b>500 chars</b></span><span>approved_context <b>10 files / 50k chars</b></span><span>skillMarkdown <b>16,000 chars max</b></span></div>
-              </div>
-              <div className="contract-panel output-panel">
-                <div className="panel-label"><FileCode2 size={15} aria-hidden="true" /> output / inspectable artifact</div>
-                <CodeBlock label="response.json" value={outputExample} />
-                <div className="output-tags"><span>sources</span><span>context manifest</span><span>risk notes</span><span>skillMarkdown</span></div>
+            <div className="contract-layout">
+              <CodeBlock label="compile_skill · request" value={requestExample} />
+              <div className="boundary-list">
+                <div><Check size={15} aria-hidden="true" /><span>Only submitted context reaches the compiler.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span>No repository edits or command execution.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span>Sources are public GitHub SKILL.md files.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span>Review the skill and risk notes before installing.</span></div>
+                <a href="https://agentskills.io/specification" target="_blank" rel="noreferrer">Read the Agent Skills specification <ArrowUpRight size={14} aria-hidden="true" /></a>
               </div>
             </div>
           </section>
 
-          <section className="section reference-section" id="reference">
-            <div className="section-heading">
-              <span className="section-index">06</span>
-              <div><h2>Runtime reference</h2><p>Use stdio locally. Use the protected HTTP endpoint when another process needs the compiler.</p></div>
-            </div>
-            <div className="reference-grid">
-              <div className="reference-panel"><div className="panel-label"><Radio size={15} aria-hidden="true" /> transports</div><CodeBlock label="terminal" value={runtimeExample} /><dl className="reference-list"><div><dt>stdio</dt><dd>Default transport for local coding clients. JSON-RPC stays on stdout; logs go to stderr.</dd></div><div><dt>HTTP</dt><dd>Stateless MCP at <code>/mcp</code>, with a liveness check at <code>/healthz</code>. It binds to <code>127.0.0.1</code> unless configured otherwise.</dd></div></dl></div>
-              <div className="reference-panel"><div className="panel-label"><Terminal size={15} aria-hidden="true" /> environment</div><div className="env-table"><div><code>MCP_TRANSPORT</code><span><code>stdio</code> by default; set <code>http</code> for the stateless endpoint.</span></div><div><code>PORT</code><span>HTTP port; default 3000.</span></div><div><code>MCP_HTTP_HOST</code><span>HTTP bind address; default 127.0.0.1.</span></div><div><code>MCP_HTTP_AUTH_TOKEN</code><span>Required for non-loopback HTTP hosts.</span></div><div><code>MCP_HTTP_ALLOWED_ORIGINS</code><span>Browser origins must be listed explicitly; other Origin headers are rejected.</span></div><div><code>MCP_HTTP_ALLOWED_HOSTS</code><span>Required for non-loopback binds; hostnames for DNS-rebinding protection.</span></div><div><code>MCP_HTTP_MAX_BODY_BYTES</code><span>Request limit; default 256,000 bytes.</span></div><div><code>PUBLIC_SKILL_REPOSITORIES</code><span>Public GitHub repositories for the first adapter.</span></div><div><code>PUBLIC_SKILL_BRANCH</code><span>Branch used by the public-skill adapter; default main.</span></div><div><code>PUBLIC_SKILL_FETCH_TIMEOUT_MS</code><span>Per-request retrieval timeout; default 10,000.</span></div><div><code>PUBLIC_SKILL_GITHUB_TOKEN</code><span>Optional server-side token for higher GitHub API limits.</span></div><div><code>SKILL_COMPILER_MODEL_URL</code><span>Optional compatible JSON model endpoint.</span></div><div><code>SKILL_COMPILER_MODEL_TOKEN</code><span>Optional bearer token for the model endpoint.</span></div><div><code>SKILL_COMPILER_MODEL_TIMEOUT_MS</code><span>Model request timeout; default 20,000.</span></div><div><code>SKILL_COMPILER_ALLOW_INSECURE_HTTP</code><span>Development-only escape hatch for a non-loopback model URL; default false.</span></div><div><code>SKILL_COMPILER_DEADLINE_MS</code><span>End-to-end compile deadline; default 60,000.</span></div><div><code>MAX_IN_FLIGHT_COMPILATIONS</code><span>Process concurrency cap; default 2.</span></div><div><code>RATE_LIMIT_PER_MINUTE</code><span>HTTP requests per client address per minute; default 10.</span></div><div><code>RATE_LIMIT_MAX_KEYS</code><span>Maximum in-memory client buckets; default 10,000.</span></div></div></div>
-            </div>
-            <div className="reference-footnote"><strong>When a call fails</strong><div><span>The tool returns <code>isError: true</code> with a JSON error message. Retrieval and model timeouts fall back safely; an empty retrieval result still produces a deterministic skill.</span><CodeBlock label="error.json" value={errorExample} /></div></div>
+          <section className="safety-section" id="safety">
+            <div className="safety-mark"><ShieldCheck size={20} aria-hidden="true" /></div>
+            <div><span className="section-kicker">TASTE BEFORE SERVING</span><h2>The compiler proposes. Your agent decides.</h2><p>Public skills can contain unsafe or irrelevant instructions. SkillChef labels sources and flags risky patterns, but those checks are advisory. Without a model endpoint, compilation stays local. If you configure one, approved context is sent to that provider—check its retention terms first. Review the generated file before installing it.</p></div>
           </section>
 
-          <section className="section safety-section" id="safety">
-            <div className="section-heading"><span className="section-index">07</span><div><h2>Safety boundaries</h2><p>Keep the compiler useful without giving it repository control.</p></div></div>
-            <div className="safety-callout"><div className="safety-icon"><ShieldCheck size={21} aria-hidden="true" /></div><div><span className="eyebrow">A deliberate boundary</span><h2>The compiler proposes. Your agent decides.</h2><p>Task-Time never edits or executes the repository. Public skill content is treated as untrusted input, and the response calls out shell, network, destructive, and credential-related instructions for review.</p></div></div>
-            <div className="principles-grid"><div><span className="principle-marker">01</span><h3>Private by approval</h3><p>Only context explicitly included in the request is sent to the compiler.</p></div><div><span className="principle-marker">02</span><h3>Traceable by default</h3><p>Every public source is returned with a URL, title, and content hash.</p></div><div><span className="principle-marker">03</span><h3>Inspectable output</h3><p>The result is Markdown you can read, edit, and commit like any other file.</p></div></div>
-          </section>
-
-          <footer className="footer"><div><span className="footer-brand">task-time / compiler</span><p>Task-time guidance for agents that work in real repositories.</p></div><div className="footer-links"><a href="#overview">Back to top <ArrowUpRight size={14} aria-hidden="true" /></a><span>Built for MCP coding agents</span></div></footer>
+          <footer className="footer"><a className="footer-brand" href="#overview"><ChefHat size={17} aria-hidden="true" /> SkillChef</a><span>A little more of your workflow, ready for next time.</span><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRight size={13} aria-hidden="true" /></a></footer>
         </main>
       </div>
     </div>

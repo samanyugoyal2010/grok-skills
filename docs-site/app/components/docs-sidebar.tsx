@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 
 const navItems = [
   ["overview", "Overview"],
-  ["workflow", "The compiler loop"],
-  ["quickstart", "Quickstart"],
-  ["platforms", "Coding platforms"],
-  ["contract", "Tool contract"],
-  ["reference", "Runtime reference"],
-  ["safety", "Safety boundaries"]
+  ["how-it-works", "How it works"],
+  ["station", "Agent setup"],
+  ["the-recipe", "Skill format"],
+  ["contract", "Inputs & control"],
+  ["safety", "Safety"]
 ] as const;
 
 export function DocsSidebar() {
@@ -31,7 +30,7 @@ export function DocsSidebar() {
     <aside className="sidebar">
       <div className="sidebar-intro">
         <span className="eyebrow">Documentation</span>
-        <p>Turn a task, approved context, and public guidance into one inspectable skill.</p>
+        <p>Turn a repeatable workflow and approved context into one inspectable agent skill.</p>
       </div>
       <div className="sidebar-group">
         <span className="sidebar-label">On this page</span>
@@ -42,8 +41,8 @@ export function DocsSidebar() {
         ))}
       </div>
       <div className="sidebar-footer">
-        <div className="status-line"><span className="status-dot" /> Developer preview</div>
-        <p>No accounts. No persistence. No repository writes.</p>
+        <div className="status-line"><span className="status-dot" /> Small-batch preview</div>
+        <p>No accounts or repo-context persistence. No repository writes.</p>
       </div>
     </aside>
   );

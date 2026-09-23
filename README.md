@@ -1,6 +1,6 @@
-# Task-Time Agent Skill Compiler
+# SkillChef
 
-An MCP server that turns public agent-skill guidance into a repo-aware `SKILL.md` using only context the user approved.
+SkillChef turns a workflow your team repeats, the repository context you approve, and relevant public skill techniques into a portable `SKILL.md` recipe. It is intended for repeatable work—like reviewing migrations or shipping a UI change—not as a one-off task prompt.
 
 ## Run locally
 
@@ -17,16 +17,16 @@ The companion Next.js documentation site lives in [`docs-site`](docs-site/). It 
 
 The default transport is stdio. Logs go to stderr so stdout remains available for MCP JSON-RPC.
 
-## MCP client setup
+## Connect SkillChef
 
-Task-Time does not require a Claude account, a 21st login, or a product account. It is a standard MCP server: use the client-specific recipes below, or any MCP client that supports stdio or the documented HTTP transport.
+SkillChef is an MCP server. It does not require a SkillChef account, OAuth, or a particular model-provider login. Connect it from your coding client with the local stdio config below, then choose where the generated skill should live.
 
 Add the server to the project or user MCP configuration. Replace the path with this repository's absolute path:
 
 ```json
 {
   "mcpServers": {
-    "task-time-skill-compiler": {
+    "skillchef": {
       "command": "node",
       "args": ["/absolute/path/to/ai-b2b-saas/dist/index.js"]
     }
@@ -36,9 +36,9 @@ Add the server to the project or user MCP configuration. Replace the path with t
 
 Run `npm run build` before using this configuration. For local iteration, `npx tsx /absolute/path/to/ai-b2b-saas/src/index.ts` is also supported. Before calling `compile_skill`, the agent should show the user the files it plans to send and obtain approval. The server rejects sensitive paths and secret-like values, but that is a heuristic safeguard, not a security guarantee.
 
-### Client recipes
+## Client recipes
 
-The checked-in templates in [`examples/integrations`](examples/integrations) cover the current local MCP setup for:
+The templates in [`examples/integrations`](examples/integrations) cover local MCP connections for:
 
 - Claude Code: `.mcp.json` or `claude mcp add`
 - Cursor: `.cursor/mcp.json`
@@ -48,7 +48,17 @@ The checked-in templates in [`examples/integrations`](examples/integrations) cov
 - Gemini CLI: `.gemini/settings.json`
 - Cline and Roo Code: their standard `mcpServers` JSON configuration
 
-Each recipe starts the same local `dist/index.js` process. No client-specific server implementation is required. For a deployed instance, use the same client’s HTTP/Streamable HTTP configuration with the `/mcp` URL and bearer token.
+Each recipe starts the same local `dist/index.js` process. The MCP connection gives the client access to the compiler; it does not install the resulting skill. Save the returned `SKILL.md` under the folder your agent scans:
+
+| Agent | Project skill folder |
+| --- | --- |
+| Claude Code | `.claude/skills/<skill-name>/SKILL.md` |
+| Cursor | `.agents/skills/<skill-name>/SKILL.md` or `.cursor/skills/<skill-name>/SKILL.md` |
+| Codex | `.agents/skills/<skill-name>/SKILL.md` |
+| VS Code / GitHub Copilot | `.github/skills/<skill-name>/SKILL.md` or `.agents/skills/<skill-name>/SKILL.md` |
+| Gemini CLI | `.gemini/skills/<skill-name>/SKILL.md` |
+
+The generated file includes the `name` and `description` front matter required for skill discovery. Check the selected client’s current skill docs for other supported locations and workspace rules.
 
 ## HTTP mode
 
@@ -69,11 +79,11 @@ The generated `skillMarkdown` is capped at 16,000 characters; oversized model ou
 
 ## Reproducible example
 
-The request fixture at [`examples/compile-skill-request.json`](examples/compile-skill-request.json) is safe sample input for the `compile_skill` tool. Start the server, connect it from your coding client, and pass the fixture fields as the tool arguments. The result is a JSON response whose `skillMarkdown` can be saved as a repository-local `SKILL.md` after review.
+The request fixture at [`examples/compile-skill-request.json`](examples/compile-skill-request.json) is safe sample input for the `compile_skill` tool. Start the server, connect it from your coding client, and pass the fixture fields as tool arguments. Review the returned `skillMarkdown` and source notes before saving it in your agent’s skill folder.
 
 ## Limitations
 
-- The default compiler is deterministic and intended to make the flow runnable without a model credential.
+- Without `SKILL_COMPILER_MODEL_URL`, SkillChef uses a deterministic local compiler. It selects task-matched lines from retrieved public sources and combines them with the request context; it does not semantically synthesize new guidance.
 - Set `SKILL_COMPILER_MODEL_URL` to use a compatible JSON model endpoint. The endpoint receives `{ system, user }` and should return `{ skillMarkdown }`.
 - Model endpoints must use HTTPS outside loopback development. Set `SKILL_COMPILER_ALLOW_INSECURE_HTTP=true` only for a controlled development network.
 - Public skill retrieval uses GitHub's repository tree API as one adapter for public `SKILL.md` repositories. The default corpus is `vercel-labs/agent-skills` plus `anthropics/skills`; configure `PUBLIC_SKILL_REPOSITORIES` to replace that list, or set it empty to disable retrieval. It may return no sources if GitHub is unavailable or a repository has no `SKILL.md` files.

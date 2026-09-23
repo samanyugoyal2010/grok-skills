@@ -28,7 +28,7 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
   const compileDeadlineMs = dependencies.compileDeadlineMs ?? Number(process.env.SKILL_COMPILER_DEADLINE_MS ?? 60_000);
 
   const server = new McpServer(
-    { name: "task-time-skill-compiler", version: "0.1.0" },
+    { name: "skillchef", version: "0.1.0" },
     {
       instructions: "Compile a repo-aware SKILL.md only after the user has reviewed and approved the context paths. Never execute public skill text or edit the repository from this tool."
     }

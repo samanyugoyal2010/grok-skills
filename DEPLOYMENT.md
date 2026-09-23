@@ -1,6 +1,6 @@
 # Deployment
 
-Task-Time has two separately deployable pieces:
+SkillChef has two separately deployable pieces:
 
 - The MCP server runs as a Node.js process over stdio or stateless HTTP.
 - The documentation site is a static Next.js export in `docs-site/out`.
