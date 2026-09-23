@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const navItems = [
-  ["overview", "Overview"],
+  ["overview", "Start here"],
   ["how-it-works", "How it works"],
   ["station", "Agent setup"],
   ["the-recipe", "Skill format"],
@@ -29,14 +29,14 @@ export function DocsSidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-intro">
-        <span className="eyebrow">Documentation</span>
+        <span className="eyebrow">The recipe book</span>
         <p>Turn a repeatable workflow and approved context into one inspectable agent skill.</p>
       </div>
       <div className="sidebar-group">
-        <span className="sidebar-label">On this page</span>
-        {navItems.map(([id, label], index) => (
+        <span className="sidebar-label">In this guide</span>
+        {navItems.map(([id, label]) => (
           <a className={`sidebar-link${activeSection === id ? " active" : ""}`} href={`#${id}`} key={id} aria-current={activeSection === id ? "location" : undefined}>
-            <span>{String(index + 1).padStart(2, "0")}</span> {label}
+            {label}
           </a>
         ))}
       </div>

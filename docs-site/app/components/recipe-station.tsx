@@ -93,21 +93,21 @@ export function RecipeStation() {
 
   return (
     <div className="station">
-      <div className="station-tabs" role="tablist" aria-label="Choose your coding agent">
+      <div className="station-tabs" role="group" aria-label="Choose your coding agent">
         {recipes.map((recipe) => (
           <button
             key={recipe.id}
             className={`station-tab${selected.id === recipe.id ? " selected" : ""}`}
             type="button"
-            role="tab"
-            aria-selected={selected.id === recipe.id}
+            aria-pressed={selected.id === recipe.id}
+            aria-controls="agent-setup-panel"
             onClick={() => setSelectedId(recipe.id)}
           >
             {recipe.name}
           </button>
         ))}
       </div>
-      <div className="station-worktop" role="tabpanel" aria-label={`${selected.name} setup`}>
+      <div className="station-worktop" id="agent-setup-panel" aria-label={`${selected.name} setup`}>
         <div className="station-instructions">
           <div className="station-step"><span className="station-number">01</span><div><strong>Connect the tool</strong><p>Merge this server entry into <code>{selected.configPath}</code>, then replace the example path with your checkout path.</p></div></div>
           <CodeBlock label={selected.configPath} value={selected.config} />

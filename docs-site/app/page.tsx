@@ -61,20 +61,20 @@ export default function Home() {
         <main className="content-column" id="main-content" tabIndex={-1}>
           <section className="hero section" id="overview">
             <div className="hero-copy">
-              <div className="eyebrow"><span className="eyebrow-rule" />A workbench for repeatable coding work</div>
+              <div className="eyebrow"><span className="eyebrow-rule" />A kitchen for repeatable coding work</div>
               <h1>Make your repo’s way of working a skill.</h1>
-              <p className="hero-lede">Lay out a workflow you repeat, the project files you approve, and useful public techniques. SkillChef turns that mise en place (the prep before cooking) into a portable, reviewable <code>SKILL.md</code>.</p>
+              <p className="hero-lede">Bring a workflow you repeat, the project files you approve, and useful public techniques. SkillChef prepares them into a portable, reviewable <code>SKILL.md</code>.</p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#station">Connect your agent <ArrowUpRight size={15} aria-hidden="true" /></a>
-                <a className="text-link" href="#how-it-works">See how it cooks</a>
+                <a className="button button-primary" href="#station">Connect a coding agent <ArrowUpRight size={15} aria-hidden="true" /></a>
+                <a className="text-link" href="#how-it-works">See the workflow</a>
               </div>
-              <div className="hero-facts"><span><Check size={13} aria-hidden="true" /> local compiler by default</span><span><Check size={13} aria-hidden="true" /> context by approval</span><span><Check size={13} aria-hidden="true" /> human-reviewed output</span></div>
+              <div className="hero-facts"><span><Check size={14} aria-hidden="true" /> local compiler by default</span><span><Check size={14} aria-hidden="true" /> context by approval</span><span><Check size={14} aria-hidden="true" /> human-reviewed output</span></div>
             </div>
 
-            <div className="ticket-scene" aria-label="A task and its ingredients becoming an agent skill">
-              <div className="ticket-topline"><span>THE PREP BOARD</span><span className="ticket-live"><CircleDot size={11} aria-hidden="true" /> READY TO COOK</span></div>
+            <div className="ticket-scene" role="img" aria-label="A work order listing a repeatable developer task, approved project context, public techniques, and the resulting agent skill">
+              <div className="ticket-topline"><span>Prep board</span><span className="ticket-live"><CircleDot size={12} aria-hidden="true" /> Ready to compile</span></div>
               <div className="ticket-main">
-                <div className="ticket-row"><span className="ticket-kicker">THE REPEATABLE JOB</span><strong>Add form validation to account settings</strong></div>
+                <div className="ticket-row"><span className="ticket-kicker">A repeatable workflow</span><strong>Add form validation to account settings</strong></div>
                 <div className="ticket-divider"><span>mise en place</span><i /></div>
                 <div className="ingredient-list">
                   <div className="ingredient"><span className="ingredient-mark herb-mark" /><span><b>Repo context</b><small>2 files, approved</small></span></div>
@@ -87,26 +87,26 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="promise-strip" aria-label="Product boundary">
+          <section className="promise-strip" aria-label="Workflow summary">
             <p>Built for work you’ll do again.</p>
             <div><span>Collect</span><b>→</b><span>Match</span><b>→</b><span>Compile</span><b>→</b><span>Review</span></div>
           </section>
 
           <section className="section method-section" id="how-it-works">
             <div className="section-heading">
-              <span className="section-kicker">THE METHOD</span>
+              <span className="section-kicker">How it works</span>
               <div><h2>Good recipes start with what’s already in the kitchen.</h2><p>SkillChef draws from approved repo context and a small set of public skill sources. You inspect the result before saving it.</p></div>
             </div>
             <div className="method-line">
-              <article className="method-step"><span className="method-index">01 / GATHER</span><h3>Choose the workflow</h3><p>Start with something your team repeats, like reviewing migrations or shipping a UI change.</p><span className="ingredient-tag">workflow</span></article>
-              <article className="method-step method-step-accent"><span className="method-index">02 / PREP</span><h3>Approve the ingredients</h3><p>Your agent lists files first. Include only context that helps define the workflow.</p><span className="ingredient-tag">approved files</span></article>
-              <article className="method-step"><span className="method-index">03 / PLATE</span><h3>Review the skill</h3><p>Get a standard skill file with its sources, matched techniques, and risk notes.</p><span className="ingredient-tag">SKILL.md</span></article>
+              <article className="method-step"><span className="method-index">01 · Gather</span><h3>Choose the workflow</h3><p>Start with work your team repeats, like reviewing migrations or shipping a UI change.</p><span className="ingredient-tag">workflow</span></article>
+              <article className="method-step method-step-accent"><span className="method-index">02 · Prep</span><h3>Approve the ingredients</h3><p>Your agent proposes files first. Include only context that helps define the workflow.</p><span className="ingredient-tag">approved files</span></article>
+              <article className="method-step"><span className="method-index">03 · Plate</span><h3>Review the skill</h3><p>Get a standard skill file with its sources, matched techniques, and risk notes.</p><span className="ingredient-tag">SKILL.md</span></article>
             </div>
           </section>
 
           <section className="section station-section" id="station">
             <div className="section-heading">
-              <span className="section-kicker">YOUR STATION</span>
+              <span className="section-kicker">Agent setup</span>
               <div><h2>Pick an agent. Get the right setup.</h2><p>Connect the compiler once, then place its reviewed recipe where your agent discovers skills.</p></div>
             </div>
             <div className="build-row"><div><span className="tiny-label">FIRST, BUILD LOCALLY</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
@@ -115,7 +115,7 @@ export default function Home() {
 
           <section className="section recipe-section" id="the-recipe">
             <div className="section-heading">
-              <span className="section-kicker">ON THE CARD</span>
+              <span className="section-kicker">The finished skill</span>
               <div><h2>A skill your agent can actually find.</h2><p>The output uses standard Agent Skills metadata, with a folder name that must match the skill’s <code>name</code>.</p></div>
             </div>
             <div className="recipe-layout">
@@ -130,7 +130,7 @@ export default function Home() {
 
           <section className="section contract-section" id="contract">
             <div className="section-heading">
-              <span className="section-kicker">THE INPUT</span>
+              <span className="section-kicker">What goes in</span>
               <div><h2>The agent sends the request. You stay in control.</h2><p>SkillChef never crawls a working tree. The client must pass the paths and file contents the user approved.</p></div>
             </div>
             <div className="contract-layout">
@@ -147,7 +147,7 @@ export default function Home() {
 
           <section className="safety-section" id="safety">
             <div className="safety-mark"><ShieldCheck size={20} aria-hidden="true" /></div>
-            <div><span className="section-kicker">TASTE BEFORE SERVING</span><h2>The compiler proposes. Your agent decides.</h2><p>Public skills can contain unsafe or irrelevant instructions. SkillChef labels sources and flags risky patterns, but those checks are advisory. Without a model endpoint, compilation stays local. If you configure one, approved context is sent to that provider—check its retention terms first. Review the generated file before installing it.</p></div>
+            <div><span className="section-kicker">Review before serving</span><h2>The compiler proposes. Your agent decides.</h2><p>Public skills can contain unsafe or irrelevant instructions. SkillChef labels sources and flags risky patterns, but those checks are advisory. Without a model endpoint, compilation stays local. If you configure one, approved context is sent to that provider—check its retention terms first. Review the generated file before installing it.</p></div>
           </section>
 
           <footer className="footer"><a className="footer-brand" href="#overview"><ChefHat size={17} aria-hidden="true" /> SkillChef</a><span>A little more of your workflow, ready for next time.</span><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRight size={13} aria-hidden="true" /></a></footer>
