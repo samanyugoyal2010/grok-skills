@@ -15,6 +15,13 @@ test("rejects unknown compile_skill input fields", () => {
     unexpected: true
   });
   assert.equal(result.success, false);
+  const withApiKey = compileSkillInputSchema.safeParse({
+    task: "Add a profile page",
+    search_query: "frontend",
+    approved_context: [],
+    api_key: "must-not-be-a-tool-argument"
+  });
+  assert.equal(withApiKey.success, false);
 });
 
 test("registers the compile_skill tool", async () => {

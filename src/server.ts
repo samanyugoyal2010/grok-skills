@@ -7,6 +7,7 @@ import { RateLimiter } from "./rate-limit.js";
 import { InFlightLimiter } from "./rate-limit.js";
 import { GitHubSkillRetriever } from "./retrieval.js";
 import type { CompilerOptions } from "./compiler.js";
+import { loadModelConfig } from "./config.js";
 
 export interface ServerDependencies {
   retriever?: SkillRetriever;
@@ -21,8 +22,7 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
   const rateLimiter = dependencies.rateLimiter === undefined ? new RateLimiter() : dependencies.rateLimiter;
   const inFlightLimiter = dependencies.inFlightLimiter ?? new InFlightLimiter();
   const compilerOptions = dependencies.compilerOptions ?? {
-    modelUrl: process.env.SKILL_COMPILER_MODEL_URL,
-    modelToken: process.env.SKILL_COMPILER_MODEL_TOKEN,
+    ...loadModelConfig(),
     modelTimeoutMs: Number(process.env.SKILL_COMPILER_MODEL_TIMEOUT_MS ?? 20_000)
   };
   const compileDeadlineMs = dependencies.compileDeadlineMs ?? Number(process.env.SKILL_COMPILER_DEADLINE_MS ?? 60_000);

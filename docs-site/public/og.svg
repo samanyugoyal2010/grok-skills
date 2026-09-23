@@ -1,18 +1,27 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="630" fill="#E8ECE7"/>
-  <circle cx="1090" cy="93" r="270" fill="#D8EE62" fill-opacity=".55"/>
-  <path d="M0 493H1200" stroke="#CBD3C9"/>
-  <rect x="76" y="66" width="54" height="54" rx="15" fill="#244333"/>
-  <path d="M89 91H117M93 91C93 83 98 78 103 78C108 78 113 83 113 91M97 77V73M103 76V71M109 77V73M95 97V104C95 108 98 111 103 111C108 111 111 108 111 104V97" stroke="#F7F8F2" stroke-width="2.5" stroke-linecap="round"/>
-  <text x="148" y="103" fill="#1E2C25" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">SkillChef</text>
-  <text x="76" y="269" fill="#1E2C25" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Make your repo’s way</text>
-  <text x="76" y="353" fill="#1E2C25" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700" letter-spacing="-3">of working a skill.</text>
-  <text x="80" y="416" fill="#627169" font-family="Arial, Helvetica, sans-serif" font-size="22">A workbench for repeatable coding workflows.</text>
-  <rect x="76" y="527" width="176" height="42" rx="3" fill="#244333"/>
-  <text x="96" y="553" fill="#F7F8F2" font-family="monospace" font-size="14" letter-spacing="1">PREP · COMPILE · REVIEW</text>
-  <rect x="820" y="349" width="292" height="128" fill="#F7F8F2" stroke="#A8B4A9"/>
-  <rect x="820" y="349" width="292" height="27" fill="#244333"/>
-  <text x="838" y="367" fill="#D8EE62" font-family="monospace" font-size="10" letter-spacing="1">THE RECIPE</text>
-  <text x="841" y="416" fill="#1E2C25" font-family="monospace" font-size="18" font-weight="700">account-form-validation</text>
-  <text x="841" y="448" fill="#627169" font-family="Arial, Helvetica, sans-serif" font-size="14">SKILL.md · ready to review</text>
+  <defs>
+    <pattern id="counter-grid" width="34" height="34" patternUnits="userSpaceOnUse">
+      <path d="M34 0H0V34" stroke="#766B61" stroke-opacity=".12"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#FBF5E8"/>
+  <rect width="1200" height="630" fill="url(#counter-grid)"/>
+  <rect width="1200" height="9" fill="#A92F3E"/>
+  <rect x="77" y="61" width="57" height="57" rx="16" fill="#E9A4B0" stroke="#25211F" stroke-width="3"/>
+  <rect x="72" y="56" width="57" height="57" rx="16" fill="#A92F3E" stroke="#25211F" stroke-width="3"/>
+  <path d="M87 82H114M91 82C91 74 96 68 101 68C106 68 111 74 111 82M95 67V62M101 66V59M107 67V62M94 88V95C94 100 97 103 101 103C105 103 108 100 108 95V88" stroke="#FFFDF8" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="149" y="94" fill="#25211F" font-family="Trebuchet MS, Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-1.5">SkillChef</text>
+  <text x="74" y="238" fill="#25211F" font-family="Trebuchet MS, Arial, sans-serif" font-size="72" font-weight="800" letter-spacing="-3.5">Make your repo’s way</text>
+  <text x="74" y="321" fill="#25211F" font-family="Trebuchet MS, Arial, sans-serif" font-size="72" font-weight="800" letter-spacing="-3.5">of working a skill.</text>
+  <text x="80" y="382" fill="#554D46" font-family="Trebuchet MS, Arial, sans-serif" font-size="23">A workbench for repeatable developer workflows.</text>
+  <rect x="77" y="507" width="278" height="48" fill="#A92F3E" stroke="#25211F" stroke-width="2"/>
+  <text x="96" y="538" fill="#FFFDF8" font-family="ui-monospace, monospace" font-size="15" font-weight="700" letter-spacing="1">PREP · COMPILE · REVIEW</text>
+  <rect x="820" y="361" width="302" height="129" fill="#E9A4B0" stroke="#25211F" stroke-width="2" transform="rotate(1.5 820 361)"/>
+  <rect x="808" y="346" width="302" height="129" fill="#FFFDF8" stroke="#25211F" stroke-width="2"/>
+  <path d="M808 346H1110V379H808V346Z" fill="#A92F3E" stroke="#25211F" stroke-width="2"/>
+  <path d="M834 365H852M837 365C837 358 842 353 847 353C852 353 857 358 857 365M841 352V348M847 351V345M853 352V348" stroke="#FFFDF8" stroke-width="2" stroke-linecap="round"/>
+  <text x="868" y="368" fill="#FFFDF8" font-family="ui-monospace, monospace" font-size="13" font-weight="700">THE RECIPE</text>
+  <text x="832" y="422" fill="#25211F" font-family="ui-monospace, monospace" font-size="19" font-weight="700">account-form-validation</text>
+  <text x="832" y="454" fill="#554D46" font-family="Trebuchet MS, Arial, sans-serif" font-size="16">SKILL.md · ready to review</text>
+  <rect x="808" y="475" width="302" height="20" fill="#F2D969" stroke="#25211F" stroke-width="2"/>
 </svg>

@@ -7,6 +7,23 @@ export const DEFAULT_HTTP_MAX_BODY_BYTES = 256_000;
 export const DEFAULT_COMPILE_DEADLINE_MS = 60_000;
 export const DEFAULT_MAX_IN_FLIGHT_COMPILATIONS = 2;
 
+export const MODEL_PROVIDERS = ["openai", "anthropic", "openrouter", "groq"] as const;
+export type ModelProvider = typeof MODEL_PROVIDERS[number];
+
+const PROVIDER_KEYS: Record<ModelProvider, string> = {
+  openai: "OPENAI_API_KEY",
+  anthropic: "ANTHROPIC_API_KEY",
+  openrouter: "OPENROUTER_API_KEY",
+  groq: "GROQ_API_KEY"
+};
+
+const DEFAULT_MODELS: Record<ModelProvider, string> = {
+  openai: "gpt-4.1-mini",
+  anthropic: "claude-sonnet-5",
+  openrouter: "openai/gpt-4.1-mini",
+  groq: "openai/gpt-oss-20b"
+};
+
 export interface RuntimeConfig {
   transport: "stdio" | "http";
   port: number;
@@ -17,6 +34,9 @@ export interface RuntimeConfig {
   allowedHosts: string[];
   modelUrl?: string;
   modelToken?: string;
+  modelProvider?: ModelProvider;
+  modelApiKey?: string;
+  model?: string;
   modelTimeoutMs: number;
   compileDeadlineMs: number;
   maxInFlightCompilations: number;
@@ -77,6 +97,45 @@ function validateRepositories(repositories: string[]): void {
   }
 }
 
+export function loadModelConfig(env: NodeJS.ProcessEnv = process.env): Pick<RuntimeConfig, "modelUrl" | "modelToken" | "modelProvider" | "modelApiKey" | "model"> {
+  const modelUrl = parseModelUrl(env.SKILL_COMPILER_MODEL_URL, env.SKILL_COMPILER_ALLOW_INSECURE_HTTP === "true");
+  const modelToken = env.SKILL_COMPILER_MODEL_TOKEN || undefined;
+  const configuredKeys = MODEL_PROVIDERS.flatMap((provider) => {
+    const key = env[PROVIDER_KEYS[provider]];
+    return key?.trim() ? [{ provider, key }] : [];
+  });
+  const requestedProvider = env.SKILL_COMPILER_PROVIDER?.trim().toLowerCase();
+
+  if (requestedProvider && !(MODEL_PROVIDERS as readonly string[]).includes(requestedProvider)) {
+    throw new Error("SKILL_COMPILER_PROVIDER must be openai, anthropic, openrouter, or groq");
+  }
+  if (modelUrl && requestedProvider) throw new Error("SKILL_COMPILER_MODEL_URL cannot be combined with SKILL_COMPILER_PROVIDER");
+  if (modelUrl && configuredKeys.length > 0) throw new Error("Provider API keys cannot be combined with SKILL_COMPILER_MODEL_URL");
+  if (modelToken && !modelUrl) throw new Error("SKILL_COMPILER_MODEL_TOKEN requires SKILL_COMPILER_MODEL_URL");
+
+  if (modelUrl) return { modelUrl, ...(modelToken ? { modelToken } : {}) };
+
+  let provider: ModelProvider | undefined;
+  if (requestedProvider) {
+    provider = requestedProvider as ModelProvider;
+    if (!env[PROVIDER_KEYS[provider]]?.trim()) {
+      throw new Error(`${PROVIDER_KEYS[provider]} must be set when SKILL_COMPILER_PROVIDER selects ${provider}`);
+    }
+  } else if (configuredKeys.length === 1) {
+    provider = configuredKeys[0].provider;
+  } else if (configuredKeys.length > 1) {
+    throw new Error("Set SKILL_COMPILER_PROVIDER when more than one provider API key is configured");
+  }
+
+  if (!provider) return {};
+  const apiKey = env[PROVIDER_KEYS[provider]]!.trim();
+  return {
+    modelProvider: provider,
+    modelApiKey: apiKey,
+    model: env.SKILL_COMPILER_MODEL?.trim() || DEFAULT_MODELS[provider]
+  };
+}
+
 export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig {
   const transport = env.MCP_TRANSPORT === undefined || env.MCP_TRANSPORT === "stdio"
     ? "stdio"
@@ -88,9 +147,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const allowedOrigins = parseList(env.MCP_HTTP_ALLOWED_ORIGINS);
   const allowedHosts = parseList(env.MCP_HTTP_ALLOWED_HOSTS);
   const normalizedAllowedHosts = allowedHosts.map((host) => host.toLowerCase());
-  const allowInsecureModelHttp = env.SKILL_COMPILER_ALLOW_INSECURE_HTTP === "true";
-  const modelUrl = parseModelUrl(env.SKILL_COMPILER_MODEL_URL, allowInsecureModelHttp);
-  const modelToken = env.SKILL_COMPILER_MODEL_TOKEN || undefined;
+  const modelConfig = loadModelConfig(env);
   const publicSkillRepositories = parseList(env.PUBLIC_SKILL_REPOSITORIES === undefined ? "vercel-labs/agent-skills,anthropics/skills" : env.PUBLIC_SKILL_REPOSITORIES);
   const publicSkillBranch = env.PUBLIC_SKILL_BRANCH?.trim() || "main";
   const publicSkillGithubToken = env.PUBLIC_SKILL_GITHUB_TOKEN || undefined;
@@ -101,7 +158,6 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   if (transport === "http" && !isLoopbackHost(httpHost) && normalizedAllowedHosts.length === 0) {
     throw new Error("MCP_HTTP_ALLOWED_HOSTS is required when MCP_HTTP_HOST is not loopback");
   }
-  if (modelToken && !modelUrl) throw new Error("SKILL_COMPILER_MODEL_TOKEN requires SKILL_COMPILER_MODEL_URL");
   validateOrigins(allowedOrigins);
   validateRepositories(publicSkillRepositories);
   if (!/^[A-Za-z0-9._/-]+$/.test(publicSkillBranch) || publicSkillBranch.includes("..")) throw new Error("PUBLIC_SKILL_BRANCH contains invalid characters");
@@ -114,8 +170,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     ...(bearerToken ? { bearerToken } : {}),
     allowedOrigins,
     allowedHosts: normalizedAllowedHosts.length > 0 || !isLoopbackHost(httpHost) ? normalizedAllowedHosts : ["localhost", "127.0.0.1", "[::1]"],
-    ...(modelUrl ? { modelUrl } : {}),
-    ...(modelToken ? { modelToken } : {}),
+    ...modelConfig,
     modelTimeoutMs: parsePositiveInteger("SKILL_COMPILER_MODEL_TIMEOUT_MS", env.SKILL_COMPILER_MODEL_TIMEOUT_MS, 20_000),
     compileDeadlineMs: parsePositiveInteger("SKILL_COMPILER_DEADLINE_MS", env.SKILL_COMPILER_DEADLINE_MS, DEFAULT_COMPILE_DEADLINE_MS),
     maxInFlightCompilations: parsePositiveInteger("MAX_IN_FLIGHT_COMPILATIONS", env.MAX_IN_FLIGHT_COMPILATIONS, DEFAULT_MAX_IN_FLIGHT_COMPILATIONS),

@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 
 const navItems = [
-  ["overview", "Overview"],
+  ["overview", "Start here"],
   ["how-it-works", "How it works"],
   ["station", "Agent setup"],
+  ["provider-setup", "Model provider"],
   ["the-recipe", "Skill format"],
   ["contract", "Inputs & control"],
   ["safety", "Safety"]
@@ -15,10 +16,15 @@ export function DocsSidebar() {
   const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
+    const visibleSections = new Map<Element, IntersectionObserverEntry>();
     const observer = new IntersectionObserver((entries) => {
-      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      entries.forEach((entry) => visibleSections.set(entry.target, entry));
+      const marker = window.innerHeight * 0.2;
+      const visible = [...visibleSections.values()]
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => Math.abs(a.boundingClientRect.top - marker) - Math.abs(b.boundingClientRect.top - marker));
       if (visible[0]) setActiveSection(visible[0].target.id);
-    }, { rootMargin: "-18% 0px -66% 0px", threshold: 0 });
+    }, { rootMargin: "-12% 0px -74% 0px", threshold: 0 });
     navItems.forEach(([id]) => {
       const section = document.getElementById(id);
       if (section) observer.observe(section);
@@ -29,20 +35,20 @@ export function DocsSidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-intro">
-        <span className="eyebrow">Documentation</span>
+        <span className="eyebrow">SkillChef docs</span>
         <p>Turn a repeatable workflow and approved context into one inspectable agent skill.</p>
       </div>
-      <div className="sidebar-group">
-        <span className="sidebar-label">On this page</span>
-        {navItems.map(([id, label], index) => (
+      <nav className="sidebar-group" aria-label="In this guide">
+        <span className="sidebar-label">In this guide</span>
+        {navItems.map(([id, label]) => (
           <a className={`sidebar-link${activeSection === id ? " active" : ""}`} href={`#${id}`} key={id} aria-current={activeSection === id ? "location" : undefined}>
-            <span>{String(index + 1).padStart(2, "0")}</span> {label}
+            {label}
           </a>
         ))}
-      </div>
+      </nav>
       <div className="sidebar-footer">
-        <div className="status-line"><span className="status-dot" /> Small-batch preview</div>
-        <p>No accounts or repo-context persistence. No repository writes.</p>
+        <div className="status-line"><span className="status-dot" /> Local-first · single owner</div>
+        <p>No accounts, repo-context persistence, or repository writes. Shared hosting is not multi-tenant BYOK.</p>
       </div>
     </aside>
   );

@@ -51,7 +51,7 @@ Set `NEXT_PUBLIC_SITE_URL` at build time when the deployed site needs canonical 
 
 ## Private repository context
 
-The server only accepts context included in the `approved_context` request, but validation is a heuristic safeguard. Before testing with private code, verify the model provider's retention and no-training terms. If those terms cannot be verified, run the deterministic compiler without `SKILL_COMPILER_MODEL_URL` and keep inputs public.
+The server only accepts context included in the `approved_context` request, but validation is a heuristic safeguard. Provider API keys are process-level secrets, never `compile_skill` arguments or prompt text. In shared HTTP mode, every caller uses the same configured provider key and billing identity; it is single-tenant until per-user credential isolation and authorization are implemented. Before testing with private code, verify the selected provider's retention and no-training terms. If those terms cannot be verified, unset provider keys and `SKILL_COMPILER_MODEL_URL` to use the deterministic compiler, and keep inputs public.
 
 ## Release checks
 
