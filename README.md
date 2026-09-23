@@ -15,6 +15,8 @@ npm run dev
 
 The companion Next.js documentation site lives in [`docs-site`](docs-site/). It is a normal static-export Next.js app in this repository. Run it with `cd docs-site && npm run dev`; deployment notes are in [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
+For the end-to-end coding-agent workflow, provider-key handling, and what must be added before a shared hosted BYOK service is safe, see [`PRODUCTION.md`](PRODUCTION.md).
+
 The default transport is stdio. Logs go to stderr so stdout remains available for MCP JSON-RPC.
 
 ## Connect SkillChef
