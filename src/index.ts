@@ -16,6 +16,9 @@ const dependencies = {
   compilerOptions: {
     modelUrl: config.modelUrl,
     modelToken: config.modelToken,
+    modelProvider: config.modelProvider,
+    modelApiKey: config.modelApiKey,
+    model: config.model,
     modelTimeoutMs: config.modelTimeoutMs
   },
   compileDeadlineMs: config.compileDeadlineMs

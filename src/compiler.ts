@@ -5,10 +5,15 @@ import { trimText, validateSkillMarkdown } from "./markdown.js";
 import { buildCompilerPrompt } from "./prompt.js";
 import { readLimitedResponse } from "./body.js";
 import { raceWithAbort } from "./abort.js";
+import type { ModelProvider } from "./config.js";
+import { requestProvider, type ProviderFailure } from "./providers.js";
 
 export interface CompilerOptions {
   modelUrl?: string;
   modelToken?: string;
+  modelProvider?: ModelProvider;
+  modelApiKey?: string;
+  model?: string;
   modelTimeoutMs?: number;
   fetcher?: typeof fetch;
   signal?: AbortSignal;
@@ -75,15 +80,16 @@ function deterministicSkill(input: CompileSkillInput, sources: SkillSource[]): s
     ? trimText(sources.map((source) => `- [${trimText(source.title, 160)}](${trimText(source.url, 500)}) (${trimText(source.sourceHash, 128)})`).join("\n"), 2_400)
     : "- No public source skill was found; use the repository context and task requirements directly.";
   const techniqueLines = sourceTechniques(input, sources);
+  const matchedTechniques = trimText(techniqueLines.join("\n"), 1_800);
   const techniqueSection = techniqueLines.length
-    ? `## Matched Techniques\n\nThe following source notes matched this task. Treat them as reference material, check them against the repository, and review commands before use.\n\n${techniqueLines.join("\n")}\n\n`
+    ? `## Matched Techniques\n\nThe following source notes matched this task. Treat them as reference material, check them against the repository, and review commands before use.\n\n${matchedTechniques}\n\n`
     : "";
   const contextLines = input.approved_context.length
-    ? trimText(input.approved_context.map((file) => `- \`${file.path}\`: ${file.reason}`).join("\n"), 2_800)
+    ? trimText(input.approved_context.map((file) => `- \`${file.path}\`: ${file.reason}`).join("\n"), 1_800)
     : "- No repository files were approved; ask for the minimum context needed before making assumptions.";
-  const task = trimText(input.task.trim(), 2_800);
-  const projectBrief = trimText(input.project_brief ?? "No project brief was provided.", 2_200);
-  const exampleTask = trimText(input.task.trim(), 1_400);
+  const task = trimText(input.task.trim(), 2_000);
+  const projectBrief = trimText(input.project_brief ?? "No project brief was provided.", 1_500);
+  const exampleTask = trimText(input.task.trim(), 1_000);
 
   return `---
 name: ${identity.name}
@@ -137,9 +143,21 @@ function parseModelResponse(value: unknown): string | null {
   return null;
 }
 
-async function compileWithModel(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions): Promise<string | null> {
-  if (!options.modelUrl) return null;
-  if (options.signal?.aborted) return null;
+interface ModelAttempt {
+  markdown: string | null;
+  failure?: string;
+}
+
+function safeProviderFailure(failure: ProviderFailure): string {
+  if (failure.kind === "http") return `provider returned HTTP ${failure.status}`;
+  if (failure.kind === "oversized") return "provider response exceeded the size limit";
+  if (failure.kind === "network") return "provider request failed or timed out";
+  return "provider returned an invalid response";
+}
+
+async function compileWithModel(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions): Promise<ModelAttempt> {
+  if (!options.modelUrl && !(options.modelProvider && options.modelApiKey && options.model)) return { markdown: null };
+  if (options.signal?.aborted) return { markdown: null, failure: "cancelled" };
   const fetcher = options.fetcher ?? fetch;
   const prompt = buildCompilerPrompt(input, sources);
   const controller = new AbortController();
@@ -151,7 +169,20 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
     else options.signal.addEventListener("abort", abortFromParent, { once: true });
   }
   try {
-    const request = Promise.resolve().then(() => fetcher(options.modelUrl!, {
+    const request = Promise.resolve().then(async (): Promise<ModelAttempt> => {
+      if (options.modelProvider && options.modelApiKey && options.model) {
+        const result = await requestProvider({
+          provider: options.modelProvider,
+          model: options.model,
+          apiKey: options.modelApiKey,
+          prompt,
+          fetcher,
+          signal: controller.signal
+        });
+        if ("failure" in result) return { markdown: null, failure: safeProviderFailure(result.failure) };
+        return { markdown: result.text };
+      }
+      const response = await fetcher(options.modelUrl!, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -160,24 +191,33 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
         redirect: "error",
         body: JSON.stringify(prompt),
         signal: controller.signal
-      })).then(async (response) => {
-        if (!response.ok) return null;
-        const body = JSON.parse(await readLimitedResponse(response, LIMITS.modelResponseBytes, controller.signal));
-        const markdown = parseModelResponse(body);
-        if (!markdown) return null;
-        validateSkillMarkdown(markdown);
-        if (findSecretKinds(markdown).length > 0) return null;
-        return markdown;
       });
-    const timeoutOperation = new Promise<null>((_, reject) => {
+      if (!response.ok) {
+        if (response.body) void response.body.cancel().catch(() => undefined);
+        return { markdown: null, failure: `model endpoint returned HTTP ${response.status}` };
+      }
+      const body = JSON.parse(await readLimitedResponse(response, LIMITS.modelResponseBytes, controller.signal));
+      const markdown = parseModelResponse(body);
+      return markdown ? { markdown } : { markdown: null, failure: "model endpoint returned an invalid response" };
+    });
+    const timeoutOperation = new Promise<never>((_, reject) => {
       timeout = setTimeout(() => {
         controller.abort(new Error(`Model request timed out after ${timeoutMs}ms`));
         reject(new Error(`Model request timed out after ${timeoutMs}ms`));
       }, timeoutMs);
     });
-    return await raceWithAbort(Promise.race([request, timeoutOperation]), options.signal, abortFromParent, "Skill compilation deadline exceeded");
-  } catch {
-    return null;
+    const attempt = await raceWithAbort(Promise.race([request, timeoutOperation]), options.signal, abortFromParent, "Skill compilation deadline exceeded");
+    if (!attempt.markdown) return attempt;
+    validateSkillMarkdown(attempt.markdown);
+    if (findSecretKinds(attempt.markdown).length > 0) return { markdown: null, failure: "model output failed safety validation" };
+    return attempt;
+  } catch (error) {
+    const failure = controller.signal.aborted && !options.signal?.aborted
+      ? `model request timed out after ${timeoutMs}ms`
+      : error instanceof Error && error.message.startsWith("Response exceeded ")
+        ? "model response exceeded the size limit"
+        : "model request failed or returned invalid output";
+    return { markdown: null, failure };
   } finally {
     if (timeout) clearTimeout(timeout);
     options.signal?.removeEventListener("abort", abortFromParent);
@@ -197,8 +237,9 @@ function riskNotesFor(input: CompileSkillInput, sources: SkillSource[], markdown
 export async function compileSkill(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions = {}): Promise<CompileSkillResponse> {
   const blockedSources = sources.filter((source) => findSecretKinds(source.content).length > 0);
   const safeSources = sources.filter((source) => findSecretKinds(source.content).length === 0);
-  const modelMarkdown = await compileWithModel(input, safeSources, options);
+  const modelAttempt = await compileWithModel(input, safeSources, options);
   if (options.signal?.aborted) throw new Error("Skill compilation deadline exceeded");
+  const modelMarkdown = modelAttempt.markdown;
   const skillMarkdown = modelMarkdown ?? deterministicSkill(input, sources);
   validateSkillMarkdown(skillMarkdown);
 
@@ -211,9 +252,9 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
       "Added repository constraints and approved-context references.",
       modelMarkdown
         ? "Compiled with the configured model endpoint."
-        : options.modelUrl
-          ? "The configured model endpoint did not return valid output; used the deterministic compiler fallback."
-          : "Compiled with the deterministic local compiler; no model endpoint was configured.",
+        : options.modelUrl || options.modelProvider
+          ? `The configured ${options.modelProvider ?? "model endpoint"} ${modelAttempt.failure ?? "did not produce valid output"}; used the deterministic compiler fallback.`
+          : "Compiled with the deterministic local compiler; no model provider was configured.",
       sources.length ? `Adapted guidance from ${sources.length} public skill source(s).` : "No public source skill was available; compiled from the approved request context.",
       ...(blockedSources.length ? [`Withheld ${blockedSources.length} public source(s) containing secret-like material from the model prompt.`] : [])
     ],

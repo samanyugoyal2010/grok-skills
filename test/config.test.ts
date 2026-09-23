@@ -30,7 +30,7 @@ test("selects one locally configured provider with a conservative model default"
   assert.equal(config.model, "gpt-4.1-mini");
   assert.equal(loadRuntimeConfig({ ANTHROPIC_API_KEY: "local-anthropic-key" }).model, "claude-sonnet-5");
   assert.equal(loadRuntimeConfig({ OPENROUTER_API_KEY: "local-openrouter-key" }).model, "openai/gpt-4.1-mini");
-  assert.equal(loadRuntimeConfig({ GROQ_API_KEY: "local-groq-key" }).model, "llama-3.3-70b-versatile");
+  assert.equal(loadRuntimeConfig({ GROQ_API_KEY: "local-groq-key" }).model, "openai/gpt-oss-20b");
 });
 
 test("requires an explicit provider when multiple local API keys are set", () => {

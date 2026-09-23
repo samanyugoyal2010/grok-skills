@@ -21,7 +21,7 @@ const DEFAULT_MODELS: Record<ModelProvider, string> = {
   openai: "gpt-4.1-mini",
   anthropic: "claude-sonnet-5",
   openrouter: "openai/gpt-4.1-mini",
-  groq: "llama-3.3-70b-versatile"
+  groq: "openai/gpt-oss-20b"
 };
 
 export interface RuntimeConfig {
@@ -97,7 +97,7 @@ function validateRepositories(repositories: string[]): void {
   }
 }
 
-function resolveModelConfig(env: NodeJS.ProcessEnv): Pick<RuntimeConfig, "modelUrl" | "modelToken" | "modelProvider" | "modelApiKey" | "model"> {
+export function loadModelConfig(env: NodeJS.ProcessEnv = process.env): Pick<RuntimeConfig, "modelUrl" | "modelToken" | "modelProvider" | "modelApiKey" | "model"> {
   const modelUrl = parseModelUrl(env.SKILL_COMPILER_MODEL_URL, env.SKILL_COMPILER_ALLOW_INSECURE_HTTP === "true");
   const modelToken = env.SKILL_COMPILER_MODEL_TOKEN || undefined;
   const configuredKeys = MODEL_PROVIDERS.flatMap((provider) => {
@@ -147,7 +147,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const allowedOrigins = parseList(env.MCP_HTTP_ALLOWED_ORIGINS);
   const allowedHosts = parseList(env.MCP_HTTP_ALLOWED_HOSTS);
   const normalizedAllowedHosts = allowedHosts.map((host) => host.toLowerCase());
-  const modelConfig = resolveModelConfig(env);
+  const modelConfig = loadModelConfig(env);
   const publicSkillRepositories = parseList(env.PUBLIC_SKILL_REPOSITORIES === undefined ? "vercel-labs/agent-skills,anthropics/skills" : env.PUBLIC_SKILL_REPOSITORIES);
   const publicSkillBranch = env.PUBLIC_SKILL_BRANCH?.trim() || "main";
   const publicSkillGithubToken = env.PUBLIC_SKILL_GITHUB_TOKEN || undefined;

@@ -70,6 +70,36 @@ test("reports model compilation in the change summary", async () => {
   assert.match(result.changeSummary.join(" "), /configured model endpoint/);
 });
 
+test("uses the configured provider adapter without placing its key in the prompt and reports safe failures", async () => {
+  const apiKey = "provider-secret-only-in-server-config";
+  let serializedRequest = "";
+  const result = await compileSkill(input, [], {
+    modelProvider: "openai",
+    modelApiKey: apiKey,
+    model: "gpt-4.1-mini",
+    fetcher: (async (_url, init) => {
+      serializedRequest = String(init?.body);
+      assert.equal(new Headers(init?.headers).get("authorization"), `Bearer ${apiKey}`);
+      return new Response(JSON.stringify({ output_text: "invalid skill" }), { status: 200 });
+    }) as typeof fetch
+  });
+  assert.equal(serializedRequest.includes(apiKey), false);
+  assert.match(result.changeSummary.join(" "), /openai.*used the deterministic compiler fallback/);
+  assert.doesNotMatch(result.changeSummary.join(" "), new RegExp(apiKey));
+});
+
+test("times out provider calls that do not resolve and keeps the deterministic fallback", async () => {
+  const result = await compileSkill(input, [], {
+    modelProvider: "groq",
+    modelApiKey: "server-only-key",
+    model: "openai/gpt-oss-20b",
+    modelTimeoutMs: 10,
+    fetcher: (async () => new Promise<Response>(() => {})) as typeof fetch
+  });
+  assert.match(result.changeSummary.join(" "), /timed out.*deterministic compiler fallback/);
+  assert.doesNotMatch(result.changeSummary.join(" "), /server-only-key/);
+});
+
 test("falls back when the model endpoint times out or fails", async () => {
   const result = await compileSkill(input, [], {
     modelUrl: "https://model.example/compile",
