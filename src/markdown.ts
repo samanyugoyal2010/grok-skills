@@ -33,3 +33,25 @@ export function validateSkillMarkdown(markdown: string): void {
 export function trimText(value: string, max: number): string {
   return value.length <= max ? value : `${value.slice(0, max - 1)}…`;
 }
+
+export function singleLine(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").replace(/\s{2,}/g, " ").trim();
+}
+
+export function escapeMarkdownInline(value: string): string {
+  return singleLine(value).replaceAll("\\", "\\\\").replaceAll("`", "\\`");
+}
+
+export function escapeMarkdownLinkLabel(value: string): string {
+  return escapeMarkdownInline(value).replaceAll("[", "\\[").replaceAll("]", "\\]");
+}
+
+export function escapeMarkdownUrl(value: string): string {
+  const normalized = singleLine(value).replace(/[<>\r\n]/g, "");
+  try {
+    const parsed = new URL(normalized);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? normalized : "#";
+  } catch {
+    return "#";
+  }
+}

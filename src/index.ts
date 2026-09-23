@@ -33,7 +33,14 @@ if (config.transport === "http") {
     allowedOrigins: config.allowedOrigins,
     allowedHosts: config.allowedHosts,
     maxBodyBytes: config.httpMaxBodyBytes,
-    rateLimiter: new RateLimiter(config.rateLimitPerMinute, 60_000, config.rateLimitMaxKeys)
+    rateLimiter: new RateLimiter(config.rateLimitPerMinute, 60_000, config.rateLimitMaxKeys),
+    ...(config.httpClientIdHeader ? {
+      clientKey: (request) => {
+        const value = request.headers[config.httpClientIdHeader!];
+        const first = Array.isArray(value) ? value[0] : value;
+        return first?.trim() || request.socket?.remoteAddress || "anonymous";
+      }
+    } : {})
   });
   const httpServer = createNodeServer(protectedHandler);
   httpServer.requestTimeout = 120_000;
@@ -77,7 +84,9 @@ if (config.transport === "http") {
   process.once("SIGINT", () => void shutdown());
   process.once("SIGTERM", () => void shutdown());
 } else {
-  const handle = serveStdio(() => createServer(dependencies));
+  const handle = serveStdio(() => createServer(dependencies), {
+    onerror: (error) => console.error(`skillchef MCP stdio error: ${error.message}`)
+  });
   console.error("skillchef MCP running over stdio");
   let shutdownStarted = false;
   const shutdown = () => {

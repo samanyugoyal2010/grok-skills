@@ -60,6 +60,7 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
             if (controller.signal.aborted) throw new Error("Skill compilation deadline exceeded");
             const result = await compileSkill(input, sources, {
               ...compilerOptions,
+              retrievalStatus: retriever.getLastSearchStatus?.(),
               signal: controller.signal
             });
             return {

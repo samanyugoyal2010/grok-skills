@@ -117,6 +117,24 @@ test("enforces HTTP rate limits per client with Retry-After", () => {
   assert.equal(handled, 2);
 });
 
+test("supports a trusted proxy client identity function for rate limiting", () => {
+  let handled = 0;
+  const guarded = createProtectedHttpHandler(() => { handled += 1; }, {
+    rateLimiter: new RateLimiter(1, 60_000),
+    clientKey: (incoming) => String(incoming.headers["x-real-ip"] ?? incoming.socket?.remoteAddress ?? "anonymous")
+  });
+  const first = response();
+  guarded(request("/mcp", { "x-real-ip": "198.51.100.10" }, "GET", "127.0.0.1") as never, first as never);
+  const sameClient = response();
+  guarded(request("/mcp", { "x-real-ip": "198.51.100.10" }, "GET", "127.0.0.2") as never, sameClient as never);
+  const otherClient = response();
+  guarded(request("/mcp", { "x-real-ip": "198.51.100.11" }, "GET", "127.0.0.2") as never, otherClient as never);
+  assert.equal(first.statusCode, 200);
+  assert.equal(sameClient.statusCode, 429);
+  assert.equal(otherClient.statusCode, 200);
+  assert.equal(handled, 2);
+});
+
 test("serves a cache-disabled health response without invoking MCP", () => {
   let handled = 0;
   const guarded = createProtectedHttpHandler(() => { handled += 1; }, { allowedHosts: ["localhost"] });

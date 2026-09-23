@@ -37,6 +37,7 @@ export interface RuntimeConfig {
   bearerToken?: string;
   allowedOrigins: string[];
   allowedHosts: string[];
+  httpClientIdHeader?: string;
   modelUrl?: string;
   modelToken?: string;
   modelProvider?: ModelProvider;
@@ -64,6 +65,13 @@ function parsePositiveInteger(name: string, value: string | undefined, fallback:
 
 function parseList(value: string | undefined): string[] {
   return (value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function parseHeaderName(value: string | undefined): string | undefined {
+  const header = value?.trim().toLowerCase();
+  if (!header) return undefined;
+  if (!/^[a-z0-9-]+$/.test(header)) throw new Error("MCP_HTTP_CLIENT_ID_HEADER must be a valid HTTP header name");
+  return header;
 }
 
 function isLoopbackHostname(hostname: string): boolean {
@@ -177,6 +185,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const bearerToken = env.MCP_HTTP_AUTH_TOKEN || undefined;
   const allowedOrigins = parseList(env.MCP_HTTP_ALLOWED_ORIGINS);
   const allowedHosts = parseList(env.MCP_HTTP_ALLOWED_HOSTS);
+  const httpClientIdHeader = parseHeaderName(env.MCP_HTTP_CLIENT_ID_HEADER);
   const normalizedAllowedHosts = allowedHosts.map((host) => host.toLowerCase());
   const modelConfig = loadModelConfig(env);
   const publicSkillRepositories = parseList(env.PUBLIC_SKILL_REPOSITORIES === undefined ? "vercel-labs/agent-skills,anthropics/skills" : env.PUBLIC_SKILL_REPOSITORIES);
@@ -201,6 +210,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     ...(bearerToken ? { bearerToken } : {}),
     allowedOrigins,
     allowedHosts: normalizedAllowedHosts.length > 0 || !isLoopbackHost(httpHost) ? normalizedAllowedHosts : ["localhost", "127.0.0.1", "[::1]"],
+    ...(httpClientIdHeader ? { httpClientIdHeader } : {}),
     ...modelConfig,
     modelTimeoutMs: parsePositiveInteger("SKILL_COMPILER_MODEL_TIMEOUT_MS", env.SKILL_COMPILER_MODEL_TIMEOUT_MS, 20_000),
     compileDeadlineMs: parsePositiveInteger("SKILL_COMPILER_DEADLINE_MS", env.SKILL_COMPILER_DEADLINE_MS, DEFAULT_COMPILE_DEADLINE_MS),

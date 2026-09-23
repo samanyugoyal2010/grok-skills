@@ -193,3 +193,31 @@ test("withholds secret-like public source content from the model prompt", async 
   assert.equal(result.sources.length, 1);
   assert.equal(result.riskNotes.some((note) => note.category === "secret-like-value"), true);
 });
+
+test("does not claim blocked sources were adapted and escapes Markdown metadata", async () => {
+  const result = await compileSkill({
+    ...input,
+    task: "Add a `profile` page\n## Injected heading",
+    project_brief: "Use `existing` conventions\n- injected list item",
+    approved_context: [{ path: "src/`routes`.ts\n## path", reason: "Current `route` boundary\n- injected", content: "export const routes = {};" }]
+  }, [{ ...source, title: "Source [title]", url: "https://example.com/a)>\nunsafe", content: "password=supersecret123" }]);
+
+  assert.match(result.changeSummary.join(" "), /No public source skill was available/);
+  assert.match(result.changeSummary.join(" "), /Withheld 1 public source/);
+  assert.doesNotMatch(result.skillMarkdown, /^## Injected heading$/m);
+  assert.match(result.skillMarkdown, /profile/);
+  assert.match(result.skillMarkdown, /\\`routes\\`/);
+});
+
+test("does not emit non-web source URLs into Markdown links", async () => {
+  const result = await compileSkill(input, [{ ...source, url: "javascript:alert(1)" }]);
+  assert.doesNotMatch(result.skillMarkdown, /javascript:/i);
+  assert.match(result.skillMarkdown, /\]\(<#>\)/);
+});
+
+test("distinguishes incomplete public retrieval from a genuine empty result", async () => {
+  const failed = await compileSkill(input, [], { retrievalStatus: "failed" });
+  assert.match(failed.changeSummary.join(" "), /retrieval failed/);
+  const partial = await compileSkill(input, [], { retrievalStatus: "partial" });
+  assert.match(partial.changeSummary.join(" "), /retrieval was incomplete/);
+});

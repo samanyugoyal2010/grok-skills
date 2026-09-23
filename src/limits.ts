@@ -51,7 +51,7 @@ const secretPatterns: Array<[string, RegExp]> = [
   ["database-url", /\b(?:DATABASE_URL|REDIS_URL|MONGODB_URI)\s*[:=]\s*(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis):\/\/[^\s"'`]+/i],
 ];
 
-const credentialAssignmentPattern = /\b(?:[A-Z0-9_]*(?:API[_-]?KEY|SECRET|PASSWORD|TOKEN)[A-Z0-9_]*)\s*[:=]\s*["']?([A-Z0-9_./+=-]{8,})["']?(?=\s|$|[;,])/i;
+const credentialAssignmentPattern = /\b(?:[A-Z0-9_]*(?:API[_-]?KEY|SECRET|PASSWORD|TOKEN)[A-Z0-9_]*)\s*[:=]\s*["']?([A-Z0-9_./+=-]{8,})["']?(?=\s|$|[;,])/gi;
 
 function isPlaceholderCredential(value: string): boolean {
   return /(?:test|dummy|example|placeholder|fake|sample|replace[-_ ]?me)/i.test(value);
@@ -59,8 +59,12 @@ function isPlaceholderCredential(value: string): boolean {
 
 export function findSecretKinds(value: string): string[] {
   const kinds = secretPatterns.filter(([, pattern]) => pattern.test(value)).map(([kind]) => kind);
-  const assignment = credentialAssignmentPattern.exec(value);
-  if (assignment && !isPlaceholderCredential(assignment[1])) kinds.push("credential-assignment");
+  for (const assignment of value.matchAll(credentialAssignmentPattern)) {
+    if (!isPlaceholderCredential(assignment[1])) {
+      kinds.push("credential-assignment");
+      break;
+    }
+  }
   return [...new Set(kinds)];
 }
 

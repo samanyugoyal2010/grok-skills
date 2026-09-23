@@ -58,13 +58,42 @@ test("caches public tree and skill responses within one retriever", async () => 
 });
 
 test("passes the optional GitHub token as a request header", async () => {
-  let receivedHeaders: Record<string, string> | undefined;
+  const receivedHeaders: Array<{ url: string; headers: Record<string, string> | undefined }> = [];
   const retriever = new GitHubSkillRetriever(["acme/skills"], async (_url, _signal, headers) => {
-    receivedHeaders = headers;
+    receivedHeaders.push({ url: _url, headers });
     return JSON.stringify({ tree: [] });
   }, "main", 10, "github-token");
   await retriever.search("frontend");
-  assert.deepEqual(receivedHeaders, { authorization: "Bearer github-token" });
+  assert.deepEqual(receivedHeaders, [{ url: "https://api.github.com/repos/acme/skills/git/trees/main?recursive=1", headers: { authorization: "Bearer github-token" } }]);
+});
+
+test("does not send the GitHub API token to raw source URLs", async () => {
+  const receivedHeaders: Array<{ url: string; headers: Record<string, string> | undefined }> = [];
+  const retriever = new GitHubSkillRetriever(["acme/skills"], async (url, _signal, headers) => {
+    receivedHeaders.push({ url, headers });
+    return url.startsWith("https://api.github.com/")
+      ? JSON.stringify({ tree: [{ path: "skills/frontend/SKILL.md", type: "blob" }] })
+      : "# Frontend\nUse the existing components.";
+  }, "main", 10, "github-token");
+  await retriever.search("frontend");
+  assert.deepEqual(receivedHeaders, [
+    { url: "https://api.github.com/repos/acme/skills/git/trees/main?recursive=1", headers: { authorization: "Bearer github-token" } },
+    { url: "https://raw.githubusercontent.com/acme/skills/main/skills/frontend/SKILL.md", headers: undefined }
+  ]);
+});
+
+test("reports partial and failed retrieval status without throwing", async () => {
+  const partial = new GitHubSkillRetriever(["acme/one", "acme/two"], async (url) => {
+    if (url.includes("acme/one")) return JSON.stringify({ tree: [{ path: "skills/frontend/SKILL.md", type: "blob" }] });
+    if (url.includes("api.github.com/repos/acme/two")) throw new Error("rate limited");
+    return "# Frontend\nUse the existing components.";
+  });
+  assert.equal((await partial.search("frontend")).length, 1);
+  assert.equal(partial.getLastSearchStatus(), "partial");
+
+  const failed = new GitHubSkillRetriever(["acme/skills"], async () => { throw new Error("timeout"); });
+  assert.deepEqual(await failed.search("frontend"), []);
+  assert.equal(failed.getLastSearchStatus(), "failed");
 });
 
 test("encodes unusual public skill path segments in source URLs", async () => {

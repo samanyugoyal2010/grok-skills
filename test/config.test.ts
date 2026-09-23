@@ -96,6 +96,12 @@ test("fails fast for invalid runtime configuration", () => {
   assert.throws(() => loadRuntimeConfig({ RATE_LIMIT_MAX_KEYS: "0" }), /RATE_LIMIT_MAX_KEYS/);
 });
 
+test("accepts a configured trusted proxy client identity header", () => {
+  const config = loadRuntimeConfig({ MCP_TRANSPORT: "http", MCP_HTTP_CLIENT_ID_HEADER: "X-Real-IP" });
+  assert.equal(config.httpClientIdHeader, "x-real-ip");
+  assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", MCP_HTTP_CLIENT_ID_HEADER: "x bad" }), /header name/);
+});
+
 test("allows loopback HTTP for local model development and rejects remote HTTP by default", () => {
   assert.equal(loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "http://127.0.0.1:8080/compile" }).modelUrl, "http://127.0.0.1:8080/compile");
   assert.equal(loadRuntimeConfig({ SKILL_COMPILER_MODEL_URL: "http://model.example/compile", SKILL_COMPILER_ALLOW_INSECURE_HTTP: "true" }).modelUrl, "http://model.example/compile");

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { LIMITS } from "./limits.js";
-import type { SkillRetriever, SkillSource } from "./types.js";
+import type { SkillRetriever, SkillRetrievalStatus, SkillSource } from "./types.js";
 import { readLimitedResponse } from "./body.js";
 import { abortReason, raceWithAbort } from "./abort.js";
 
@@ -83,6 +83,7 @@ interface GitTreeResponse {
 export class GitHubSkillRetriever implements SkillRetriever {
   private readonly responseCache = new Map<string, { value: string; expiresAt: number }>();
   private cachedBytes = 0;
+  private lastSearchStatus: SkillRetrievalStatus = "complete";
 
   constructor(
     private readonly repositories = (process.env.PUBLIC_SKILL_REPOSITORIES ?? "vercel-labs/agent-skills,anthropics/skills").split(",").map((repo) => repo.trim()).filter(Boolean),
@@ -91,6 +92,10 @@ export class GitHubSkillRetriever implements SkillRetriever {
     private readonly timeoutMs = Number(process.env.PUBLIC_SKILL_FETCH_TIMEOUT_MS ?? 10_000),
     private readonly githubToken = process.env.PUBLIC_SKILL_GITHUB_TOKEN
   ) {}
+
+  getLastSearchStatus(): SkillRetrievalStatus {
+    return this.lastSearchStatus;
+  }
 
   private async fetchWithTimeout(url: string, signal?: AbortSignal): Promise<string> {
     if (signal?.aborted) throw abortReason(signal, "Public skill fetch aborted");
@@ -113,7 +118,9 @@ export class GitHubSkillRetriever implements SkillRetriever {
       else signal.addEventListener("abort", abort, { once: true });
     }
     try {
-      const fetchOperation = Promise.resolve().then(() => this.fetcher(url, controller.signal, this.githubToken ? { authorization: `Bearer ${this.githubToken}` } : undefined));
+      const isGithubApiRequest = new URL(url).hostname === "api.github.com";
+      const headers = this.githubToken && isGithubApiRequest ? { authorization: `Bearer ${this.githubToken}` } : undefined;
+      const fetchOperation = Promise.resolve().then(() => this.fetcher(url, controller.signal, headers));
       const value = await raceWithAbort(Promise.race([
         fetchOperation,
         new Promise<string>((_, reject) => {
@@ -148,6 +155,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
   }
 
   async search(query: string, signal?: AbortSignal): Promise<SkillSource[]> {
+    let hadFailure = false;
     const repositories = this.repositories.slice(0, LIMITS.repositories);
     const candidateGroups = await mapWithConcurrency(repositories, 2, async (repository) => {
       try {
@@ -157,6 +165,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
           .map((entry) => ({ repository, path: entry.path!, score: score(query, entry.path!) }));
       } catch {
         // A missing or rate-limited repository must not make other sources fail.
+        hadFailure = true;
         return [];
       }
     });
@@ -173,10 +182,11 @@ export class GitHubSkillRetriever implements SkillRetriever {
         return { candidate, sourceUrl, content };
       } catch {
         // A single stale public entry must not make the whole compile fail.
+        hadFailure = true;
         return null;
       }
     });
-    return retrieved
+    const results = retrieved
       .filter((source): source is { candidate: typeof candidates[number]; sourceUrl: string; content: string } => source !== null)
       .sort((a, b) => {
         const scoreDifference = score(query, b.candidate.path, b.content) - score(query, a.candidate.path, a.content);
@@ -194,5 +204,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
           content
         } satisfies SkillSource;
       });
+    this.lastSearchStatus = hadFailure ? (results.length > 0 ? "partial" : "failed") : "complete";
+    return results;
   }
 }
