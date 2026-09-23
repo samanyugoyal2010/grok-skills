@@ -9,6 +9,7 @@ import {
 import { CodeBlock } from "./components/code-block";
 import { DocsSidebar } from "./components/docs-sidebar";
 import { RecipeStation } from "./components/recipe-station";
+import { ProviderSetup } from "./components/provider-setup";
 
 const repositoryUrl = "https://github.com/samanyugoyal2010/grok-skills";
 
@@ -91,30 +92,33 @@ description: Add and verify client-side validation in account settings.
           </section>
 
           <section className="promise-strip" aria-label="Workflow summary">
-            <p>Four inputs. One reviewable file.</p>
+            <p>From task to reviewable file.</p>
             <div><span>Task</span><b>→</b><span>Approved files</span><b>→</b><span>Public skills</span><b>→</b><span><code>SKILL.md</code></span></div>
           </section>
 
           <section className="section method-section" id="how-it-works">
             <div className="section-heading">
               <span className="section-kicker">How it works</span>
-              <div><h2>Three steps. You approve each input.</h2><p>SkillChef does not choose which private files to read or install the result on your behalf.</p></div>
+              <div><h2>A small, reviewable path from task to skill.</h2><p>Your coding agent stays in control of file selection and installation. SkillChef only compiles the request it receives.</p></div>
             </div>
             <div className="method-line">
-              <article className="method-step"><span className="method-index">01</span><h3>Describe the repeatable task</h3><p>Include the outcome, project conventions, and what “done” means.</p></article>
-              <article className="method-step method-step-accent"><span className="method-index">02</span><h3>Approve the project context</h3><p>Your agent proposes paths. Only the files you approve are sent.</p></article>
-              <article className="method-step"><span className="method-index">03</span><h3>Inspect before installing</h3><p>Review the procedure, source links, context manifest, and risk notes.</p></article>
+              <article className="method-step"><span className="method-index">01</span><h3>Describe the work</h3><p>Send a task, optional project brief, and the result you want the skill to guide.</p></article>
+              <article className="method-step method-step-accent"><span className="method-index">02</span><h3>Approve specific files</h3><p>Your agent proposes paths. It sends only the text you approve—never a repository checkout.</p></article>
+              <article className="method-step"><span className="method-index">03</span><h3>Compile against public references</h3><p>SkillChef searches configured public GitHub skill repositories, then uses your configured model—or its local deterministic compiler.</p></article>
+              <article className="method-step"><span className="method-index">04</span><h3>Review, then decide</h3><p>Inspect the skill, sources, context manifest, and risk notes. Your agent does not save or run it for you.</p></article>
             </div>
           </section>
 
           <section className="section station-section" id="station">
             <div className="section-heading">
               <span className="section-kicker">Agent setup</span>
-              <div><h2>Connect SkillChef to your coding agent.</h2><p>Add the MCP server once. Save each reviewed skill in the folder that agent scans.</p></div>
+              <div><h2>Run the compiler beside your agent.</h2><p>In the local setup, your coding agent starts SkillChef as an MCP child process. The page only documents setup; provider keys never belong in this site or an agent config.</p></div>
             </div>
             <div className="build-row"><div><span className="tiny-label">Build locally</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
             <RecipeStation />
           </section>
+
+          <ProviderSetup />
 
           <section className="section recipe-section" id="the-recipe">
             <div className="section-heading">
@@ -134,15 +138,15 @@ description: Add and verify client-side validation in account settings.
           <section className="section contract-section" id="contract">
             <div className="section-heading">
               <span className="section-kicker">What goes in</span>
-              <div><h2>Only approved context goes into the request.</h2><p>SkillChef does not read your working tree. The client passes the file paths and contents you approved.</p></div>
+              <div><h2>Know what leaves the machine.</h2><p>The MCP tool receives the approved task payload. With a model provider configured, that payload is sent for synthesis; without one, the deterministic compiler runs locally.</p></div>
             </div>
             <div className="contract-layout">
               <CodeBlock label="compile_skill · request" value={requestExample} />
               <div className="boundary-list">
-                <div><Check size={15} aria-hidden="true" /><span>Only submitted context reaches the compiler.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span>No repository edits or command execution.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span>Sources are public GitHub SKILL.md files.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span>Review the skill and risk notes before installing.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span><b>Local MCP process:</b> receives the task and approved text from your coding agent.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span><b>GitHub:</b> receives public retrieval requests for configured skill repositories.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span><b>Model provider (optional):</b> receives the submitted task, brief, approved file contents, and selected public skill excerpts for synthesis.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span><b>Your repository:</b> is never read or changed by SkillChef; your agent asks before saving the returned file.</span></div>
                 <a href="https://agentskills.io/specification" target="_blank" rel="noreferrer">Read the Agent Skills specification <ArrowUpRight size={14} aria-hidden="true" /></a>
               </div>
             </div>
@@ -150,7 +154,7 @@ description: Add and verify client-side validation in account settings.
 
           <section className="safety-section" id="safety">
             <div className="safety-mark"><ShieldCheck size={20} aria-hidden="true" /></div>
-            <div><span className="section-kicker">Safety</span><h2>Read it like a code change.</h2><p>Public skills can contain unsafe or irrelevant instructions. SkillChef labels sources and flags risky patterns, but those checks are advisory. Without a model endpoint, compilation stays local. If you configure one, approved context is sent to that provider; check its retention terms. Review the generated file before installing it.</p></div>
+            <div><span className="section-kicker">Safety & deployment</span><h2>Local-first today. Not shared BYOK hosting.</h2><p>SkillChef has no user accounts, persistent storage, or per-user provider credentials. Its optional HTTP transport uses the server’s single provider key and billing identity, so it is for a private single-owner deployment—not a public multi-user service. Before sending private code, verify the chosen provider’s current retention and training terms. Public skills and model output are untrusted; risk checks are advisory. Review the generated file before installing it.</p><p className="safety-followup">For a hosted multi-user product, add authentication, per-user authorization and isolated credentials, managed secret storage, tenant-aware rate limits, and explicit data-retention controls first.</p></div>
           </section>
 
           <footer className="footer"><a className="footer-brand" href="#overview"><ChefHat size={17} aria-hidden="true" /> SkillChef</a><span>Task-time compiler for repo-specific agent skills.</span><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRight size={13} aria-hidden="true" /></a></footer>

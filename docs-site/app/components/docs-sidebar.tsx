@@ -6,6 +6,7 @@ const navItems = [
   ["overview", "Start here"],
   ["how-it-works", "How it works"],
   ["station", "Agent setup"],
+  ["provider-setup", "Model provider"],
   ["the-recipe", "Skill format"],
   ["contract", "Inputs & control"],
   ["safety", "Safety"]
@@ -41,8 +42,8 @@ export function DocsSidebar() {
         ))}
       </nav>
       <div className="sidebar-footer">
-        <div className="status-line"><span className="status-dot" /> Small-batch preview</div>
-        <p>No accounts or repo-context persistence. No repository writes.</p>
+        <div className="status-line"><span className="status-dot" /> Local-first · single owner</div>
+        <p>No accounts, repo-context persistence, or repository writes. Shared hosting is not multi-tenant BYOK.</p>
       </div>
     </aside>
   );
