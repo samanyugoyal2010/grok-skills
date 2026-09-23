@@ -107,13 +107,24 @@ description: Add and verify client-side validation in account settings.
           <section className="section method-section" id="how-it-works">
             <div className="section-heading">
               <span className="section-kicker">How it works</span>
-              <div><h2>A small, reviewable path from task to skill.</h2><p>Your coding agent stays in control of file selection and installation. SkillChef only compiles the request it receives.</p></div>
+              <div><h2>Prep the context. Cook the skill. Taste before saving.</h2><p>Your coding agent stays in control of file selection and installation. SkillChef only compiles the request it receives.</p></div>
             </div>
             <div className="method-line">
-              <article className="method-step"><span className="method-index">01</span><h3>Describe the work</h3><p>Send a task, optional project brief, and the result you want the skill to guide.</p></article>
-              <article className="method-step method-step-accent"><span className="method-index">02</span><h3>Approve specific files</h3><p>Your agent proposes paths. It sends only the text you approve—never a repository checkout.</p></article>
-              <article className="method-step"><span className="method-index">03</span><h3>Compile against public references</h3><p>SkillChef searches configured public GitHub skill repositories, then uses your configured model—or its local deterministic compiler.</p></article>
-              <article className="method-step"><span className="method-index">04</span><h3>Review, then decide</h3><p>Inspect the skill, sources, context manifest, and risk notes. Your agent does not save or run it for you.</p></article>
+              <article className="method-step">
+                <span className="method-index">01 / PREP</span>
+                <h3>Choose the ingredients</h3>
+                <p>Describe the task and brief. Your agent proposes useful files; approve the exact text before sending it.</p>
+              </article>
+              <article className="method-step">
+                <span className="method-index">02 / COOK</span>
+                <h3>Compile a focused skill</h3>
+                <p>SkillChef pairs public skill references with the approved context, using your configured model or its local deterministic compiler.</p>
+              </article>
+              <article className="method-step">
+                <span className="method-index">03 / TASTE</span>
+                <h3>Inspect before plating</h3>
+                <p>Review the skill, linked sources, context manifest, and risk notes. Your agent asks before saving; nothing runs automatically.</p>
+              </article>
             </div>
           </section>
 
