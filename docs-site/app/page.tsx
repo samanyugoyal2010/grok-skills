@@ -81,19 +81,18 @@ export default function Home() {
                 <div className="specimen-path">.agents/skills/account-form-validation/SKILL.md</div>
                 <pre className="specimen-body"><code>{`---
 name: account-form-validation
-description: Add and verify client-side validation in account settings.
+description: Validate account settings inputs.
 ---
 
 # Account form validation
 
 ## Procedure
-1. Reuse the existing form schema.
-2. Show field errors beside each input.
-3. Cover valid and invalid input with Vitest.
+1. Reuse the shared schema.
+2. Show errors beside fields.
+3. Test valid and invalid values.
 
-## Repository constraints
-- Use the shared form components.
-- Do not add a validation dependency.`}</code></pre>
+## Repo constraints
+- Shared form components; no new dependency.`}</code></pre>
                 <div className="specimen-evidence"><span><b>Context</b> src/account/form.ts · approved</span><span><b>Sources</b> 2 public skills · linked</span></div>
               </figure>
             </div>
