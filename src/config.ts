@@ -8,6 +8,7 @@ export const DEFAULT_COMPILE_DEADLINE_MS = 60_000;
 export const DEFAULT_MAX_IN_FLIGHT_COMPILATIONS = 2;
 
 export const MODEL_PROVIDERS = ["openai", "anthropic", "openrouter", "groq", "ollama"] as const;
+const DEFAULT_OLLAMA_MODEL_TIMEOUT_MS = 60_000;
 export type ModelProvider = typeof MODEL_PROVIDERS[number];
 const CLOUD_MODEL_PROVIDERS = ["openai", "anthropic", "openrouter", "groq"] as const;
 type CloudModelProvider = typeof CLOUD_MODEL_PROVIDERS[number];
@@ -212,7 +213,11 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     allowedHosts: normalizedAllowedHosts.length > 0 || !isLoopbackHost(httpHost) ? normalizedAllowedHosts : ["localhost", "127.0.0.1", "[::1]"],
     ...(httpClientIdHeader ? { httpClientIdHeader } : {}),
     ...modelConfig,
-    modelTimeoutMs: parsePositiveInteger("SKILL_COMPILER_MODEL_TIMEOUT_MS", env.SKILL_COMPILER_MODEL_TIMEOUT_MS, 20_000),
+    modelTimeoutMs: parsePositiveInteger(
+      "SKILL_COMPILER_MODEL_TIMEOUT_MS",
+      env.SKILL_COMPILER_MODEL_TIMEOUT_MS,
+      modelConfig.modelProvider === "ollama" ? DEFAULT_OLLAMA_MODEL_TIMEOUT_MS : 20_000
+    ),
     compileDeadlineMs: parsePositiveInteger("SKILL_COMPILER_DEADLINE_MS", env.SKILL_COMPILER_DEADLINE_MS, DEFAULT_COMPILE_DEADLINE_MS),
     maxInFlightCompilations: parsePositiveInteger("MAX_IN_FLIGHT_COMPILATIONS", env.MAX_IN_FLIGHT_COMPILATIONS, DEFAULT_MAX_IN_FLIGHT_COMPILATIONS),
     rateLimitMaxKeys: parsePositiveInteger("RATE_LIMIT_MAX_KEYS", env.RATE_LIMIT_MAX_KEYS, DEFAULT_RATE_LIMIT_MAX_KEYS),

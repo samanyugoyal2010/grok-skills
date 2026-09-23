@@ -46,6 +46,7 @@ test("selects Ollama explicitly without a key and applies its local defaults", (
   assert.equal(config.model, "qwen3:8b");
   assert.equal(config.ollamaBaseUrl, "http://127.0.0.1:11434");
   assert.equal(config.modelApiKey, undefined);
+  assert.equal(config.modelTimeoutMs, 60_000);
 
   const custom = loadRuntimeConfig({
     SKILL_COMPILER_PROVIDER: "ollama",
@@ -54,6 +55,7 @@ test("selects Ollama explicitly without a key and applies its local defaults", (
   });
   assert.equal(custom.model, "llama3.2:3b");
   assert.equal(custom.ollamaBaseUrl, "http://localhost:11434");
+  assert.equal(loadRuntimeConfig({ SKILL_COMPILER_PROVIDER: "ollama", SKILL_COMPILER_MODEL_TIMEOUT_MS: "45000" }).modelTimeoutMs, 45_000);
 });
 
 test("restricts Ollama URLs to loopback HTTP origins without credentials or extra URL components", () => {

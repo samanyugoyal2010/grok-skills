@@ -43,6 +43,8 @@ function buildRequest(options: ProviderRequestOptions): ProviderRequest {
           { role: "system", content: prompt.system },
           { role: "user", content: prompt.user }
         ],
+        think: false,
+        options: { num_predict: 1_536 },
         stream: false
       }
     };

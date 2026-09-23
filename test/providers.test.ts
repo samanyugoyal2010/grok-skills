@@ -101,6 +101,8 @@ test("sends Ollama native chat requests without an API key or authorization head
   assert.deepEqual(requestBody, {
     model: "qwen3:8b",
     messages: [{ role: "system", content: prompt.system }, { role: "user", content: prompt.user }],
+    think: false,
+    options: { num_predict: 1_536 },
     stream: false
   });
   assert.deepEqual(result, { text: markdown });
