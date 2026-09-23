@@ -16,10 +16,15 @@ export function DocsSidebar() {
   const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
+    const visibleSections = new Map<Element, IntersectionObserverEntry>();
     const observer = new IntersectionObserver((entries) => {
-      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      entries.forEach((entry) => visibleSections.set(entry.target, entry));
+      const marker = window.innerHeight * 0.2;
+      const visible = [...visibleSections.values()]
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => Math.abs(a.boundingClientRect.top - marker) - Math.abs(b.boundingClientRect.top - marker));
       if (visible[0]) setActiveSection(visible[0].target.id);
-    }, { rootMargin: "-18% 0px -66% 0px", threshold: 0 });
+    }, { rootMargin: "-12% 0px -74% 0px", threshold: 0 });
     navItems.forEach(([id]) => {
       const section = document.getElementById(id);
       if (section) observer.observe(section);
