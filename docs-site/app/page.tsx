@@ -9,13 +9,10 @@ import {
 import Image from "next/image";
 import { CodeBlock } from "./components/code-block";
 import { DocsSidebar } from "./components/docs-sidebar";
-import { RecipeStation } from "./components/recipe-station";
 import { ProviderSetup } from "./components/provider-setup";
+import { SetupPrompt } from "./components/setup-prompt";
 
 const repositoryUrl = "https://github.com/samanyugoyal2010/grok-skills";
-
-const buildExample = `npm ci
-npm run build`;
 
 const skillFrontmatter = `---
 name: account-form-validation
@@ -52,7 +49,7 @@ export default function Home() {
         <div className="topbar-meta">
           <span className="topbar-context">Task-time skill compiler</span>
           <a className="source-link" href={repositoryUrl} target="_blank" rel="noreferrer">Source <Github size={14} aria-hidden="true" /></a>
-          <a className="topbar-cta" href="#station">Set up SkillChef <ArrowUpRight size={14} aria-hidden="true" /></a>
+          <a className="topbar-cta" href="#station">Set up your agent <ArrowUpRight size={14} aria-hidden="true" /></a>
         </div>
       </nav>
 
@@ -61,20 +58,20 @@ export default function Home() {
         <main className="content-column" id="main-content" tabIndex={-1}>
           <section className="hero section" id="overview">
             <div className="hero-copy">
-              <span className="hero-ribbon">A little prep. A much better workflow.</span>
-              <h1>Turn repeat work into a repo-specific skill.</h1>
-              <p className="hero-lede">Give SkillChef a task, project brief, and files you approve. It finds relevant public skills and returns a reviewable <code>SKILL.md</code> with sources and risk notes. Your agent decides whether to save it.</p>
+              <span className="hero-ribbon">Prep · Cook · Taste</span>
+              <h1>Turn approved context into reusable skills.</h1>
+              <p className="hero-lede">Give SkillChef a task, project brief, and files you approve. It finds relevant public skills, then returns a reviewable <code>SKILL.md</code> with source links and risk notes. Your agent asks before saving it.</p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#station">Set up your agent <ArrowUpRight size={15} aria-hidden="true" /></a>
                 <a className="text-link" href="#the-recipe">See the output</a>
               </div>
-              <div className="hero-facts"><span><Check size={14} aria-hidden="true" /> no repository access</span><span><Check size={14} aria-hidden="true" /> approved files only</span><span><Check size={14} aria-hidden="true" /> inspect before saving</span></div>
+              <div className="hero-facts"><span><Check size={14} aria-hidden="true" /> you choose the files</span><span><Check size={14} aria-hidden="true" /> no repository writes</span><span><Check size={14} aria-hidden="true" /> review before saving</span></div>
             </div>
 
             <div className="hero-workbench">
               <div className="hero-illustration" aria-label="Illustration of a recipe sheet, tomato, basil, spoon, and a wooden prep board">
                 <Image src="/skillchef-prep-art.webp" alt="A recipe sheet, tomato, basil, wooden spoon, and cutting board" width={760} height={507} priority />
-                <span>Gather the good bits</span>
+                <span>Prep station</span>
               </div>
               <figure className="skill-specimen">
                 <figcaption className="specimen-head"><span><FileText size={15} aria-hidden="true" /> Example output</span><span>review before saving</span></figcaption>
@@ -105,23 +102,23 @@ description: Validate account settings inputs.
 
           <section className="section method-section" id="how-it-works">
             <div className="section-heading">
-              <span className="section-kicker">How it works</span>
-              <div><h2>Prep the context. Cook the skill. Taste before saving.</h2><p>Your coding agent stays in control of file selection and installation. SkillChef only compiles the request it receives.</p></div>
+              <span className="section-kicker">The method</span>
+              <div><h2>Three steps to a skill your agent can reuse.</h2><p>Your agent chooses the files. SkillChef assembles the skill. You review it before it goes anywhere.</p></div>
             </div>
             <div className="method-line">
               <article className="method-step">
-                <span className="method-index">01 / PREP</span>
-                <h3>Choose the ingredients</h3>
-                <p>Describe the task and brief. Your agent proposes useful files; approve the exact text before sending it.</p>
+                <span className="method-index">Step 1 · Prep</span>
+                <h3>Choose a task and files</h3>
+                <p>Describe the task and project. Your agent proposes relevant files; approve their exact text before sending it.</p>
               </article>
               <article className="method-step">
-                <span className="method-index">02 / COOK</span>
-                <h3>Compile a focused skill</h3>
+                <span className="method-index">Step 2 · Cook</span>
+                <h3>Build a focused skill</h3>
                 <p>SkillChef pairs public skill references with the approved context, using your configured model or its local deterministic compiler.</p>
               </article>
               <article className="method-step">
-                <span className="method-index">03 / TASTE</span>
-                <h3>Inspect before plating</h3>
+                <span className="method-index">Step 3 · Taste</span>
+                <h3>Review before saving</h3>
                 <p>Review the skill, linked sources, context manifest, and risk notes. Your agent asks before saving; nothing runs automatically.</p>
               </article>
             </div>
@@ -129,11 +126,10 @@ description: Validate account settings inputs.
 
           <section className="section station-section" id="station">
             <div className="section-heading">
-              <span className="section-kicker">Agent setup</span>
-              <div><h2>Run the compiler beside your agent.</h2><p>In the local setup, your coding agent starts SkillChef as an MCP child process. The page only documents setup; provider keys never belong in this site or an agent config.</p></div>
+              <span className="section-kicker">Set up once</span>
+              <div><h2>Choose how to set it up.</h2><p>Use a copy-and-paste instruction with an agent that can configure local MCP tools, or follow the manual steps yourself. Both install SkillChef on your computer.</p></div>
             </div>
-            <div className="build-row"><div><span className="tiny-label">Build locally</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
-            <RecipeStation />
+            <SetupPrompt />
           </section>
 
           <ProviderSetup />
@@ -141,7 +137,7 @@ description: Validate account settings inputs.
           <section className="section recipe-section" id="the-recipe">
             <div className="section-heading">
               <span className="section-kicker">The finished skill</span>
-              <div><h2>What the compiler returns.</h2><p>A plain Agent Skills file. Its folder name must match the <code>name</code> in its front matter.</p></div>
+              <div><h2>What your agent receives.</h2><p>A plain Agent Skills file. Its folder name must match the <code>name</code> in its front matter.</p></div>
             </div>
             <div className="recipe-layout">
               <div className="recipe-copy">

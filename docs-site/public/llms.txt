@@ -1,0 +1,26 @@
+# SkillChef
+
+> SkillChef is a local-first MCP tool that helps coding agents turn a developer task, an approved project brief, and user-approved repository context into a reviewable, reusable `SKILL.md`.
+
+SkillChef does not read or edit a repository directly. The coding agent proposes context files; the user approves what to share and reviews sources, risk notes, and the generated skill before saving it. The website documents a local, single-owner tool, not a hosted multi-user service.
+
+Choose either the copy-and-paste agent setup prompt or the manual MCP configuration guide. These are alternative setup methods. Model-provider selection is a separate choice. Deterministic compilation works without a model provider; semantic synthesis uses the provider configured for the local MCP process.
+
+## Docs
+
+- [SkillChef guide](https://grok-skills.vercel.app/): Product overview, workflow, setup choices, data boundaries, safety notes, and skill format.
+- [Agent setup](https://grok-skills.vercel.app/#station): Choose between the agent prompt and manual MCP configuration.
+- [Model provider setup](https://grok-skills.vercel.app/#provider-setup): Configure a hosted provider or run synthesis locally with Ollama.
+- [Skill output format](https://grok-skills.vercel.app/#the-recipe): Review the generated Agent Skills file structure.
+- [Data and safety boundaries](https://grok-skills.vercel.app/#contract): See what SkillChef receives, where context may be sent, and what it does not change.
+
+## Source
+
+- [Project README](https://github.com/samanyugoyal2010/grok-skills/blob/master/README.md): Install, configure, and use the local MCP server.
+- [Production notes](https://github.com/samanyugoyal2010/grok-skills/blob/master/PRODUCTION.md): Current transport and deployment constraints.
+- [Installation integrations](https://github.com/samanyugoyal2010/grok-skills/tree/master/examples/integrations): MCP configuration examples for coding agents.
+- [Agent Skills specification](https://agentskills.io/specification): Format requirements for portable `SKILL.md` files.
+
+## Optional
+
+- [llms.txt format](https://llmstxt.org/): Specification for this file.
