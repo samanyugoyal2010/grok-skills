@@ -49,6 +49,7 @@ export function ProviderSetup() {
 
       <div className="provider-panel">
         <div className="provider-tabs" role="group" aria-label="Choose a model provider">
+          <span className="provider-select-label">Pick your provider</span>
           {providers.map((provider) => (
             <button
               type="button"
