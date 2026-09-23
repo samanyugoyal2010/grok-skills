@@ -1,26 +1,148 @@
 # SkillChef
 
-> SkillChef is a local-first MCP tool that helps coding agents turn a developer task, an approved project brief, and user-approved repository context into a reviewable, reusable `SKILL.md`.
+> SkillChef is a local-first Model Context Protocol (MCP) server that helps a coding agent turn a repeatable developer workflow, a project brief, and explicitly approved repository text into a reviewable Agent Skill (`SKILL.md`).
 
-SkillChef does not read or edit a repository directly. The coding agent proposes context files; the user approves what to share and reviews sources, risk notes, and the generated skill before saving it. The website documents a local, single-owner tool, not a hosted multi-user service.
+SkillChef is a compiler for reusable workflow instructions, not a marketplace, coding agent, repository scanner, or hosted multi-user service. The coding agent proposes the files and sends only the context the developer approves. SkillChef retrieves a small set of public `SKILL.md` references, compiles an artifact, and returns its provenance and advisory risk notes. It does not read a checkout, edit files, execute the generated skill, or install it. The developer reviews the output and decides whether and where to save it.
 
-Choose either the copy-and-paste agent setup prompt or the manual MCP configuration guide. These are alternative setup methods. Model-provider selection is a separate choice. Deterministic compilation works without a model provider; semantic synthesis uses the provider configured for the local MCP process.
+The server can run a deterministic compiler locally without a model provider, call one of the supported cloud model APIs, or call an Ollama service on loopback. The agent's subscription/login and SkillChef's optional synthesis provider are separate connections. There is no SkillChef account or OAuth setup.
 
-## Docs
+## Website guide
 
-- [SkillChef guide](https://grok-skills.vercel.app/): Product overview, workflow, setup choices, data boundaries, safety notes, and skill format.
-- [Agent setup](https://grok-skills.vercel.app/#station): Choose between the agent prompt and manual MCP configuration.
-- [Model provider setup](https://grok-skills.vercel.app/#provider-setup): Configure a hosted provider or run synthesis locally with Ollama.
-- [Skill output format](https://grok-skills.vercel.app/#the-recipe): Review the generated Agent Skills file structure.
-- [Data and safety boundaries](https://grok-skills.vercel.app/#contract): See what SkillChef receives, where context may be sent, and what it does not change.
+- [SkillChef documentation](https://grok-skills.vercel.app/): Concise product overview and interactive setup guide.
+- [Product overview](https://grok-skills.vercel.app/#overview): What SkillChef does and the review-before-save boundary.
+- [Workflow](https://grok-skills.vercel.app/#how-it-works): Choose a repeatable workflow, approve context, compile, and review.
+- [Setup choices](https://grok-skills.vercel.app/#station): Choose either the copyable agent setup prompt or manual MCP setup. These are alternatives; model-provider setup is separate.
+- [Skill output](https://grok-skills.vercel.app/#the-recipe): Example generated skill and format notes.
+- [Inputs and data flow](https://grok-skills.vercel.app/#contract): Example request and the systems that can receive its contents.
+- [Safety and deployment boundary](https://grok-skills.vercel.app/#safety): Local-first use, review expectations, and why shared hosting is not multi-tenant BYOK.
+- [Model provider guide](https://grok-skills.vercel.app/#provider-setup): Provider choices, Ollama, and process-environment configuration.
 
-## Source
+## Choose one setup path
 
-- [Project README](https://github.com/samanyugoyal2010/grok-skills/blob/master/README.md): Install, configure, and use the local MCP server.
-- [Production notes](https://github.com/samanyugoyal2010/grok-skills/blob/master/PRODUCTION.md): Current transport and deployment constraints.
-- [Installation integrations](https://github.com/samanyugoyal2010/grok-skills/tree/master/examples/integrations): MCP configuration examples for coding agents.
-- [Agent Skills specification](https://agentskills.io/specification): Format requirements for portable `SKILL.md` files.
+Both paths install or run the MCP server on the developer's machine and configure a coding client to launch it. MCP setup makes the `compile_skill` tool available; it does not install generated skills.
 
-## Optional
+- [Agent prompt setup](https://grok-skills.vercel.app/#station): Copy the website's instruction into the coding agent. The prompt tells the agent to inspect the official repository instructions, build and test SkillChef, preserve existing MCP entries, show proposed configuration changes, and wait for approval. It instructs the agent not to read the current project or add credentials during installation. The agent must report if it cannot configure or reload the MCP client.
+- [Manual setup](https://grok-skills.vercel.app/#station): Clone or otherwise obtain the repository, use Node.js 20+, install dependencies, build, and add the local `dist/index.js` command to the coding client's MCP settings. Start from the exact [integration examples](https://github.com/samanyugoyal2010/grok-skills/tree/master/examples/integrations) for that client. The [README](https://github.com/samanyugoyal2010/grok-skills/blob/master/README.md#connect-skillchef) includes a generic stdio configuration.
 
-- [llms.txt format](https://llmstxt.org/): Specification for this file.
+Supported integration examples cover Claude Code, Cursor, Codex, Windsurf, VS Code/GitHub Copilot, Gemini CLI, Cline, and Roo Code. Client configuration syntax, environment interpolation, and skill discovery locations can change; check the client's current documentation. MCP configuration connects the tool only. After reviewing a generated skill, the user or agent must separately save it in the platform's supported skills directory. The skill directory name must match the frontmatter `name`.
+
+## Typical workflow
+
+1. Ask the coding agent to create a skill for a workflow you expect to repeat, rather than for a one-off task.
+2. The agent identifies candidate repository files, explains why each is relevant, and asks permission to send their contents. Review the exact paths and text; approve only what is appropriate.
+3. The agent calls `compile_skill` with the task, a search query, optional project brief, and the approved context. SkillChef does not independently inspect the repository.
+4. SkillChef searches configured public GitHub skill repositories and creates a focused skill. If configured, the selected model provider receives the request context and selected public excerpts for synthesis.
+5. Inspect `skillMarkdown`, source URLs and hashes, context manifest, change summary, and risk notes. Ask for corrections if needed.
+6. Only after your approval, save the file to the skills directory used by your coding client. Reload skills or start a fresh session if that client requires it. Nothing is installed or executed automatically.
+
+## `compile_skill` request fields and limits
+
+The MCP tool accepts a strict JSON object. Unknown fields are rejected.
+
+```json
+{
+  "task": "Add client-side validation to account settings.",
+  "search_query": "frontend form validation testing",
+  "project_brief": "TypeScript app; use the existing test framework.",
+  "approved_context": [
+    {
+      "path": "src/account/form.ts",
+      "reason": "Shows the current form boundary and validation helpers.",
+      "content": "Only the text the developer approved is included here."
+    }
+  ]
+}
+```
+
+- `task` (required): 1–4,000 characters describing the repeatable work.
+- `search_query` (required): 1–500 characters used to find relevant public skills.
+- `project_brief` (optional): up to 20,000 characters of project guidance.
+- `approved_context` (required array): up to 10 text files and 50,000 total content characters.
+- Each context item has `path` and `reason` (each 1–500 characters) and `content` (up to 20,000 characters per file). The limits apply to content, not the JSON-encoded byte size.
+- The generated `skillMarkdown` is limited to 16,000 characters. The HTTP request body defaults to 256,000 bytes; configure `MCP_HTTP_MAX_BODY_BYTES` to change that transport limit.
+
+Empty task/query values and malformed objects are rejected. The server screens for binary-looking content, secret-like values, and sensitive paths such as `.env`, `.ssh`, `.git`, credential files, private keys, and certificate/key extensions. These checks are heuristic: they cannot guarantee secrets are absent. Do not include credentials or content you do not intend to share.
+
+## Where data goes
+
+- **Coding client to SkillChef:** The coding agent sends the request fields to its configured local MCP process. The context should already have been selected and approved by the user. SkillChef itself does not access the repository working tree.
+- **Public retrieval:** By default, SkillChef queries GitHub's repository tree API and downloads matching public Markdown from `vercel-labs/agent-skills` and `anthropics/skills`. It selects up to five sources from at most eight configured repositories. `PUBLIC_SKILL_REPOSITORIES` changes that list; setting it empty disables retrieval. GitHub may receive retrieval queries and requests for public repository data, never the developer's approved repository file contents as part of the retrieval request.
+- **Configured cloud model:** If OpenAI, Anthropic, OpenRouter, Groq, or a custom compatible model endpoint is configured, the provider receives the task, search query, optional brief, approved context, and selected public skill material needed for synthesis. SkillChef does not control a provider's retention or training policy. Review that provider's current terms before sending private code. API costs are charged by the configured provider.
+- **Ollama:** If Ollama is selected, the model request goes to the configured local loopback Ollama service. It is not sent to a cloud model by SkillChef. A separate GitHub retrieval request for public references may still occur unless retrieval is disabled.
+- **No configured model:** The deterministic compiler runs locally. It selects task-matched material from retrieved public skills and combines it with request context; it does not perform semantic model synthesis.
+- **Persistence:** SkillChef has no user account or application database for compile history. Public retrieval responses may be cached in process memory for up to five minutes. Do not treat local operation as a substitute for checking logs, process environment, MCP-client behavior, or the chosen provider's terms.
+
+## Model and Ollama configuration
+
+Set model configuration in the environment of the SkillChef MCP server process, not in `compile_skill` arguments, generated skills, browser-side website code, or committed agent configuration. An IDE-launched process inherits the IDE/launcher environment; an `export` in a terminal does not update an already-running IDE. Restart the MCP child (or client if needed) after changing environment values. SkillChef does not automatically load arbitrary `.env` files.
+
+### Cloud providers
+
+Supported cloud values for `SKILL_COMPILER_PROVIDER` are `openai`, `anthropic`, `openrouter`, and `groq`. Set the matching server-process secret variable:
+
+| Provider | `SKILL_COMPILER_PROVIDER` | API key variable | Default model |
+| --- | --- | --- | --- |
+| OpenAI | `openai` | `OPENAI_API_KEY` | `gpt-4.1-mini` |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` | `claude-sonnet-5` |
+| OpenRouter | `openrouter` | `OPENROUTER_API_KEY` | `openai/gpt-4.1-mini` |
+| Groq | `groq` | `GROQ_API_KEY` | `openai/gpt-oss-20b` |
+
+`SKILL_COMPILER_MODEL` overrides the selected provider's default. If exactly one cloud API key is set, the server can infer its provider; when multiple keys exist, set `SKILL_COMPILER_PROVIDER`. A cloud API key is separate from a Claude Code/Cursor/Codex login or subscription. Store keys in an OS secret manager or MCP host process-environment injection. Never paste real keys into chat, source control, an MCP JSON/TOML file, or tool input. See the [provider section](https://grok-skills.vercel.app/#provider-setup) and [`.env.example`](https://github.com/samanyugoyal2010/grok-skills/blob/master/.env.example) for variable names.
+
+### Local Ollama
+
+Install and start [Ollama](https://ollama.com/), then install a model yourself (for example, `ollama pull qwen3:8b`). SkillChef does not pull models automatically. Set these in the MCP server's process environment:
+
+```text
+SKILL_COMPILER_PROVIDER=ollama
+SKILL_COMPILER_MODEL=qwen3:8b
+SKILL_COMPILER_OLLAMA_BASE_URL=http://127.0.0.1:11434
+```
+
+`SKILL_COMPILER_MODEL` must match a model installed in your Ollama instance. The base URL defaults to `http://127.0.0.1:11434`; it must use plain HTTP on `localhost`, `127.0.0.1`, or `[::1]`, with no credentials, path, query, or fragment. Remote hosts and HTTPS are rejected. SkillChef calls Ollama's native `/api/chat` endpoint with streaming disabled and sends no API key or authorization header. Approved context is sent to the local Ollama service; model resource needs vary by model and machine. See [Ollama's API documentation](https://github.com/ollama/ollama/blob/main/docs/api.md).
+
+### Custom model endpoint
+
+`SKILL_COMPILER_MODEL_URL` supports a compatible JSON endpoint that accepts `{ "system", "user" }` and returns `{ "skillMarkdown" }`. It cannot be combined with `SKILL_COMPILER_PROVIDER` or cloud provider API keys. It must use HTTPS except for loopback development; `SKILL_COMPILER_ALLOW_INSECURE_HTTP=true` is intended only for a controlled development network. An optional `SKILL_COMPILER_MODEL_TOKEN` requires the custom endpoint setting. Review the endpoint operator's data handling before sending repository context.
+
+## Output format
+
+The MCP result includes:
+
+- `sources`: public source URL, title, SHA-256 content hash, and match reason for each selected reference.
+- `contextManifest`: approved path, reason, and content character count; this records what the request supplied, not an independent file read.
+- `changeSummary`: brief description of the compilation and whether deterministic or configured-model fallback behavior was used.
+- `riskNotes`: heuristic notes with `low`, `medium`, or `high` severity and a category/explanation. These are warnings, not a security certification.
+- `skillMarkdown`: the proposed Agent Skill text. It must begin with YAML frontmatter containing a kebab-case `name` (maximum 64 characters) and a `description`, and include a title plus description/overview, procedure, repository constraints, and example sections. Put it in a skill directory whose name matches `name`.
+
+The format is based on the [Agent Skills specification](https://agentskills.io/specification). Generated markdown is untrusted input: review its instructions, commands, URLs, and referenced files before installing or following it.
+
+## Safety and operational limits
+
+- Public skills and model output are untrusted. Prompt-injection filtering is limited; risk detection is heuristic and advisory. Inspect output and provenance yourself.
+- Path and secret screening reduces accidental disclosure but is not a security guarantee. The user and coding agent remain responsible for selecting and approving context.
+- SkillChef never executes skill instructions, reads files from disk on its own, writes to the repository, or auto-installs output. The coding agent may perform those actions only as a separate user-approved step.
+- Public retrieval uses one GitHub adapter, defaults to two public repositories, and returns at most five sources. Up to eight repositories can be configured. Fetches time out after 10 seconds by default; public responses are cached in process memory for up to five minutes.
+- A compilation has a 60-second default end-to-end deadline, allows two in-flight compilations by default, and limits provider response size before parsing. `SKILL_COMPILER_MODEL_TIMEOUT_MS` controls the model request timeout.
+- The default rate limit is 10 requests per minute. HTTP requests are rate-limited by client address; stdio uses a local process bucket. Limits are in-memory and not a multi-instance tenant quota. Use a trusted edge limiter for horizontally scaled services.
+- HTTP transport is stateless and binds to `127.0.0.1` by default. It exposes `/mcp` and `/healthz`. Binding to a non-loopback host requires `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_ALLOWED_HOSTS`; configure allowed browser origins where relevant. A bearer token is server access control, not user identity or per-user key isolation.
+
+## Local versus hosted use
+
+The intended setup is a local MCP process with the developer's own provider credentials, or local Ollama. A private single-tenant server may be operated by one trusted owner. Current HTTP mode has no account system, organization authorization, per-user API-key vault, tenant-isolated history, or per-user billing. Every request to a shared instance would use its server-configured provider and billing identity. Therefore, do not expose it as a public shared BYOK service or ask users to submit keys as tool arguments. Safe shared hosting would require authentication/authorization, isolated encrypted credentials, key lifecycle controls, tenant-aware quotas, and explicit retention and privacy controls first.
+
+## Project and implementation sources
+
+- [README: installation and use](https://github.com/samanyugoyal2010/grok-skills/blob/master/README.md): Runtime requirements, MCP setup, client integrations, model providers, request example, and operational limits.
+- [Production workflow and deployment boundary](https://github.com/samanyugoyal2010/grok-skills/blob/master/PRODUCTION.md): What the agent does, approval steps, credential handling, and hosted-service restrictions.
+- [Integration examples](https://github.com/samanyugoyal2010/grok-skills/tree/master/examples/integrations): MCP configuration examples by coding client.
+- [Example `compile_skill` request](https://github.com/samanyugoyal2010/grok-skills/blob/master/examples/compile-skill-request.json): Safe fixture payload.
+- [Input/output schema](https://github.com/samanyugoyal2010/grok-skills/blob/master/src/types.ts): Exact request and response fields.
+- [Input size and secret/path checks](https://github.com/samanyugoyal2010/grok-skills/blob/master/src/limits.ts): Character limits and heuristic screening.
+- [Provider configuration](https://github.com/samanyugoyal2010/grok-skills/blob/master/src/config.ts): Provider names, defaults, Ollama URL checks, transport settings, and limits.
+- [Provider requests](https://github.com/samanyugoyal2010/grok-skills/blob/master/src/providers.ts): Provider API integrations.
+- [Public skill retrieval](https://github.com/samanyugoyal2010/grok-skills/blob/master/src/retrieval.ts): GitHub adapter, source selection, hashes, cache, and bounds.
+- [Risk analysis](https://github.com/samanyugoyal2010/grok-skills/blob/master/src/safety.ts): Current advisory risk categories.
+- [Markdown validation](https://github.com/samanyugoyal2010/grok-skills/blob/master/src/markdown.ts): Generated skill requirements.
+- [Agent Skills format](https://agentskills.io/specification): External skill format specification.
+- [llms.txt format](https://llmstxt.org/): Convention used for this guide.
