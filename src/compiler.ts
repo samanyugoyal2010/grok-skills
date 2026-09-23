@@ -13,6 +13,7 @@ export interface CompilerOptions {
   modelToken?: string;
   modelProvider?: ModelProvider;
   modelApiKey?: string;
+  ollamaBaseUrl?: string;
   model?: string;
   modelTimeoutMs?: number;
   fetcher?: typeof fetch;
@@ -156,7 +157,7 @@ function safeProviderFailure(failure: ProviderFailure): string {
 }
 
 async function compileWithModel(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions): Promise<ModelAttempt> {
-  if (!options.modelUrl && !(options.modelProvider && options.modelApiKey && options.model)) return { markdown: null };
+  if (!options.modelUrl && !(options.modelProvider && options.model && (options.modelProvider === "ollama" || options.modelApiKey))) return { markdown: null };
   if (options.signal?.aborted) return { markdown: null, failure: "cancelled" };
   const fetcher = options.fetcher ?? fetch;
   const prompt = buildCompilerPrompt(input, sources);
@@ -170,11 +171,12 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
   }
   try {
     const request = Promise.resolve().then(async (): Promise<ModelAttempt> => {
-      if (options.modelProvider && options.modelApiKey && options.model) {
+      if (options.modelProvider && options.model && (options.modelProvider === "ollama" || options.modelApiKey)) {
         const result = await requestProvider({
           provider: options.modelProvider,
           model: options.model,
           apiKey: options.modelApiKey,
+          ollamaBaseUrl: options.ollamaBaseUrl,
           prompt,
           fetcher,
           signal: controller.signal

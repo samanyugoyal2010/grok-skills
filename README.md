@@ -74,9 +74,9 @@ HTTP mode binds to `127.0.0.1` by default. Set `MCP_HTTP_AUTH_TOKEN` to require 
 
 HTTP requests are capped at 256,000 bytes by default. Set `MCP_HTTP_MAX_BODY_BYTES` to change the limit, and `MCP_HTTP_ALLOWED_HOSTS` to add hostnames for DNS-rebinding protection. Invalid ports, transports, and non-loopback hosts without a token fail during startup.
 
-## Model providers and local API keys
+## Model providers, including local Ollama
 
-For semantic compilation, configure a provider API key in the environment of the local MCP server process. Keys are never accepted by `compile_skill`, never added to its prompt, and are not coding-agent subscription credentials; users need provider API access and are billed under that provider account.
+For semantic compilation, configure a provider in the environment of the local MCP server process. Cloud provider keys are never accepted by `compile_skill` or added to its prompt, and are not coding-agent subscription credentials; usage is billed under the selected provider account. Ollama runs locally and needs no API key.
 
 ```bash
 export SKILL_COMPILER_PROVIDER=openai
@@ -87,7 +87,18 @@ npm start
 
 Inject `OPENAI_API_KEY` into the MCP process using your OS secret manager or MCP host. Do not paste an actual key into a shell command or commit it in an MCP configuration.
 
-Set exactly one of `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, or `GROQ_API_KEY` to infer the provider, or set `SKILL_COMPILER_PROVIDER` (`openai`, `anthropic`, `openrouter`, `groq`) when multiple keys are available. `SKILL_COMPILER_MODEL` overrides the selected provider's default model. Defaults are `gpt-4.1-mini`, `claude-sonnet-5`, `openai/gpt-4.1-mini`, and `openai/gpt-oss-20b`, respectively. `SKILL_COMPILER_MODEL_TIMEOUT_MS` controls the request timeout. Use a local secret manager or your MCP host's process-environment injection; `.env.example` documents names only and is not loaded automatically. For a stdio MCP server started by an IDE, the child inherits the IDE process environment plus any variables the IDE's local MCP launcher injects. An `export` in a terminal affects only processes started from that shell; it will not update an already-running IDE. Configure the secret in an uncommitted local secret store/launcher and restart the MCP child (or IDE, if needed). Never put a real key in repository examples or `compile_skill` arguments.
+Set exactly one of `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, or `GROQ_API_KEY` to infer a cloud provider, or explicitly set `SKILL_COMPILER_PROVIDER` (`openai`, `anthropic`, `openrouter`, `groq`, or `ollama`) when selecting a provider. `SKILL_COMPILER_MODEL` overrides the provider's model default. Cloud defaults are `gpt-4.1-mini`, `claude-sonnet-5`, `openai/gpt-4.1-mini`, and `openai/gpt-oss-20b`.
+
+For Ollama, install and start Ollama yourself, make sure the model is already installed, then configure:
+
+```bash
+SKILL_COMPILER_PROVIDER=ollama
+SKILL_COMPILER_MODEL=qwen3:8b
+# Optional; defaults to http://127.0.0.1:11434
+SKILL_COMPILER_OLLAMA_BASE_URL=http://127.0.0.1:11434
+```
+
+SkillChef does not download/pull Ollama models. The endpoint must be plain HTTP on `localhost`, `127.0.0.1`, or `[::1]`; credentials, paths, query strings, fragments, HTTPS, and remote hosts are rejected. Requests use Ollama's native `/api/chat` API with `stream: false`; no API key or authorization header is sent. Approved context is sent to the local Ollama process. `SKILL_COMPILER_MODEL_TIMEOUT_MS` controls request timeout for all providers. Use a local secret manager or your MCP host's process-environment injection; `.env.example` documents names only and is not loaded automatically. For a stdio MCP server started by an IDE, the child inherits the IDE process environment plus any variables the IDE's local MCP launcher injects. An `export` in a terminal affects only processes started from that shell; it will not update an already-running IDE. Configure secrets in an uncommitted local secret store/launcher and restart the MCP child (or IDE, if needed). Never put a real key in repository examples or `compile_skill` arguments.
 
 Keys belong to the MCP server process, not the agent's Claude/Cursor/Codex subscription login. In shared HTTP mode, every caller currently uses the same server-configured provider key and billing identity. Treat that mode as single-tenant; do not expose it to multiple users until per-user credential isolation and authorization exist. The server sends approved context to the selected provider, so review that provider's current data-retention terms before using private repository content.
 
@@ -102,8 +113,8 @@ The request fixture at [`examples/compile-skill-request.json`](examples/compile-
 
 ## Limitations
 
-- Without a provider key or `SKILL_COMPILER_MODEL_URL`, SkillChef uses a deterministic local compiler. It selects task-matched lines from retrieved public sources and combines them with the request context; it does not semantically synthesize new guidance.
-- OpenAI, Anthropic, OpenRouter, and Groq use their native HTTPS APIs. A custom `SKILL_COMPILER_MODEL_URL` remains available for a compatible JSON endpoint that receives `{ system, user }` and returns `{ skillMarkdown }`; it cannot be combined with provider selection or provider API keys. Custom endpoints must use HTTPS outside loopback development. Set `SKILL_COMPILER_ALLOW_INSECURE_HTTP=true` only for a controlled development network.
+- Without a provider or `SKILL_COMPILER_MODEL_URL`, SkillChef uses a deterministic local compiler. It selects task-matched lines from retrieved public sources and combines them with the request context; it does not semantically synthesize new guidance.
+- OpenAI, Anthropic, OpenRouter, and Groq use their native HTTPS APIs. Ollama uses its local native chat API. A custom `SKILL_COMPILER_MODEL_URL` remains available for a compatible JSON endpoint that receives `{ system, user }` and returns `{ skillMarkdown }`; it cannot be combined with provider selection or provider API keys. Custom endpoints must use HTTPS outside loopback development. Set `SKILL_COMPILER_ALLOW_INSECURE_HTTP=true` only for a controlled development network.
 - Public skill retrieval uses GitHub's repository tree API as one adapter for public `SKILL.md` repositories. The default corpus is `vercel-labs/agent-skills` plus `anthropics/skills`; configure `PUBLIC_SKILL_REPOSITORIES` to replace that list, or set it empty to disable retrieval. It may return no sources if GitHub is unavailable or a repository has no `SKILL.md` files.
 - Set `PUBLIC_SKILL_GITHUB_TOKEN` in the runtime environment when the anonymous GitHub API limit is too low. The token is sent only as an Authorization header and is never included in source URLs or responses.
 - Retrieval requests time out after `PUBLIC_SKILL_FETCH_TIMEOUT_MS` (10 seconds by default), model responses are capped before parsing, and public tree/source responses are cached in memory for up to five minutes within a process.

@@ -40,6 +40,39 @@ test("requires an explicit provider when multiple local API keys are set", () =>
   assert.equal(config.model, "custom-model");
 });
 
+test("selects Ollama explicitly without a key and applies its local defaults", () => {
+  const config = loadRuntimeConfig({ SKILL_COMPILER_PROVIDER: "ollama" });
+  assert.equal(config.modelProvider, "ollama");
+  assert.equal(config.model, "qwen3:8b");
+  assert.equal(config.ollamaBaseUrl, "http://127.0.0.1:11434");
+  assert.equal(config.modelApiKey, undefined);
+
+  const custom = loadRuntimeConfig({
+    SKILL_COMPILER_PROVIDER: "ollama",
+    SKILL_COMPILER_MODEL: "llama3.2:3b",
+    SKILL_COMPILER_OLLAMA_BASE_URL: "http://localhost:11434/"
+  });
+  assert.equal(custom.model, "llama3.2:3b");
+  assert.equal(custom.ollamaBaseUrl, "http://localhost:11434");
+});
+
+test("restricts Ollama URLs to loopback HTTP origins without credentials or extra URL components", () => {
+  for (const url of [
+    "https://127.0.0.1:11434",
+    "http://ollama.example:11434",
+    "http://192.168.1.20:11434",
+    "http://user:pass@127.0.0.1:11434",
+    "http://127.0.0.1:11434/api",
+    "http://127.0.0.1:11434?token=x",
+    "http://127.0.0.1:11434/#fragment"
+  ]) {
+    assert.throws(() => loadRuntimeConfig({
+      SKILL_COMPILER_PROVIDER: "ollama",
+      SKILL_COMPILER_OLLAMA_BASE_URL: url
+    }), /SKILL_COMPILER_OLLAMA_BASE_URL/);
+  }
+});
+
 test("fails fast for invalid runtime configuration", () => {
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", PORT: "nope" }), /PORT/);
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "wat" }), /MCP_TRANSPORT/);

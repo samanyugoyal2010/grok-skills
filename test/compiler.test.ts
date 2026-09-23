@@ -88,6 +88,26 @@ test("uses the configured provider adapter without placing its key in the prompt
   assert.doesNotMatch(result.changeSummary.join(" "), new RegExp(apiKey));
 });
 
+test("uses the configured Ollama model without requiring or transmitting an API key", async () => {
+  const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nExample";
+  let requestUrl = "";
+  let authHeader: string | null = null;
+  const result = await compileSkill(input, [], {
+    modelProvider: "ollama",
+    model: "qwen3:8b",
+    ollamaBaseUrl: "http://127.0.0.1:11434",
+    fetcher: (async (url, init) => {
+      requestUrl = String(url);
+      authHeader = new Headers(init?.headers).get("authorization");
+      return new Response(JSON.stringify({ message: { content: markdown } }), { status: 200 });
+    }) as typeof fetch
+  });
+  assert.equal(requestUrl, "http://127.0.0.1:11434/api/chat");
+  assert.equal(authHeader, null);
+  assert.match(result.changeSummary.join(" "), /configured ollama/);
+  assert.match(result.skillMarkdown, /^# Skill$/m);
+});
+
 test("times out provider calls that do not resolve and keeps the deterministic fallback", async () => {
   const result = await compileSkill(input, [], {
     modelProvider: "groq",

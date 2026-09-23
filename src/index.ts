@@ -18,6 +18,7 @@ const dependencies = {
     modelToken: config.modelToken,
     modelProvider: config.modelProvider,
     modelApiKey: config.modelApiKey,
+    ollamaBaseUrl: config.ollamaBaseUrl,
     model: config.model,
     modelTimeoutMs: config.modelTimeoutMs
   },

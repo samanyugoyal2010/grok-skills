@@ -10,7 +10,8 @@ export interface ProviderPrompt {
 export interface ProviderRequestOptions {
   provider: ModelProvider;
   model: string;
-  apiKey: string;
+  apiKey?: string;
+  ollamaBaseUrl?: string;
   prompt: ProviderPrompt;
   fetcher?: typeof fetch;
   signal?: AbortSignal;
@@ -32,6 +33,21 @@ interface ProviderRequest {
 
 function buildRequest(options: ProviderRequestOptions): ProviderRequest {
   const { provider, model, apiKey, prompt } = options;
+  if (provider === "ollama") {
+    return {
+      url: `${options.ollamaBaseUrl ?? "http://127.0.0.1:11434"}/api/chat`,
+      headers: {},
+      body: {
+        model,
+        messages: [
+          { role: "system", content: prompt.system },
+          { role: "user", content: prompt.user }
+        ],
+        stream: false
+      }
+    };
+  }
+  if (!apiKey) throw new Error("Provider API key is required");
   if (provider === "openai") {
     return {
       url: "https://api.openai.com/v1/responses",
@@ -64,7 +80,7 @@ function buildRequest(options: ProviderRequestOptions): ProviderRequest {
     : "https://api.groq.com/openai/v1/chat/completions";
   return {
     url,
-    headers: { authorization: `Bearer ${apiKey}` },
+    headers: { authorization: `Bearer ${apiKey!}` },
     body: {
       model,
       messages: [
@@ -107,6 +123,13 @@ function parseProviderText(provider: ModelProvider, value: unknown): string | nu
   if (provider === "anthropic") {
     return Array.isArray(body.content)
       ? textFromContent(body.content.filter((block) => block && typeof block === "object" && (block as Record<string, unknown>).type === "text"))
+      : null;
+  }
+
+  if (provider === "ollama") {
+    const message = body.message;
+    return message && typeof message === "object" && typeof (message as Record<string, unknown>).content === "string"
+      ? (message as Record<string, unknown>).content as string
       : null;
   }
 
