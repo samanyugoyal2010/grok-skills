@@ -106,7 +106,7 @@ code { color: var(--tomato-dark); font: .9em var(--mono); overflow-wrap: anywher
 .specimen-head { min-height: 45px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px; color: var(--muted); border-bottom: 1px solid var(--line); font: 11px var(--mono); }
 .specimen-head > span:first-child { display: inline-flex; align-items: center; gap: 8px; color: var(--tomato-dark); font-weight: 700; }
 .specimen-path { padding: 13px 16px; color: var(--muted); border-bottom: 1px solid var(--line); font: 11px/1.5 var(--mono); overflow-wrap: anywhere; }
-.specimen-body { max-height: 390px; padding: 18px 16px; overflow: auto; color: var(--ink); background: transparent; font: 12px/1.8 var(--mono); }
+.specimen-body { max-height: 390px; padding: 18px 16px; overflow: auto; color: var(--ink); background: transparent; font: 12px/1.8 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
 .specimen-body code { color: inherit; font: inherit; }
 .specimen-evidence { display: grid; gap: 8px; padding: 13px 16px; color: var(--muted); border-top: 1px solid var(--line); font-size: 12px; }
 .specimen-evidence b { margin-right: 6px; color: var(--herb); font-family: var(--mono); font-size: 11px; }
