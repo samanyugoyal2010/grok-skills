@@ -80,11 +80,12 @@ For semantic compilation, configure a provider API key in the environment of the
 
 ```bash
 export SKILL_COMPILER_PROVIDER=openai
-export OPENAI_API_KEY="<your-provider-api-key>"
 export SKILL_COMPILER_MODEL=gpt-4.1-mini # optional; defaults vary by provider
 npm run build
 npm start
 ```
+
+Inject `OPENAI_API_KEY` into the MCP process using your OS secret manager or MCP host. Do not paste an actual key into a shell command or commit it in an MCP configuration.
 
 Set exactly one of `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, or `GROQ_API_KEY` to infer the provider, or set `SKILL_COMPILER_PROVIDER` (`openai`, `anthropic`, `openrouter`, `groq`) when multiple keys are available. `SKILL_COMPILER_MODEL` overrides the selected provider's default model. Defaults are `gpt-4.1-mini`, `claude-sonnet-5`, `openai/gpt-4.1-mini`, and `openai/gpt-oss-20b`, respectively. `SKILL_COMPILER_MODEL_TIMEOUT_MS` controls the request timeout. Use a local secret manager or your MCP host's process-environment injection; `.env.example` documents names only and is not loaded automatically. For a stdio MCP server started by an IDE, the child inherits the IDE process environment plus any variables the IDE's local MCP launcher injects. An `export` in a terminal affects only processes started from that shell; it will not update an already-running IDE. Configure the secret in an uncommitted local secret store/launcher and restart the MCP child (or IDE, if needed). Never put a real key in repository examples or `compile_skill` arguments.
 
