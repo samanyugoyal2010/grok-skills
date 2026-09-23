@@ -22,9 +22,13 @@ export function CodeBlock({ label, value }: { label: string; value: string }) {
         textarea.style.position = "fixed";
         textarea.style.opacity = "0";
         document.body.appendChild(textarea);
-        textarea.select();
-        const copied = document.execCommand("copy");
-        textarea.remove();
+        let copied = false;
+        try {
+          textarea.select();
+          copied = document.execCommand("copy");
+        } finally {
+          textarea.remove();
+        }
         if (!copied) throw new Error("Copy command failed");
         setCopyStatus("copied");
       } catch {
