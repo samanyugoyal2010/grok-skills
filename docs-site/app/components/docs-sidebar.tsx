@@ -29,17 +29,17 @@ export function DocsSidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-intro">
-        <span className="eyebrow">The recipe book</span>
+        <span className="eyebrow">SkillChef docs</span>
         <p>Turn a repeatable workflow and approved context into one inspectable agent skill.</p>
       </div>
-      <div className="sidebar-group">
+      <nav className="sidebar-group" aria-label="In this guide">
         <span className="sidebar-label">In this guide</span>
         {navItems.map(([id, label]) => (
           <a className={`sidebar-link${activeSection === id ? " active" : ""}`} href={`#${id}`} key={id} aria-current={activeSection === id ? "location" : undefined}>
             {label}
           </a>
         ))}
-      </div>
+      </nav>
       <div className="sidebar-footer">
         <div className="status-line"><span className="status-dot" /> Small-batch preview</div>
         <p>No accounts or repo-context persistence. No repository writes.</p>
