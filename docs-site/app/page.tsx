@@ -48,7 +48,7 @@ export default function Home() {
           <span>SkillChef</span>
         </a>
         <div className="topbar-meta">
-          <span className="topbar-context">The agent skill workbench</span>
+          <span className="topbar-context">Task-time skill compiler</span>
           <a className="source-link" href={repositoryUrl} target="_blank" rel="noreferrer">Source <Github size={14} aria-hidden="true" /></a>
           <a className="topbar-cta" href="#station">Set up SkillChef <ArrowUpRight size={14} aria-hidden="true" /></a>
         </div>
@@ -59,7 +59,6 @@ export default function Home() {
         <main className="content-column" id="main-content" tabIndex={-1}>
           <section className="hero section" id="overview">
             <div className="hero-copy">
-              <div className="eyebrow"><span className="eyebrow-rule" />SkillChef · MCP tool</div>
               <h1>Turn repeat work into a repo-specific skill.</h1>
               <p className="hero-lede">Give SkillChef a task, project brief, and files you approve. It finds relevant public skills and returns a reviewable <code>SKILL.md</code> with sources and risk notes. Your agent decides whether to save it.</p>
               <div className="hero-actions">
@@ -113,7 +112,7 @@ description: Add and verify client-side validation in account settings.
               <span className="section-kicker">Agent setup</span>
               <div><h2>Connect SkillChef to your coding agent.</h2><p>Add the MCP server once. Save each reviewed skill in the folder that agent scans.</p></div>
             </div>
-            <div className="build-row"><div><span className="tiny-label">FIRST, BUILD LOCALLY</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
+            <div className="build-row"><div><span className="tiny-label">Build locally</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
             <RecipeStation />
           </section>
 
@@ -128,7 +127,7 @@ description: Add and verify client-side validation in account settings.
                 <div className="recipe-detail"><span className="detail-mark detail-yellow" /><div><strong>Repo-specific constraints</strong><p>Carry forward the conventions in the context you approved.</p></div></div>
                 <div className="recipe-detail"><span className="detail-mark detail-purple" /><div><strong>Sources to inspect</strong><p>See matched excerpts with source links and content hashes.</p></div></div>
               </div>
-              <CodeBlock label="SKILL.md · Agent Skills format" value={skillFrontmatter} />
+              <CodeBlock label="SKILL.md / Agent Skills format" value={skillFrontmatter} />
             </div>
           </section>
 
