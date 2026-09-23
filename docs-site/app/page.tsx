@@ -11,6 +11,7 @@ import { CodeBlock } from "./components/code-block";
 import { DocsSidebar } from "./components/docs-sidebar";
 import { RecipeStation } from "./components/recipe-station";
 import { ProviderSetup } from "./components/provider-setup";
+import { SetupPrompt } from "./components/setup-prompt";
 
 const repositoryUrl = "https://github.com/samanyugoyal2010/grok-skills";
 
@@ -130,10 +131,17 @@ description: Validate account settings inputs.
           <section className="section station-section" id="station">
             <div className="section-heading">
               <span className="section-kicker">Agent setup</span>
-              <div><h2>Run the compiler beside your agent.</h2><p>In the local setup, your coding agent starts SkillChef as an MCP child process. The page only documents setup; provider keys never belong in this site or an agent config.</p></div>
+              <div><h2>Let your agent set it up.</h2><p>Copy one instruction into the coding agent you already use. It will install SkillChef locally, prepare the right MCP connection, and verify the tool is available.</p></div>
             </div>
-            <div className="build-row"><div><span className="tiny-label">Build locally</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
-            <RecipeStation />
+            <SetupPrompt />
+            <details className="manual-setup">
+              <summary>Configure SkillChef yourself instead</summary>
+              <div className="manual-setup-content">
+                <p>These local stdio examples are here if you prefer to install and configure it by hand. Keep provider keys out of your agent configuration.</p>
+                <div className="build-row"><div><span className="tiny-label">Build locally</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
+                <RecipeStation />
+              </div>
+            </details>
           </section>
 
           <ProviderSetup />
