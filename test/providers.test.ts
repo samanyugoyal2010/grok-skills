@@ -118,7 +118,7 @@ test("rejects malformed JSON and responses beyond the configured byte limit", as
   assert.deepEqual(oversized, { failure: { kind: "oversized" } });
 });
 
-test("forwards abort signals and refuses redirects that could receive authorization headers", async () => {
+test("forwards abort signals and disables automatic redirects for credentialed requests", async () => {
   const controller = new AbortController();
   let sentSignal: AbortSignal | null | undefined;
   let redirectMode: RequestRedirect | undefined;

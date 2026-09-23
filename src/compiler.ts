@@ -251,7 +251,7 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
       "Added a task-specific procedure based on the approved task and repository context.",
       "Added repository constraints and approved-context references.",
       modelMarkdown
-        ? "Compiled with the configured model endpoint."
+        ? `Compiled with the configured ${options.modelProvider ?? "model endpoint"}.`
         : options.modelUrl || options.modelProvider
           ? `The configured ${options.modelProvider ?? "model endpoint"} ${modelAttempt.failure ?? "did not produce valid output"}; used the deterministic compiler fallback.`
           : "Compiled with the deterministic local compiler; no model provider was configured.",

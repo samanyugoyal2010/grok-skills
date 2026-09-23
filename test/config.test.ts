@@ -24,7 +24,7 @@ test("keeps the optional GitHub retrieval token in runtime configuration", () =>
 });
 
 test("selects one locally configured provider with a conservative model default", () => {
-  const config = loadRuntimeConfig({ OPENAI_API_KEY: "local-openai-key" });
+  const config = loadRuntimeConfig({ OPENAI_API_KEY: "  local-openai-key  " });
   assert.equal(config.modelProvider, "openai");
   assert.equal(config.modelApiKey, "local-openai-key");
   assert.equal(config.model, "gpt-4.1-mini");

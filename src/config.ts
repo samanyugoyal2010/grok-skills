@@ -128,7 +128,7 @@ export function loadModelConfig(env: NodeJS.ProcessEnv = process.env): Pick<Runt
   }
 
   if (!provider) return {};
-  const apiKey = env[PROVIDER_KEYS[provider]]!;
+  const apiKey = env[PROVIDER_KEYS[provider]]!.trim();
   return {
     modelProvider: provider,
     modelApiKey: apiKey,
