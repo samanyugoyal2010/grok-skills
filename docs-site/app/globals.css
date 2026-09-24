@@ -517,9 +517,6 @@ body { background: var(--counter); color: var(--ink); font: 13px/1.7 var(--sans)
 .hero-intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .95fr); align-items: center; gap: clamp(36px, 7vw, 100px); padding: clamp(46px, 7vw, 82px) 0 48px; border-bottom: 1px solid var(--line); }
 .hero-wordmark-wrap .eyebrow, .eyebrow { color: var(--herb); font-size: 10px; font-weight: 550; letter-spacing: .12em; }
 .hero-wordmark-wrap .eyebrow { margin: 0 0 20px; }
-.hero-intro .hero-wordmark { display: grid; width: fit-content; margin: 0; color: #edf1ec; font: 800 clamp(58px, 8vw, 96px)/.86 var(--mono); letter-spacing: -.105em; text-transform: uppercase; }
-.hero-wordmark span:first-child { text-shadow: 2px 2px 0 #090b0d, 4px 4px 0 #56664d; }
-.hero-wordmark span:last-child { color: #bdc7bf; }
 .hero-copy { max-width: 530px; padding: 0; }
 .hero-kicker { margin: 0 0 16px; color: var(--herb); font-size: 10px; font-weight: 600; letter-spacing: .12em; }
 .hero-kicker span { padding-inline: 5px; color: var(--tomato); }
@@ -701,13 +698,13 @@ body { font: 15px/1.65 var(--sans); }
 .hero-intro .hero-wordmark {
   display: block;
   max-width: 14ch;
+  margin: 0;
   color: var(--ink);
   font: 650 clamp(46px, 5.2vw, 68px)/.99 var(--display);
   letter-spacing: -.045em;
   text-transform: none;
   text-wrap: balance;
 }
-.hero-wordmark span:first-child, .hero-wordmark span:last-child { color: inherit; text-shadow: none; }
 .hero-kicker { font-size: 15px; letter-spacing: 0; }
 .hero-lede { font-size: 16px; line-height: 1.7; }
 .button { font: 600 13px/1.2 var(--sans); text-transform: none; }
@@ -778,6 +775,9 @@ body { font: 15px/1.65 var(--sans); }
 @media (max-width: 820px) {
   .hero-intro .hero-wordmark { max-width: 14ch; font-size: clamp(44px, 8vw, 62px); }
   .method-step { grid-template-columns: 88px minmax(170px, .8fr) minmax(0, 1.2fr); }
+}
+@media (max-width: 960px) and (min-width: 561px) {
+  .provider-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
   body { font-size: 15px; }
