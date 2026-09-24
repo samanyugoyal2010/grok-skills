@@ -132,8 +132,8 @@ export function ProviderSetup() {
     <section className="section provider-section" id="provider-setup">
       <div className="section-heading">
         <div>
-          <h2>Choose how to write the draft.</h2>
-          <p>Start with SkillChef’s local compiler, add Ollama, or connect a cloud provider.</p>
+          <h2>Choose how to prepare the draft.</h2>
+          <p>Use the built-in compiler, keep it local with Ollama, or bring a cloud provider.</p>
         </div>
       </div>
 

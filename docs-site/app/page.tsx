@@ -9,29 +9,33 @@ import { SetupPrompt } from "./components/setup-prompt";
 const repositoryUrl = "https://github.com/samanyugoyal2010/grok-skills";
 
 const skillFrontmatter = `---
-name: mcp-server-release-check
-description: Verify an MCP server before cutting a release.
+name: add-list-filter
+description: Add a searchable list filter using the project's existing patterns.
 ---
 
-# MCP server release check
+# Add a list filter
 
-## Procedure
-1. Run the repository's lint and test commands.
-2. Launch the server over stdio and initialize a client.
-3. List tools and call one safe tool; verify stdout contains only protocol messages.
-4. Record any failing command and its output.
+Use this when a page needs to filter items it already has.
 
-## Repo constraints
-- Use the scripts defined in package.json.`;
+## Recipe
+1. Reuse the page's current list and input patterns.
+2. Filter loaded items locally. Do not add a request or change the API.
+3. Show all items for a blank query.
+4. Give a clear message when nothing matches.
+
+## Taste test
+- Try matching, unmatched, and blank searches.
+- Check keyboard access and input labels.
+- Run the project's lint and test commands.`;
 
 const requestExample = `{
-  "task": "Check the MCP server before a release.",
-  "search_query": "MCP server stdio protocol release checklist",
-  "project_brief": "Node.js MCP server; follow the repository's scripts and test setup.",
+  "task": "Add an accessible search filter to the settings page.",
+  "search_query": "accessible React client-side list filter empty state",
+  "project_brief": "Next.js app; follow existing components and keep filtering client-side.",
   "approved_context": [
     {
-      "path": "package.json",
-      "reason": "Use the project's actual lint and test commands.",
+      "path": "app/settings/page.tsx",
+      "reason": "Reuse the settings page's existing list and input patterns.",
       "content": "..."
     }
   ]
@@ -57,12 +61,12 @@ export default function Home() {
           <section className="hero section" id="overview">
             <div className="hero-intro">
               <div className="hero-wordmark-wrap">
-                <p className="eyebrow">A recipe card for your coding agent</p>
-                <h1 className="hero-wordmark">Teach your agent how your repo works.</h1>
+                <p className="eyebrow">The prep station for your coding agent</p>
+                <h1 className="hero-wordmark">Give your agent the recipe your team follows.</h1>
               </div>
               <div className="hero-copy">
-                <p className="hero-kicker">Describe it. Review it. Reuse it.</p>
-                <p className="hero-lede">Turn work your team repeats into an Agent Skill. Choose the repo context, inspect the draft, then save the <code>SKILL.md</code> where your agent can use it.</p>
+                <p className="hero-kicker">Describe the work. Gather context. Review the draft.</p>
+                <p className="hero-lede">Turn a repeatable task into an Agent Skill. Choose the repo files it can use, taste-test the draft, then save it where your agent can find it.</p>
                 <div className="hero-actions">
                   <a className="button button-primary" href="#station">Set up SkillChef <ArrowUpRightIcon size={16} aria-hidden="true" /></a>
                   <a className="text-link" href="#the-recipe">See an example skill</a>
@@ -73,7 +77,7 @@ export default function Home() {
               <div className="hero-command">
                 <span className="eyebrow">Quick start</span>
                 <a href="#station">Copy the setup prompt <ArrowUpRightIcon size={16} aria-hidden="true" /></a>
-                <small>Runs locally · review before saving</small>
+                <small>Runs on your computer. Review before saving.</small>
               </div>
               <div className="hero-agents">
                 <span className="eyebrow">Works with your coding agent</span>
@@ -86,38 +90,38 @@ export default function Home() {
 
           <section className="section method-section" id="how-it-works">
             <div className="section-heading">
-              <div><h2>From repeated task to reusable skill.</h2><p>Describe the work, approve the context, then check the generated instructions before you save them.</p></div>
+              <div><h2>Prep the task. Gather ingredients. Taste-test the draft.</h2><p>Tell SkillChef what to make, choose the files it can use, then check the skill before saving.</p></div>
             </div>
             <div className="method-line">
               <article className="method-step">
-                <span className="method-index">01 · Describe</span>
-                <h3>Name the work you repeat</h3>
-                <p>Tell SkillChef what the agent should do and when to use the skill.</p>
+                <span className="method-index">01 · Prep</span>
+                <h3>Describe the work</h3>
+                <p>Say what the agent should do and when this recipe applies.</p>
               </article>
               <article className="method-step">
-                <span className="method-index">02 · Prepare</span>
-                <h3>Approve useful repo context</h3>
-                <p>Choose the exact files SkillChef may use. Public references are optional.</p>
+                <span className="method-index">02 · Ingredients</span>
+                <h3>Choose the files it can use</h3>
+                <p>Approve exact repo files. Public references are optional.</p>
               </article>
               <article className="method-step">
-                <span className="method-index">03 · Review</span>
-                <h3>Check the draft before saving</h3>
-                <p>Inspect the skill, sources, and risk notes. SkillChef never saves or runs it for you.</p>
+                <span className="method-index">03 · Taste test</span>
+                <h3>Review before you save</h3>
+                <p>Check the skill, sources, and risk notes. SkillChef never saves or runs it for you.</p>
               </article>
             </div>
           </section>
 
           <section className="section recipe-section" id="the-recipe">
             <div className="section-heading">
-              <div><h2>A real skill file, ready to inspect.</h2><p>SkillChef writes the standard Agent Skills format. Save it in a folder matching its <code>name</code>.</p></div>
+              <div><h2>A recipe card your agent can follow.</h2><p>A compact skill file with the task, method, guardrails, and final checks spelled out.</p></div>
             </div>
             <div className="recipe-layout">
               <div className="recipe-copy">
-                <div className="recipe-detail"><div><strong>Clear name and description</strong><p>Help the agent recognize when this workflow applies.</p></div></div>
-                <div className="recipe-detail"><div><strong>Repo-specific constraints</strong><p>Carry forward the conventions in the context you approved.</p></div></div>
-                <div className="recipe-detail"><div><strong>Sources to inspect</strong><p>See matched excerpts with source links and content hashes.</p></div></div>
+                <div className="recipe-detail"><div><strong>A clear reason to use it</strong><p>The name and description tell the agent when to reach for this skill.</p></div></div>
+                <div className="recipe-detail"><div><strong>Approved ingredients</strong><p>Only the repo files you choose can shape the draft.</p></div></div>
+                <div className="recipe-detail"><div><strong>A final taste test</strong><p>Review the result, source notes, and risks before saving.</p></div></div>
               </div>
-              <CodeBlock label="SKILL.md / Agent Skills format" value={skillFrontmatter} />
+              <CodeBlock label="Sample recipe · SKILL.md" value={skillFrontmatter} variant="recipe" />
             </div>
           </section>
 
@@ -132,7 +136,7 @@ export default function Home() {
 
           <section className="section contract-section" id="contract">
             <div className="section-heading">
-              <div><h2>Know what gets sent.</h2><p>The MCP server receives your task and only the repo context you approve. Cloud synthesis also sends that material to your chosen provider.</p></div>
+              <div><h2>Know what leaves your kitchen.</h2><p>The MCP server receives your task and only the repo context you approve. Cloud synthesis also sends that material to your chosen provider.</p></div>
             </div>
             <div className="contract-layout">
               <CodeBlock label="compile_skill · request" value={requestExample} />
@@ -151,7 +155,7 @@ export default function Home() {
             <div><h2>Built for local use.</h2><p>SkillChef has no accounts or per-user keys. HTTP mode uses one server-held provider key and is single-tenant. Check a cloud provider’s data terms before sending private code. Treat public references and generated instructions as untrusted, and review every skill before using it.</p><p className="safety-followup">A shared hosted service needs user accounts, isolated keys, and tenant-level controls.</p></div>
           </section>
 
-          <footer className="footer"><a className="footer-brand" href="#overview"><ChefHatIcon size={19} weight="duotone" aria-hidden="true" /> SkillChef</a><span>Turn repeated work into a skill your agent can follow.</span><div className="footer-links"><a href="/llms.txt">Full guide</a><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRightIcon size={16} aria-hidden="true" /></a></div></footer>
+          <footer className="footer"><a className="footer-brand" href="#overview"><ChefHatIcon size={19} weight="duotone" aria-hidden="true" /> SkillChef</a><span>Turn repeated work into a recipe your agent can follow.</span><div className="footer-links"><a href="/llms.txt">Full guide</a><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRightIcon size={16} aria-hidden="true" /></a></div></footer>
         </main>
       </div>
     </div>
