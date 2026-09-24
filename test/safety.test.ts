@@ -4,6 +4,7 @@ import { findSecretKinds, isForbiddenPath, validateCompileInput } from "../src/l
 import { InFlightLimiter, RateLimitError, RateLimiter } from "../src/rate-limit.js";
 import { scanRisk } from "../src/safety.js";
 
+// Split synthetic password fixtures so secret scanners do not mistake them for real credentials.
 const syntheticCredential = ["pass", "word=", "super", "secret", "123"].join("");
 
 test("rejects credentials and sensitive paths", () => {

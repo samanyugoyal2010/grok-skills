@@ -85,7 +85,7 @@ test("preserves the deterministic fallback budget after slow retrieval", async (
   });
   assert.equal(result.isError, undefined);
   const structured = result.structuredContent as { changeSummary: string[] };
-  assert.match(structured.changeSummary.join(" "), /not enough time remained.*deterministic compiler fallback/);
+  assert.match(structured.changeSummary.join(" "), /Skipped model synthesis because too little compilation time remained.*deterministic compiler fallback/);
   await client.close();
   await server.close();
 });

@@ -12,6 +12,7 @@ export async function copyTextToClipboard(value: string): Promise<void> {
     document.body.appendChild(textarea);
     let copied = false;
     try {
+      textarea.setSelectionRange(0, textarea.value.length);
       textarea.select();
       copied = document.execCommand("copy");
     } finally {

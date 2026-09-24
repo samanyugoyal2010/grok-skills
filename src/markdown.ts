@@ -43,7 +43,7 @@ export function escapeMarkdownInline(value: string): string {
 }
 
 export function escapeMarkdownCodeSpan(value: string): string {
-  const normalized = singleLine(value);
+  const normalized = value.replace(/[\r\n]+/g, " ");
   const longestRun = Math.max(0, ...Array.from(normalized.matchAll(/`+/g), (match) => match[0].length));
   const delimiter = "`".repeat(longestRun + 1);
   const needsPadding = normalized.startsWith(" ") || normalized.endsWith(" ") || normalized.startsWith("`") || normalized.endsWith("`");

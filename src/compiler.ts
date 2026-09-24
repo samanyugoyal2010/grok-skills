@@ -159,7 +159,7 @@ function safeProviderFailure(failure: ProviderFailure): string {
 }
 
 async function compileWithModel(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions): Promise<ModelAttempt> {
-  if (options.skipModel) return { markdown: null, failure: "not enough time remained for model synthesis" };
+  if (options.skipModel) return { markdown: null };
   if (!options.modelUrl && !(options.modelProvider && options.model && (options.modelProvider === "ollama" || options.modelApiKey))) return { markdown: null };
   if (options.signal?.aborted) return { markdown: null, failure: "cancelled" };
   const fetcher = options.fetcher ?? fetch;
@@ -258,7 +258,9 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
       modelMarkdown
         ? `Compiled with the configured ${options.modelProvider ?? "model endpoint"}.`
         : options.modelUrl || options.modelProvider
-          ? `The configured ${options.modelProvider ?? "model endpoint"} ${modelAttempt.failure ?? "did not produce valid output"}; used the deterministic compiler fallback.`
+          ? options.skipModel
+            ? "Skipped model synthesis because too little compilation time remained; used the deterministic compiler fallback."
+            : `The configured ${options.modelProvider ?? "model endpoint"} ${modelAttempt.failure ?? "did not produce valid output"}; used the deterministic compiler fallback.`
           : "Compiled with the deterministic local compiler; no model provider was configured.",
       safeSources.length
         ? `${options.retrievalStatus === "partial" ? "Public source retrieval was incomplete; " : ""}Adapted guidance from ${safeSources.length} safe public skill source(s).`

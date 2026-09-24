@@ -68,7 +68,7 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
             const configuredModelTimeoutMs = Number.isFinite(compilerOptions.modelTimeoutMs) && (compilerOptions.modelTimeoutMs ?? 0) >= 1
               ? compilerOptions.modelTimeoutMs!
               : 20_000;
-            const boundedModelOptions = modelConfigured && remainingModelMs > 0
+            const boundedModelOptions = modelConfigured && remainingModelMs >= 1
               ? { ...compilerOptions, modelTimeoutMs: Math.min(configuredModelTimeoutMs, remainingModelMs) }
               : modelConfigured
                 ? { ...compilerOptions, skipModel: true }

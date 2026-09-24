@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { compileSkill } from "../src/compiler.js";
 import { LIMITS } from "../src/limits.js";
+import { escapeMarkdownCodeSpan } from "../src/markdown.js";
 import type { CompileSkillInput, SkillSource } from "../src/types.js";
 
 const input: CompileSkillInput = {
@@ -11,6 +12,11 @@ const input: CompileSkillInput = {
   approved_context: [{ path: "src/routes.ts", reason: "Existing route conventions", content: "export const routes = {};" }]
 };
 const syntheticCredential = ["pass", "word=", "super", "secret", "123"].join("");
+
+test("preserves leading and trailing spaces in Markdown code spans", () => {
+  assert.equal(escapeMarkdownCodeSpan(" src/file.ts "), "`  src/file.ts  `");
+  assert.equal(escapeMarkdownCodeSpan("src/\nfile.ts"), "`src/ file.ts`");
+});
 
 const source: SkillSource = {
   url: "https://example.com/skill",
