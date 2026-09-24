@@ -113,7 +113,7 @@ export function RecipeStation() {
       <div key={selected.id} className="station-config" id="agent-setup-panel" role="region" aria-label={`${selected.name} setup`} aria-live="polite">
         <p>Put this entry in <code>{selected.configPath}</code> and replace the example path with your checkout path.</p>
         <CodeBlock label={selected.configPath} value={selected.config} />
-        <p className="station-finish-note">Reload your agent. Save reviewed skills to <code>{selected.skillPath}</code>.</p>
+        <p className="station-finish-note">Reload your agent. Save the reviewed skill to <code>{selected.skillPath}</code>, using its frontmatter name as the folder name.</p>
       </div>
     </div>
   );
