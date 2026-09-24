@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { Check, Cloud, ExternalLink, FileText, Laptop, LockKeyhole, type LucideIcon } from "lucide-react";
+import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
+import { CloudIcon } from "@phosphor-icons/react/dist/csr/Cloud";
+import { ArrowSquareOutIcon } from "@phosphor-icons/react/dist/csr/ArrowSquareOut";
+import { FileTextIcon } from "@phosphor-icons/react/dist/csr/FileText";
+import { LaptopIcon } from "@phosphor-icons/react/dist/csr/Laptop";
+import { LockKeyIcon } from "@phosphor-icons/react/dist/csr/LockKey";
 import { CodeBlock } from "./code-block";
 
 type SetupMode = "none" | "local" | "cloud";
@@ -45,10 +50,10 @@ const cloudProviders: CloudProvider[] = [
   }
 ];
 
-const setupModes: Array<{ id: SetupMode; label: string; detail: string; icon: LucideIcon }> = [
-  { id: "none", label: "Built-in compiler", detail: "No model or key", icon: FileText },
-  { id: "local", label: "Ollama on this device", detail: "Local model, local context", icon: Laptop },
-  { id: "cloud", label: "Cloud provider", detail: "Use your provider key", icon: Cloud }
+const setupModes: Array<{ id: SetupMode; label: string; detail: string; icon: typeof FileTextIcon }> = [
+  { id: "none", label: "Built-in compiler", detail: "No model or key", icon: FileTextIcon },
+  { id: "local", label: "Ollama on this device", detail: "Local model, local context", icon: LaptopIcon },
+  { id: "cloud", label: "Cloud provider", detail: "Use your provider key", icon: CloudIcon }
 ];
 
 function moveProviderTab(event: KeyboardEvent<HTMLDivElement>) {
@@ -89,16 +94,16 @@ SKILL_COMPILER_MODEL=${provider.model}`;
       <div className="provider-guide-main">
         <div className="provider-guide-heading">
           <div>
-            <span className="provider-guide-kicker">Cloud setup</span>
+            <span className="provider-guide-kicker">Cloud provider</span>
             <h3>Use {provider.name} to help write the final skill.</h3>
-            <p>SkillChef sends the task and files you approve to this provider to help write the skill. The key is read from the MCP server environment and sent only as the provider authentication header.</p>
+            <p>Cloud synthesis sends your task and approved files to {provider.name}. SkillChef reads the key from its server environment and sends it only in the provider’s authentication header.</p>
           </div>
         </div>
 
         <div className="provider-steps">
           <div className="provider-step">
             <span className="provider-step-number">1</span>
-            <div><h4>Get a key</h4><p>Create or use {article} {provider.name} API key. It is separate from your coding-agent login.</p><a className="provider-inline-link" href={provider.url} target="_blank" rel="noreferrer">Open {provider.name} setup <ExternalLink size={14} aria-hidden="true" /></a></div>
+            <div><h4>Get a key</h4><p>Create or use {article} {provider.name} API key. It is separate from your coding-agent login.</p><a className="provider-inline-link" href={provider.url} target="_blank" rel="noreferrer">Open {provider.name} setup <ArrowSquareOutIcon size={16} aria-hidden="true" /></a></div>
           </div>
           <div className="provider-step">
             <span className="provider-step-number">2</span>
@@ -127,15 +132,15 @@ export function ProviderSetup() {
     <section className="section provider-section" id="provider-setup">
       <div className="section-heading">
         <div>
-          <h2>Choose how to compile a skill.</h2>
-          <p>Run the deterministic compiler locally, add an Ollama model, or use a cloud provider.</p>
+          <h2>Choose how to write the draft.</h2>
+          <p>Start with SkillChef’s local compiler, add Ollama, or connect a cloud provider.</p>
         </div>
       </div>
 
       <div className="provider-panel">
         <div className="provider-choice-header">
-          <span className="provider-choice-label">What sounds right?</span>
-          <span className="provider-choice-help">You can change this later.</span>
+          <span className="provider-choice-label">Choose a compiler</span>
+          <span className="provider-choice-help">Change this any time.</span>
         </div>
         <div className="provider-choice-grid" role="tablist" aria-label="Choose how SkillChef should create skills" onKeyDown={moveProviderTab}>
           {setupModes.map((item) => (
@@ -150,9 +155,9 @@ export function ProviderSetup() {
               tabIndex={mode === item.id ? 0 : -1}
               onClick={() => setMode(item.id)}
             >
-              <span className="provider-choice-icon"><item.icon size={19} aria-hidden="true" /></span>
+              <span className="provider-choice-icon"><item.icon size={21} weight="duotone" aria-hidden="true" /></span>
               <span className="provider-choice-copy"><span className="provider-choice-title">{item.label}</span><span className="provider-choice-detail">{item.detail}</span></span>
-              <span className="provider-choice-check" aria-hidden="true">{mode === item.id ? "Selected" : ""}</span>
+              <span className="provider-choice-check" aria-hidden="true">{mode === item.id ? <CheckIcon size={17} weight="bold" /> : null}</span>
             </button>
           ))}
         </div>
@@ -162,8 +167,8 @@ export function ProviderSetup() {
             <div className="provider-guide provider-guide-none">
               <div className="provider-guide-main provider-guide-heading">
                 <div>
-                  <h3>Compile locally, with no model key.</h3>
-                  <p>The local compiler turns your task and approved context into a reviewable <code>SKILL.md</code>. Public reference lookup is optional.</p>
+                  <h3>Draft locally. No model key needed.</h3>
+                  <p>The built-in compiler turns your task and approved context into a reviewable <code>SKILL.md</code>. Public reference lookup is optional.</p>
                 </div>
               </div>
             </div>
@@ -175,12 +180,12 @@ export function ProviderSetup() {
                 <div className="provider-guide-heading">
                   <div>
                     <span className="provider-guide-kicker">Local setup</span>
-                    <h3>Keep the model and your context on this computer.</h3>
+                    <h3>Keep the model and approved context on this computer.</h3>
                     <p>Ollama runs the model locally. You need Ollama and an installed model, but no cloud account or API key.</p>
                   </div>
                 </div>
                 <div className="provider-steps">
-                  <div className="provider-step"><span className="provider-step-number">1</span><div><h4>Install Ollama</h4><p>Download Ollama, start it, then install a model.</p><a className="provider-inline-link" href="https://ollama.com/download" target="_blank" rel="noreferrer">Get Ollama <ExternalLink size={14} aria-hidden="true" /></a><pre className="provider-command"><code>ollama pull qwen3:8b</code></pre></div></div>
+                  <div className="provider-step"><span className="provider-step-number">1</span><div><h4>Install Ollama</h4><p>Download Ollama, start it, then install a model.</p><a className="provider-inline-link" href="https://ollama.com/download" target="_blank" rel="noreferrer">Get Ollama <ArrowSquareOutIcon size={16} aria-hidden="true" /></a><pre className="provider-command"><code>ollama pull qwen3:8b</code></pre></div></div>
                   <div className="provider-step"><span className="provider-step-number">2</span><div><h4>Point SkillChef at it</h4><p>Set these values in the MCP server environment.</p><CodeBlock label="MCP server environment" value={ollamaEnvironment} /></div></div>
                   <div className="provider-step"><span className="provider-step-number">3</span><div><h4>Restart the MCP server</h4><p>SkillChef sends approved context to your local Ollama service.</p></div></div>
                 </div>
@@ -208,7 +213,7 @@ export function ProviderSetup() {
                       onClick={() => setProviderId(item.id)}
                     >
                       <span>{item.name}</span>
-                      <span className="provider-cloud-selected" aria-hidden="true">{provider.id === item.id ? <Check size={15} /> : ""}</span>
+                      <span className="provider-cloud-selected" aria-hidden="true">{provider.id === item.id ? <CheckIcon size={16} weight="bold" /> : ""}</span>
                     </button>
                   ))}
                 </div>
@@ -221,7 +226,7 @@ export function ProviderSetup() {
         </div>
       </div>
 
-      <p className="provider-footnote"><LockKeyhole size={14} aria-hidden="true" /> Store the key in the MCP server environment. Keep it out of chat, source control, skills, and tool calls.</p>
+      <p className="provider-footnote"><LockKeyIcon size={17} weight="duotone" aria-hidden="true" /> Store the key in the MCP server environment. Keep it out of chat, source control, skills, and tool calls.</p>
     </section>
   );
 }

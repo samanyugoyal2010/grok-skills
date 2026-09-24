@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import "@fontsource-variable/fraunces";
+import "@fontsource-variable/space-grotesk";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
@@ -25,10 +27,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#e8ece7" },
-    { media: "(prefers-color-scheme: dark)", color: "#090b0d" }
-  ]
+  themeColor: "#090b0d"
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
