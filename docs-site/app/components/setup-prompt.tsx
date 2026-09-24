@@ -111,7 +111,7 @@ export function SetupPrompt() {
               <CookingPotIcon className="simmer-pot" size={27} weight="duotone" />
             </span>
           </div>
-          <div className="manual-setup-build"><span className="tiny-label">1 · Build the server</span><CodeBlock label="terminal" value={buildExample} /></div>
+          <div className="manual-setup-build"><span className="tiny-label">1 · From the checkout root, build the server</span><CodeBlock label="terminal" value={buildExample} /></div>
           <RecipeStation />
         </section>
       )}
