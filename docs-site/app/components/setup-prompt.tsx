@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { Bot, Check, Clipboard, ShieldCheck, Wrench } from "lucide-react";
+import { RobotIcon } from "@phosphor-icons/react/dist/csr/Robot";
+import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
+import { ClipboardIcon } from "@phosphor-icons/react/dist/csr/Clipboard";
+import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import { WrenchIcon } from "@phosphor-icons/react/dist/csr/Wrench";
 import { CodeBlock } from "./code-block";
 import { RecipeStation } from "./recipe-station";
 import { copyTextToClipboard } from "./copy-to-clipboard";
@@ -65,14 +69,14 @@ export function SetupPrompt() {
     <div className="setup-chooser">
       <div className="setup-method-picker" role="tablist" aria-label="Choose a setup method" onKeyDown={moveSetupTab}>
         <button id="setup-tab-agent" type="button" role="tab" aria-selected={method === "agent"} aria-controls="setup-panel" tabIndex={method === "agent" ? 0 : -1} className={`setup-method-option${method === "agent" ? " selected" : ""}`} onClick={() => setMethod("agent")}>
-          <span className="setup-method-icon"><Bot size={19} aria-hidden="true" /></span>
+          <span className="setup-method-icon"><RobotIcon size={19} weight="duotone" aria-hidden="true" /></span>
           <span className="setup-method-copy"><strong>Agent setup</strong><small>Copy one prompt and review each change.</small></span>
-          <span className="setup-method-check" aria-hidden="true">{method === "agent" ? <Check size={16} /> : null}</span>
+          <span className="setup-method-check" aria-hidden="true">{method === "agent" ? <CheckIcon size={16} weight="bold" /> : null}</span>
         </button>
         <button id="setup-tab-manual" type="button" role="tab" aria-selected={method === "manual"} aria-controls="setup-panel" tabIndex={method === "manual" ? 0 : -1} className={`setup-method-option${method === "manual" ? " selected" : ""}`} onClick={() => setMethod("manual")}>
-          <span className="setup-method-icon"><Wrench size={18} aria-hidden="true" /></span>
+          <span className="setup-method-icon"><WrenchIcon size={18} weight="duotone" aria-hidden="true" /></span>
           <span className="setup-method-copy"><strong>Manual setup</strong><small>Install the server and connect it yourself.</small></span>
-          <span className="setup-method-check" aria-hidden="true">{method === "manual" ? <Check size={16} /> : null}</span>
+          <span className="setup-method-check" aria-hidden="true">{method === "manual" ? <CheckIcon size={16} weight="bold" /> : null}</span>
         </button>
       </div>
 
@@ -87,7 +91,7 @@ export function SetupPrompt() {
             </div>
             <div className="setup-prompt-actions">
               <button className="setup-copy-button" onClick={copyPrompt} type="button">
-                {copyStatus === "copied" ? <Check size={16} aria-hidden="true" /> : <Clipboard size={16} aria-hidden="true" />}
+                {copyStatus === "copied" ? <CheckIcon size={16} weight="bold" aria-hidden="true" /> : <ClipboardIcon size={16} aria-hidden="true" />}
                 {copyStatus === "copied" ? "Prompt copied" : copyStatus === "error" ? "Copy failed — select the text below" : "Copy setup prompt"}
               </button>
               <a href="https://github.com/samanyugoyal2010/grok-skills" target="_blank" rel="noreferrer">Review source first</a>
@@ -100,7 +104,7 @@ export function SetupPrompt() {
             </div>
           </details>
           <div className="setup-prompt-safety">
-            <ShieldCheck size={17} aria-hidden="true" />
+            <ShieldCheckIcon size={19} weight="duotone" aria-hidden="true" />
             <p><strong>You stay in control.</strong> Setup asks before changing agent settings. It does not read your project or add credentials. Later, you approve exact context files and review the skill before saving.</p>
           </div>
         </section>

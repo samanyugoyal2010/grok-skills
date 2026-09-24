@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Clipboard } from "lucide-react";
+import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
+import { ClipboardIcon } from "@phosphor-icons/react/dist/csr/Clipboard";
 import { copyTextToClipboard } from "./copy-to-clipboard";
 
 export function CodeBlock({ label, value }: { label: string; value: string }) {
@@ -31,7 +32,7 @@ export function CodeBlock({ label, value }: { label: string; value: string }) {
       <div className="code-head">
         <span>{label}</span>
         <button className="copy-button" onClick={copy} type="button" aria-label={`Copy ${label}`}>
-          {copyStatus === "copied" ? <Check size={14} aria-hidden="true" /> : <Clipboard size={14} aria-hidden="true" />}
+          {copyStatus === "copied" ? <CheckIcon size={16} weight="bold" aria-hidden="true" /> : <ClipboardIcon size={16} aria-hidden="true" />}
           {copyStatus === "copied" ? "Copied" : copyStatus === "error" ? "Copy failed" : "Copy"}
         </button>
       </div>

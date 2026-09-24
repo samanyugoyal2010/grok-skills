@@ -1,8 +1,7 @@
-import {
-  ArrowUpRight,
-  Check,
-  ShieldCheck
-} from "lucide-react";
+import { ArrowUpRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowUpRight";
+import { ChefHatIcon } from "@phosphor-icons/react/dist/ssr/ChefHat";
+import { CheckIcon } from "@phosphor-icons/react/dist/ssr/Check";
+import { ShieldCheckIcon } from "@phosphor-icons/react/dist/ssr/ShieldCheck";
 import { CodeBlock } from "./components/code-block";
 import { ProviderSetup } from "./components/provider-setup";
 import { SetupPrompt } from "./components/setup-prompt";
@@ -44,12 +43,12 @@ export default function Home() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <nav className="topbar" aria-label="Primary navigation">
         <a className="brand" href="#overview" aria-label="SkillChef home">
-          <span className="brand-glyph" aria-hidden="true">▲</span><span><span className="brand-skill">Skill</span><span className="brand-chef">Chef</span></span>
+          <ChefHatIcon className="brand-glyph" size={21} weight="duotone" aria-hidden="true" /><span><span className="brand-skill">Skill</span><span className="brand-chef">Chef</span></span>
         </a>
         <div className="topbar-meta">
-          <a className="topbar-link" href="#how-it-works">Workflow</a>
-          <a className="topbar-link" href="#the-recipe">Skill file</a>
-          <a className="topbar-cta" href="#station">Get started <ArrowUpRight size={14} aria-hidden="true" /></a>
+          <a className="topbar-link" href="#how-it-works">How it works</a>
+          <a className="topbar-link" href="#the-recipe">Example skill</a>
+          <a className="topbar-cta" href="#station">Get started <ArrowUpRightIcon size={16} aria-hidden="true" /></a>
         </div>
       </nav>
 
@@ -58,26 +57,26 @@ export default function Home() {
           <section className="hero section" id="overview">
             <div className="hero-intro">
               <div className="hero-wordmark-wrap">
-                <p className="eyebrow">THE LOCAL AGENT SKILL WORKBENCH</p>
-                <h1 className="hero-wordmark" aria-label="SkillChef"><span>SKILL</span><span>CHEF</span></h1>
+                <p className="eyebrow">A recipe card for your coding agent</p>
+                <h1 className="hero-wordmark">Teach your agent how your repo works.</h1>
               </div>
               <div className="hero-copy">
-                <p className="hero-kicker">PREP <span>→</span> COOK <span>→</span> REVIEW</p>
-                <p className="hero-lede">Turn a repeatable task into an Agent Skill. Approve the context, shape the workflow, and review the <code>SKILL.md</code> before saving.</p>
+                <p className="hero-kicker">Describe it. Review it. Reuse it.</p>
+                <p className="hero-lede">Turn work your team repeats into an Agent Skill. Choose the repo context, inspect the draft, then save the <code>SKILL.md</code> where your agent can use it.</p>
                 <div className="hero-actions">
-                  <a className="button button-primary" href="#station">Choose a setup path <ArrowUpRight size={15} aria-hidden="true" /></a>
-                  <a className="text-link" href="#the-recipe">View a sample</a>
+                  <a className="button button-primary" href="#station">Set up SkillChef <ArrowUpRightIcon size={16} aria-hidden="true" /></a>
+                  <a className="text-link" href="#the-recipe">See an example skill</a>
                 </div>
               </div>
             </div>
             <div className="hero-quickstart">
               <div className="hero-command">
-                <span className="eyebrow">QUICK START</span>
-                <a href="#station">Get the setup prompt <ArrowUpRight size={14} aria-hidden="true" /></a>
-                <small>Local MCP server · review before saving</small>
+                <span className="eyebrow">Quick start</span>
+                <a href="#station">Copy the setup prompt <ArrowUpRightIcon size={16} aria-hidden="true" /></a>
+                <small>Runs locally · review before saving</small>
               </div>
               <div className="hero-agents">
-                <span className="eyebrow">AVAILABLE FOR YOUR AGENT</span>
+                <span className="eyebrow">Works with your coding agent</span>
                 <div className="agent-list" role="group" aria-label="Works with Claude Code, Cursor, Codex, and other MCP clients">
                   <span>CLAUDE CODE</span><span>CURSOR</span><span>CODEX</span><span>+ MCP CLIENTS</span>
                 </div>
@@ -87,30 +86,30 @@ export default function Home() {
 
           <section className="section method-section" id="how-it-works">
             <div className="section-heading">
-              <div><h2>A workflow becomes a reviewable skill.</h2><p>Choose the task and context, compile it, then inspect sources and risk notes before saving.</p></div>
+              <div><h2>From repeated task to reusable skill.</h2><p>Describe the work, approve the context, then check the generated instructions before you save them.</p></div>
             </div>
             <div className="method-line">
               <article className="method-step">
-                <span className="method-index">Step 1 · Prep</span>
-                <h3>Choose a task and files</h3>
-                <p>Describe the repeatable workflow. Approve each file before its text is sent.</p>
+                <span className="method-index">01 · Describe</span>
+                <h3>Name the work you repeat</h3>
+                <p>Tell SkillChef what the agent should do and when to use the skill.</p>
               </article>
               <article className="method-step">
-                <span className="method-index">Step 2 · Cook</span>
-                <h3>Compile with approved context</h3>
-                <p>SkillChef finds public references and combines them with approved context.</p>
+                <span className="method-index">02 · Prepare</span>
+                <h3>Approve useful repo context</h3>
+                <p>Choose the exact files SkillChef may use. Public references are optional.</p>
               </article>
               <article className="method-step">
-                <span className="method-index">Step 3 · Taste</span>
-                <h3>Review before saving</h3>
-                <p>Check the skill, sources, and risk notes. Nothing is saved or run automatically.</p>
+                <span className="method-index">03 · Review</span>
+                <h3>Check the draft before saving</h3>
+                <p>Inspect the skill, sources, and risk notes. SkillChef never saves or runs it for you.</p>
               </article>
             </div>
           </section>
 
           <section className="section recipe-section" id="the-recipe">
             <div className="section-heading">
-              <div><h2>A skill file you can inspect.</h2><p>Save it in your agent’s skills folder. Match the folder name to the file’s <code>name</code>.</p></div>
+              <div><h2>A real skill file, ready to inspect.</h2><p>SkillChef writes the standard Agent Skills format. Save it in a folder matching its <code>name</code>.</p></div>
             </div>
             <div className="recipe-layout">
               <div className="recipe-copy">
@@ -124,7 +123,7 @@ export default function Home() {
 
           <section className="section station-section" id="station">
             <div className="section-heading">
-              <div><h2>Pick one setup path.</h2><p>Ask your coding agent to guide setup, or configure the local MCP server yourself.</p></div>
+              <div><h2>Connect SkillChef to your agent.</h2><p>Use a guided setup prompt or configure the local MCP server yourself.</p></div>
             </div>
             <SetupPrompt />
           </section>
@@ -133,26 +132,26 @@ export default function Home() {
 
           <section className="section contract-section" id="contract">
             <div className="section-heading">
-              <div><h2>Know where your text goes.</h2><p>Your local MCP server receives only the task and context your agent sends. Choose local deterministic output, local Ollama, or a cloud provider.</p></div>
+              <div><h2>Know what gets sent.</h2><p>The MCP server receives your task and only the repo context you approve. Cloud synthesis also sends that material to your chosen provider.</p></div>
             </div>
             <div className="contract-layout">
               <CodeBlock label="compile_skill · request" value={requestExample} />
               <div className="boundary-list">
-                <div><Check size={15} aria-hidden="true" /><span><b>Your computer:</b> runs the MCP server and receives the text you approved.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span><b>GitHub:</b> serves public skill references to the retriever.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span><b>Model provider:</b> gets the request and selected references only when synthesis is configured.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span><b>Your project:</b> is not read or changed by SkillChef. You review before saving.</span></div>
-                <a href="https://agentskills.io/specification" target="_blank" rel="noreferrer">Read the Agent Skills specification <ArrowUpRight size={14} aria-hidden="true" /></a>
+                <div><CheckIcon size={17} aria-hidden="true" /><span><b>Your computer:</b> runs SkillChef and receives the task and approved files.</span></div>
+                <div><CheckIcon size={17} aria-hidden="true" /><span><b>GitHub:</b> serves public skill references when lookup is enabled.</span></div>
+                <div><CheckIcon size={17} aria-hidden="true" /><span><b>Your model provider:</b> receives the request only when cloud synthesis is selected.</span></div>
+                <div><CheckIcon size={17} aria-hidden="true" /><span><b>Your project:</b> stays in your editor. SkillChef never reads or changes it directly.</span></div>
+                <a href="https://agentskills.io/specification" target="_blank" rel="noreferrer">Read the Agent Skills specification <ArrowUpRightIcon size={16} aria-hidden="true" /></a>
               </div>
             </div>
           </section>
 
           <section className="safety-section" id="safety">
-            <div className="safety-mark"><ShieldCheck size={20} aria-hidden="true" /></div>
-            <div><h2>Designed to run locally.</h2><p>SkillChef has no accounts or per-user credentials. HTTP mode uses one server-side provider key, so keep it private and single-tenant. Check a cloud provider’s current data terms before sending private code. Public skills and generated instructions are untrusted; risk checks are advisory. Review every skill before use.</p><p className="safety-followup">A shared hosted service needs user authentication, isolated credentials, and tenant-level controls first.</p></div>
+            <div className="safety-mark"><ShieldCheckIcon size={22} weight="duotone" aria-hidden="true" /></div>
+            <div><h2>Built for local use.</h2><p>SkillChef has no accounts or per-user keys. HTTP mode uses one server-held provider key and is single-tenant. Check a cloud provider’s data terms before sending private code. Treat public references and generated instructions as untrusted, and review every skill before using it.</p><p className="safety-followup">A shared hosted service needs user accounts, isolated keys, and tenant-level controls.</p></div>
           </section>
 
-          <footer className="footer"><a className="footer-brand" href="#overview">SkillChef</a><span>Turn a workflow into a skill you can inspect.</span><div className="footer-links"><a href="/llms.txt">Full guide</a><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRight size={13} aria-hidden="true" /></a></div></footer>
+          <footer className="footer"><a className="footer-brand" href="#overview"><ChefHatIcon size={19} weight="duotone" aria-hidden="true" /> SkillChef</a><span>Turn repeated work into a skill your agent can follow.</span><div className="footer-links"><a href="/llms.txt">Full guide</a><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRightIcon size={16} aria-hidden="true" /></a></div></footer>
         </main>
       </div>
     </div>
