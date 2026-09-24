@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Check, Clipboard, ShieldCheck } from "lucide-react";
+import { useState, type KeyboardEvent } from "react";
+import { Bot, Check, Clipboard, ShieldCheck, Wrench } from "lucide-react";
 import { CodeBlock } from "./code-block";
 import { RecipeStation } from "./recipe-station";
 
@@ -25,6 +25,17 @@ const buildExample = `npm ci
 npm run build`;
 
 type SetupMethod = "agent" | "manual";
+
+function moveSetupTab(event: KeyboardEvent<HTMLDivElement>) {
+  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+  const index = tabs.indexOf(document.activeElement as HTMLButtonElement);
+  const direction = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+  if (!direction || index < 0) return;
+  event.preventDefault();
+  const next = tabs[(index + direction + tabs.length) % tabs.length];
+  next.focus();
+  next.click();
+}
 
 export function SetupPrompt() {
   const [method, setMethod] = useState<SetupMethod>("agent");
@@ -61,22 +72,25 @@ export function SetupPrompt() {
 
   return (
     <div className="setup-chooser">
-      <div className="setup-method-picker" role="group" aria-label="Choose a setup method">
-        <button type="button" aria-pressed={method === "agent"} className={`setup-method-option${method === "agent" ? " selected" : ""}`} onClick={() => setMethod("agent")}>
-          <span>Agent prompt</span><small>Copy, paste, review</small>
+      <div className="setup-method-picker" role="tablist" aria-label="Choose a setup method" onKeyDown={moveSetupTab}>
+        <button id="setup-tab-agent" type="button" role="tab" aria-selected={method === "agent"} aria-controls="setup-panel" tabIndex={method === "agent" ? 0 : -1} className={`setup-method-option${method === "agent" ? " selected" : ""}`} onClick={() => setMethod("agent")}>
+          <span className="setup-method-icon"><Bot size={19} aria-hidden="true" /></span>
+          <span className="setup-method-copy"><strong>Agent setup</strong><small>Copy one prompt and review each change.</small></span>
+          <span className="setup-method-check" aria-hidden="true">{method === "agent" ? <Check size={16} /> : null}</span>
         </button>
-        <button type="button" aria-pressed={method === "manual"} className={`setup-method-option${method === "manual" ? " selected" : ""}`} onClick={() => setMethod("manual")}>
-          <span>Manual setup</span><small>Install and connect it yourself</small>
+        <button id="setup-tab-manual" type="button" role="tab" aria-selected={method === "manual"} aria-controls="setup-panel" tabIndex={method === "manual" ? 0 : -1} className={`setup-method-option${method === "manual" ? " selected" : ""}`} onClick={() => setMethod("manual")}>
+          <span className="setup-method-icon"><Wrench size={18} aria-hidden="true" /></span>
+          <span className="setup-method-copy"><strong>Manual setup</strong><small>Install the server and connect it yourself.</small></span>
+          <span className="setup-method-check" aria-hidden="true">{method === "manual" ? <Check size={16} /> : null}</span>
         </button>
       </div>
 
       {method === "agent" ? (
-        <section className="setup-prompt-panel" aria-labelledby="agent-prompt-title">
+        <section className="setup-prompt-panel" id="setup-panel" role="tabpanel" aria-labelledby="setup-tab-agent" tabIndex={0}>
           <div className="setup-prompt-copy">
             <div className="setup-prompt-heading">
-              <span className="setup-prompt-icon"><Clipboard size={18} aria-hidden="true" /></span>
               <div>
-                <h3 id="agent-prompt-title">Give your agent one setup instruction.</h3>
+                <h3 id="agent-prompt-title">Start with your coding agent.</h3>
                 <p>It installs SkillChef locally and prepares the MCP connection. Your agent shows any config changes and waits for your approval.</p>
               </div>
             </div>
@@ -100,7 +114,7 @@ export function SetupPrompt() {
           </div>
         </section>
       ) : (
-        <section className="manual-setup-content" aria-label="Manual SkillChef setup">
+        <section className="manual-setup-content" id="setup-panel" role="tabpanel" aria-labelledby="setup-tab-manual" tabIndex={0}>
           <p>Install and build the MCP server, then add its local command to your agent’s MCP configuration. Keep provider keys out of agent config files.</p>
           <div className="build-row"><div><span className="tiny-label">Build locally</span><p>Run these commands from a SkillChef checkout.</p></div><CodeBlock label="terminal" value={buildExample} /></div>
           <RecipeStation />

@@ -152,7 +152,7 @@ test("cancels a model response body that never finishes", async () => {
 });
 
 test("falls back when the model returns secret-like output", async () => {
-  const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\npassword=supersecret123";
+  const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nexample password=supersecret123";
   const result = await compileSkill(input, [], {
     modelUrl: "https://model.example/compile",
     fetcher: (async () => new Response(JSON.stringify({ output: markdown }), { status: 200 })) as typeof fetch
@@ -180,7 +180,7 @@ test("falls back before parsing an oversized model response", async () => {
 
 test("withholds secret-like public source content from the model prompt", async () => {
   let promptBody = "";
-  const result = await compileSkill(input, [{ ...source, content: "password=supersecret123" }], {
+  const result = await compileSkill(input, [{ ...source, content: "example password=supersecret123" }], {
     modelUrl: "https://model.example/compile",
     fetcher: (async (_url, init) => {
       promptBody = String(init?.body ?? "");
@@ -200,7 +200,7 @@ test("does not claim blocked sources were adapted and escapes Markdown metadata"
     task: "Add a `profile` page\n## Injected heading",
     project_brief: "Use `existing` conventions\n- injected list item",
     approved_context: [{ path: "src/`routes`.ts\n## path", reason: "Current `route` boundary\n- injected", content: "export const routes = {};" }]
-  }, [{ ...source, title: "Source [title]", url: "https://example.com/a)>\nunsafe", content: "password=supersecret123" }]);
+  }, [{ ...source, title: "Source [title]", url: "https://example.com/a)>\nunsafe", content: "example password=supersecret123" }]);
 
   assert.match(result.changeSummary.join(" "), /No public source skill was available/);
   assert.match(result.changeSummary.join(" "), /Withheld 1 public source/);

@@ -29,7 +29,7 @@ test("rejects secret-like values in task and context metadata", () => {
   assert.equal(findSecretKinds("DATABASE_URL=postgres://user:password@example.com/db").includes("database-url"), true);
   assert.equal(findSecretKinds("const accessToken = getToken();").length, 0);
   assert.equal(findSecretKinds('bearerToken: "a-long-test-token"').includes("credential-assignment"), false);
-  assert.equal(findSecretKinds("password=supersecret123").includes("credential-assignment"), true);
+  assert.equal(findSecretKinds("example password=supersecret123").includes("credential-assignment"), true);
   assert.equal(findSecretKinds("API_KEY=example123 password=realsecret99").includes("credential-assignment"), true);
   assert.equal(findSecretKinds("TOKEN=sample123 PASSWORD=realvalue123").includes("credential-assignment"), true);
 });
