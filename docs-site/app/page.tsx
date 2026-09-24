@@ -29,7 +29,7 @@ Use this skill when a page needs to filter a list of items it already has. Keep 
 - Keep the search usable with a keyboard and a visible label.
 
 ## Examples
-- Query `billing` shows matching settings and hides unrelated items.
+- A billing query shows matching settings and hides unrelated items.
 - A blank query shows every setting.
 - A query with no matches shows a helpful empty state.`;
 
