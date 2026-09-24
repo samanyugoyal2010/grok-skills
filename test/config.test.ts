@@ -46,7 +46,7 @@ test("selects Ollama explicitly without a key and applies its local defaults", (
   assert.equal(config.model, "qwen3:8b");
   assert.equal(config.ollamaBaseUrl, "http://127.0.0.1:11434");
   assert.equal(config.modelApiKey, undefined);
-  assert.equal(config.modelTimeoutMs, 60_000);
+  assert.equal(config.modelTimeoutMs, 45_000);
 
   const custom = loadRuntimeConfig({
     SKILL_COMPILER_PROVIDER: "ollama",
@@ -102,6 +102,9 @@ test("accepts a configured trusted proxy client identity header", () => {
   const config = loadRuntimeConfig({ MCP_TRANSPORT: "http", MCP_HTTP_CLIENT_ID_HEADER: "X-Real-IP" });
   assert.equal(config.httpClientIdHeader, "x-real-ip");
   assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", MCP_HTTP_CLIENT_ID_HEADER: "x bad" }), /header name/);
+  for (const header of ["constructor", "toString", "hasOwnProperty", "__proto__"]) {
+    assert.throws(() => loadRuntimeConfig({ MCP_TRANSPORT: "http", MCP_HTTP_CLIENT_ID_HEADER: header }), /header name/);
+  }
 });
 
 test("allows loopback HTTP for local model development and rejects remote HTTP by default", () => {

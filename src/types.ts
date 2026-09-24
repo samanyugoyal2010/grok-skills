@@ -63,6 +63,11 @@ export interface SkillSourceSummary {
 
 export type SkillRetrievalStatus = "complete" | "partial" | "failed";
 
+export interface SkillSearchResult {
+  sources: SkillSource[];
+  status: SkillRetrievalStatus;
+}
+
 export interface CompileSkillResponse {
   sources: SkillSourceSummary[];
   contextManifest: Array<{
@@ -76,6 +81,5 @@ export interface CompileSkillResponse {
 }
 
 export interface SkillRetriever {
-  search(query: string, signal?: AbortSignal): Promise<SkillSource[]>;
-  getLastSearchStatus?: () => SkillRetrievalStatus;
+  search(query: string, signal?: AbortSignal): Promise<SkillSearchResult>;
 }

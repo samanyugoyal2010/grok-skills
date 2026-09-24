@@ -10,6 +10,7 @@ const input: CompileSkillInput = {
   project_brief: "Use the existing design system and add tests.",
   approved_context: [{ path: "src/routes.ts", reason: "Existing route conventions", content: "export const routes = {};" }]
 };
+const syntheticCredential = ["pass", "word=", "super", "secret", "123"].join("");
 
 const source: SkillSource = {
   url: "https://example.com/skill",
@@ -152,7 +153,7 @@ test("cancels a model response body that never finishes", async () => {
 });
 
 test("falls back when the model returns secret-like output", async () => {
-  const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nexample password=supersecret123";
+  const markdown = `---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nexample ${syntheticCredential}`;
   const result = await compileSkill(input, [], {
     modelUrl: "https://model.example/compile",
     fetcher: (async () => new Response(JSON.stringify({ output: markdown }), { status: 200 })) as typeof fetch
@@ -180,7 +181,7 @@ test("falls back before parsing an oversized model response", async () => {
 
 test("withholds secret-like public source content from the model prompt", async () => {
   let promptBody = "";
-  const result = await compileSkill(input, [{ ...source, content: "example password=supersecret123" }], {
+  const result = await compileSkill(input, [{ ...source, content: `example ${syntheticCredential}` }], {
     modelUrl: "https://model.example/compile",
     fetcher: (async (_url, init) => {
       promptBody = String(init?.body ?? "");
@@ -190,6 +191,7 @@ test("withholds secret-like public source content from the model prompt", async 
   });
   assert.doesNotMatch(promptBody, /supersecret123/);
   assert.match(result.changeSummary.join(" "), /Withheld 1 public source/);
+  assert.match(result.changeSummary.join(" "), /Public source skills were retrieved, but none were safe to use/);
   assert.equal(result.sources.length, 1);
   assert.equal(result.riskNotes.some((note) => note.category === "secret-like-value"), true);
 });
@@ -200,13 +202,29 @@ test("does not claim blocked sources were adapted and escapes Markdown metadata"
     task: "Add a `profile` page\n## Injected heading",
     project_brief: "Use `existing` conventions\n- injected list item",
     approved_context: [{ path: "src/`routes`.ts\n## path", reason: "Current `route` boundary\n- injected", content: "export const routes = {};" }]
-  }, [{ ...source, title: "Source [title]", url: "https://example.com/a)>\nunsafe", content: "example password=supersecret123" }]);
+  }, [{ ...source, title: "Source [title]", url: "https://example.com/a)>\nunsafe", content: `example ${syntheticCredential}` }]);
 
-  assert.match(result.changeSummary.join(" "), /No public source skill was available/);
+  assert.match(result.changeSummary.join(" "), /Public source skills were retrieved, but none were safe to use/);
   assert.match(result.changeSummary.join(" "), /Withheld 1 public source/);
   assert.doesNotMatch(result.skillMarkdown, /^## Injected heading$/m);
   assert.match(result.skillMarkdown, /profile/);
-  assert.match(result.skillMarkdown, /\\`routes\\`/);
+  assert.match(result.skillMarkdown, /``src\/`routes`\.ts ## path``/);
+});
+
+test("escapes Markdown source titles in link labels", async () => {
+  const result = await compileSkill(input, [{ ...source, title: "Source [title]" }]);
+  assert.match(result.skillMarkdown, /Source \\\[title\\\]/);
+});
+
+test("escapes Markdown links and HTML from matched public source text", async () => {
+  const result = await compileSkill(input, [{
+    ...source,
+    content: "Use existing design components [click](https://evil.example) and <img src=x> in frontend feature implementation."
+  }]);
+  assert.match(result.skillMarkdown, /\\\[click\\\]/);
+  assert.match(result.skillMarkdown, /\\<img/);
+  assert.doesNotMatch(result.skillMarkdown, /\[click\]\(https:\/\/evil\.example\)/);
+  assert.doesNotMatch(result.skillMarkdown, /(^|[^\\])<img/);
 });
 
 test("does not emit non-web source URLs into Markdown links", async () => {

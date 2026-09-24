@@ -188,7 +188,7 @@ test("rejects oversized chunked bodies before invoking the MCP handler", async (
 test("serves the compile_skill tool through the real MCP HTTP client", async () => {
   const mcpHandler = createMcpHandler(
     () => createServer({
-      retriever: { search: async () => [] },
+      retriever: { search: async () => ({ sources: [], status: "complete" }) },
       rateLimiter: new RateLimiter(10)
     }),
     { responseMode: "json" }

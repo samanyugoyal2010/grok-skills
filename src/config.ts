@@ -8,7 +8,7 @@ export const DEFAULT_COMPILE_DEADLINE_MS = 60_000;
 export const DEFAULT_MAX_IN_FLIGHT_COMPILATIONS = 2;
 
 export const MODEL_PROVIDERS = ["openai", "anthropic", "openrouter", "groq", "ollama"] as const;
-const DEFAULT_OLLAMA_MODEL_TIMEOUT_MS = 60_000;
+const DEFAULT_OLLAMA_MODEL_TIMEOUT_MS = 45_000;
 export type ModelProvider = typeof MODEL_PROVIDERS[number];
 const CLOUD_MODEL_PROVIDERS = ["openai", "anthropic", "openrouter", "groq"] as const;
 type CloudModelProvider = typeof CLOUD_MODEL_PROVIDERS[number];
@@ -71,7 +71,8 @@ function parseList(value: string | undefined): string[] {
 function parseHeaderName(value: string | undefined): string | undefined {
   const header = value?.trim().toLowerCase();
   if (!header) return undefined;
-  if (!/^[a-z0-9-]+$/.test(header)) throw new Error("MCP_HTTP_CLIENT_ID_HEADER must be a valid HTTP header name");
+  const objectPrototypeNames = new Set(Object.getOwnPropertyNames(Object.prototype).map((name) => name.toLowerCase()));
+  if (!/^[a-z0-9-]+$/.test(header) || objectPrototypeNames.has(header)) throw new Error("MCP_HTTP_CLIENT_ID_HEADER must be a valid HTTP header name");
   return header;
 }
 

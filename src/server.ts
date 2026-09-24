@@ -9,6 +9,8 @@ import { GitHubSkillRetriever } from "./retrieval.js";
 import type { CompilerOptions } from "./compiler.js";
 import { loadModelConfig } from "./config.js";
 
+const MODEL_FALLBACK_RESERVE_MS = 1_000;
+
 export interface ServerDependencies {
   retriever?: SkillRetriever;
   rateLimiter?: RateLimiter | null;
@@ -54,13 +56,26 @@ export function createServer(dependencies: ServerDependencies = {}): McpServer {
         rateLimiter?.consume("anonymous");
         return await inFlightLimiter.run(async () => {
           const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(new Error("Skill compilation deadline exceeded")), Number.isFinite(compileDeadlineMs) && compileDeadlineMs >= 1 ? compileDeadlineMs : 60_000);
+          const deadlineMs = Number.isFinite(compileDeadlineMs) && compileDeadlineMs >= 1 ? compileDeadlineMs : 60_000;
+          const deadlineAt = Date.now() + deadlineMs;
+          const timeout = setTimeout(() => controller.abort(new Error("Skill compilation deadline exceeded")), deadlineMs);
           try {
-            const sources = await retriever.search(input.search_query, controller.signal);
+            const retrieval = await retriever.search(input.search_query, controller.signal);
             if (controller.signal.aborted) throw new Error("Skill compilation deadline exceeded");
-            const result = await compileSkill(input, sources, {
-              ...compilerOptions,
-              retrievalStatus: retriever.getLastSearchStatus?.(),
+            const remainingMs = deadlineAt - Date.now();
+            const remainingModelMs = remainingMs - MODEL_FALLBACK_RESERVE_MS;
+            const modelConfigured = Boolean(compilerOptions.modelUrl || compilerOptions.modelProvider);
+            const configuredModelTimeoutMs = Number.isFinite(compilerOptions.modelTimeoutMs) && (compilerOptions.modelTimeoutMs ?? 0) >= 1
+              ? compilerOptions.modelTimeoutMs!
+              : 20_000;
+            const boundedModelOptions = modelConfigured && remainingModelMs > 0
+              ? { ...compilerOptions, modelTimeoutMs: Math.min(configuredModelTimeoutMs, remainingModelMs) }
+              : modelConfigured
+                ? { ...compilerOptions, skipModel: true }
+                : compilerOptions;
+            const result = await compileSkill(input, retrieval.sources, {
+              ...boundedModelOptions,
+              retrievalStatus: retrieval.status,
               signal: controller.signal
             });
             return {

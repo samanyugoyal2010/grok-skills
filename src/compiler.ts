@@ -1,7 +1,7 @@
 import type { CompileSkillInput, CompileSkillResponse, RiskNote, SkillRetrievalStatus, SkillSource } from "./types.js";
 import { mergeRiskNotes, scanRisk } from "./safety.js";
 import { LIMITS, findSecretKinds } from "./limits.js";
-import { escapeMarkdownInline, escapeMarkdownLinkLabel, escapeMarkdownUrl, singleLine, trimText, validateSkillMarkdown } from "./markdown.js";
+import { escapeMarkdownCodeSpan, escapeMarkdownInline, escapeMarkdownLinkLabel, escapeMarkdownUrl, singleLine, trimText, validateSkillMarkdown } from "./markdown.js";
 import { buildCompilerPrompt } from "./prompt.js";
 import { readLimitedResponse } from "./body.js";
 import { raceWithAbort } from "./abort.js";
@@ -17,6 +17,7 @@ export interface CompilerOptions {
   model?: string;
   modelTimeoutMs?: number;
   retrievalStatus?: SkillRetrievalStatus;
+  skipModel?: boolean;
   fetcher?: typeof fetch;
   signal?: AbortSignal;
 }
@@ -87,7 +88,7 @@ function deterministicSkill(input: CompileSkillInput, sources: SkillSource[]): s
     ? `## Matched Techniques\n\nThe following source notes matched this task. Treat them as reference material, check them against the repository, and review commands before use.\n\n${matchedTechniques}\n\n`
     : "";
   const contextLines = input.approved_context.length
-    ? trimText(input.approved_context.map((file) => `- \`${escapeMarkdownInline(file.path)}\`: ${escapeMarkdownInline(file.reason)}`).join("\n"), 1_800)
+    ? trimText(input.approved_context.map((file) => `- ${escapeMarkdownCodeSpan(file.path)}: ${escapeMarkdownInline(file.reason)}`).join("\n"), 1_800)
     : "- No repository files were approved; ask for the minimum context needed before making assumptions.";
   const task = trimText(escapeMarkdownInline(input.task), 2_000);
   const projectBrief = trimText(escapeMarkdownInline(input.project_brief ?? "No project brief was provided."), 1_500);
@@ -158,6 +159,7 @@ function safeProviderFailure(failure: ProviderFailure): string {
 }
 
 async function compileWithModel(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions): Promise<ModelAttempt> {
+  if (options.skipModel) return { markdown: null, failure: "not enough time remained for model synthesis" };
   if (!options.modelUrl && !(options.modelProvider && options.model && (options.modelProvider === "ollama" || options.modelApiKey))) return { markdown: null };
   if (options.signal?.aborted) return { markdown: null, failure: "cancelled" };
   const fetcher = options.fetcher ?? fetch;
@@ -258,9 +260,11 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
         : options.modelUrl || options.modelProvider
           ? `The configured ${options.modelProvider ?? "model endpoint"} ${modelAttempt.failure ?? "did not produce valid output"}; used the deterministic compiler fallback.`
           : "Compiled with the deterministic local compiler; no model provider was configured.",
-      sources.length && safeSources.length
+      safeSources.length
         ? `${options.retrievalStatus === "partial" ? "Public source retrieval was incomplete; " : ""}Adapted guidance from ${safeSources.length} safe public skill source(s).`
-        : options.retrievalStatus === "failed"
+        : sources.length > 0
+          ? `${options.retrievalStatus === "partial" ? "Public source retrieval was incomplete; " : ""}Public source skills were retrieved, but none were safe to use; compiled from the approved request context.`
+          : options.retrievalStatus === "failed"
           ? "Public source retrieval failed; compiled from the approved request context."
           : options.retrievalStatus === "partial"
             ? "Public source retrieval was incomplete; compiled from the approved request context."

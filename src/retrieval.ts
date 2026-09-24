@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { LIMITS } from "./limits.js";
-import type { SkillRetriever, SkillRetrievalStatus, SkillSource } from "./types.js";
+import type { SkillRetriever, SkillSearchResult, SkillSource } from "./types.js";
 import { readLimitedResponse } from "./body.js";
 import { abortReason, raceWithAbort } from "./abort.js";
 
@@ -83,7 +83,6 @@ interface GitTreeResponse {
 export class GitHubSkillRetriever implements SkillRetriever {
   private readonly responseCache = new Map<string, { value: string; expiresAt: number }>();
   private cachedBytes = 0;
-  private lastSearchStatus: SkillRetrievalStatus = "complete";
 
   constructor(
     private readonly repositories = (process.env.PUBLIC_SKILL_REPOSITORIES ?? "vercel-labs/agent-skills,anthropics/skills").split(",").map((repo) => repo.trim()).filter(Boolean),
@@ -92,10 +91,6 @@ export class GitHubSkillRetriever implements SkillRetriever {
     private readonly timeoutMs = Number(process.env.PUBLIC_SKILL_FETCH_TIMEOUT_MS ?? 10_000),
     private readonly githubToken = process.env.PUBLIC_SKILL_GITHUB_TOKEN
   ) {}
-
-  getLastSearchStatus(): SkillRetrievalStatus {
-    return this.lastSearchStatus;
-  }
 
   private async fetchWithTimeout(url: string, signal?: AbortSignal): Promise<string> {
     if (signal?.aborted) throw abortReason(signal, "Public skill fetch aborted");
@@ -154,7 +149,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
     this.cachedBytes += value.length;
   }
 
-  async search(query: string, signal?: AbortSignal): Promise<SkillSource[]> {
+  async search(query: string, signal?: AbortSignal): Promise<SkillSearchResult> {
     let hadFailure = false;
     const repositories = this.repositories.slice(0, LIMITS.repositories);
     const candidateGroups = await mapWithConcurrency(repositories, 2, async (repository) => {
@@ -204,7 +199,6 @@ export class GitHubSkillRetriever implements SkillRetriever {
           content
         } satisfies SkillSource;
       });
-    this.lastSearchStatus = hadFailure ? (results.length > 0 ? "partial" : "failed") : "complete";
-    return results;
+    return { sources: results, status: hadFailure ? (results.length > 0 ? "partial" : "failed") : "complete" };
   }
 }

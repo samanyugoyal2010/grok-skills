@@ -39,11 +39,19 @@ export function singleLine(value: string): string {
 }
 
 export function escapeMarkdownInline(value: string): string {
-  return singleLine(value).replaceAll("\\", "\\\\").replaceAll("`", "\\`");
+  return singleLine(value).replace(/[\\`*_{}\[\]<>!|]/g, "\\$&");
+}
+
+export function escapeMarkdownCodeSpan(value: string): string {
+  const normalized = singleLine(value);
+  const longestRun = Math.max(0, ...Array.from(normalized.matchAll(/`+/g), (match) => match[0].length));
+  const delimiter = "`".repeat(longestRun + 1);
+  const needsPadding = normalized.startsWith(" ") || normalized.endsWith(" ") || normalized.startsWith("`") || normalized.endsWith("`");
+  return `${delimiter}${needsPadding ? ` ${normalized} ` : normalized}${delimiter}`;
 }
 
 export function escapeMarkdownLinkLabel(value: string): string {
-  return escapeMarkdownInline(value).replaceAll("[", "\\[").replaceAll("]", "\\]");
+  return escapeMarkdownInline(value);
 }
 
 export function escapeMarkdownUrl(value: string): string {
