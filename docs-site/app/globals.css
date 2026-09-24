@@ -447,9 +447,9 @@ pre code { color: inherit; font: inherit; }
   .provider-footnote { font-size: 13px; }
 }
 
-@media (prefers-color-scheme: dark) {
 /* skills.sh inspired workbench: dark terminal canvas, restrained accents, and table-like flow. */
 :root {
+  color-scheme: dark;
   --counter: #090b0d;
   --paper: #111416;
   --paper-warm: #171b1c;
@@ -517,7 +517,7 @@ body { background: var(--counter); color: var(--ink); font: 13px/1.7 var(--sans)
 .hero-intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .95fr); align-items: center; gap: clamp(36px, 7vw, 100px); padding: clamp(46px, 7vw, 82px) 0 48px; border-bottom: 1px solid var(--line); }
 .hero-wordmark-wrap .eyebrow, .eyebrow { color: var(--herb); font-size: 10px; font-weight: 550; letter-spacing: .12em; }
 .hero-wordmark-wrap .eyebrow { margin: 0 0 20px; }
-.hero-wordmark { display: grid; width: fit-content; margin: 0; color: #edf1ec; font: 800 clamp(58px, 8vw, 96px)/.86 var(--mono); letter-spacing: -.105em; text-transform: uppercase; }
+.hero-intro .hero-wordmark { display: grid; width: fit-content; margin: 0; color: #edf1ec; font: 800 clamp(58px, 8vw, 96px)/.86 var(--mono); letter-spacing: -.105em; text-transform: uppercase; }
 .hero-wordmark span:first-child { text-shadow: 2px 2px 0 #090b0d, 4px 4px 0 #56664d; }
 .hero-wordmark span:last-child { color: #bdc7bf; }
 .hero-copy { max-width: 530px; padding: 0; }
@@ -686,5 +686,4 @@ code { color: var(--tomato-dark); font-size: .9em; }
   .station-worktop { padding-inline: 8px; }
   .recipe-copy { grid-template-columns: 1fr; }
   .footer { align-items: flex-start; flex-direction: column; gap: 8px; }
-}
 }
