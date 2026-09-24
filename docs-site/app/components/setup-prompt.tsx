@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { RobotIcon } from "@phosphor-icons/react/dist/csr/Robot";
 import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
 import { ClipboardIcon } from "@phosphor-icons/react/dist/csr/Clipboard";
 import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
-import { WrenchIcon } from "@phosphor-icons/react/dist/csr/Wrench";
+import { CookingPotIcon } from "@phosphor-icons/react/dist/csr/CookingPot";
 import { CodeBlock } from "./code-block";
 import { RecipeStation } from "./recipe-station";
 import { copyTextToClipboard } from "./copy-to-clipboard";
@@ -26,8 +25,7 @@ Safety:
 
 After approval, validate the configuration and verify that this agent can see the compile_skill tool. Explain that deterministic compilation works without a model provider; semantic synthesis requires a separately configured cloud provider API or local Ollama service.`;
 
-const buildExample = `npm ci
-npm run build`;
+const buildExample = "npm ci && npm run build";
 
 type SetupMethod = "agent" | "manual";
 
@@ -69,14 +67,10 @@ export function SetupPrompt() {
     <div className="setup-chooser">
       <div className="setup-method-picker" role="tablist" aria-label="Choose a setup method" onKeyDown={moveSetupTab}>
         <button id="setup-tab-agent" type="button" role="tab" aria-selected={method === "agent"} aria-controls="setup-panel" tabIndex={method === "agent" ? 0 : -1} className={`setup-method-option${method === "agent" ? " selected" : ""}`} onClick={() => setMethod("agent")}>
-          <span className="setup-method-icon"><RobotIcon size={19} weight="duotone" aria-hidden="true" /></span>
-          <span className="setup-method-copy"><strong>Agent setup</strong><small>Copy one prompt and review each change.</small></span>
-          <span className="setup-method-check" aria-hidden="true">{method === "agent" ? <CheckIcon size={16} weight="bold" /> : null}</span>
+          <span className="setup-method-copy"><strong>Guided setup</strong></span>
         </button>
         <button id="setup-tab-manual" type="button" role="tab" aria-selected={method === "manual"} aria-controls="setup-panel" tabIndex={method === "manual" ? 0 : -1} className={`setup-method-option${method === "manual" ? " selected" : ""}`} onClick={() => setMethod("manual")}>
-          <span className="setup-method-icon"><WrenchIcon size={18} weight="duotone" aria-hidden="true" /></span>
-          <span className="setup-method-copy"><strong>Manual setup</strong><small>Install the server and connect it yourself.</small></span>
-          <span className="setup-method-check" aria-hidden="true">{method === "manual" ? <CheckIcon size={16} weight="bold" /> : null}</span>
+          <span className="setup-method-copy"><strong>Manual setup</strong></span>
         </button>
       </div>
 
@@ -85,8 +79,8 @@ export function SetupPrompt() {
           <div className="setup-prompt-copy">
             <div className="setup-prompt-heading">
               <div>
-                <h3 id="agent-prompt-title">Start with your coding agent.</h3>
-                <p>It installs SkillChef locally and prepares the MCP connection. Your agent shows any config changes and waits for your approval.</p>
+                <h3 id="agent-prompt-title">Let your agent handle setup.</h3>
+                <p>Copy the prompt. Your agent proposes the MCP change and waits for your approval.</p>
               </div>
             </div>
             <div className="setup-prompt-actions">
@@ -98,20 +92,26 @@ export function SetupPrompt() {
             </div>
           </div>
           <details className="setup-prompt-preview">
-            <summary>Preview the setup prompt</summary>
+            <summary>What the prompt asks your agent to do</summary>
             <div className="setup-prompt-text" aria-label="Prompt to paste into your coding agent">
               <pre><code>{setupPrompt}</code></pre>
             </div>
           </details>
           <div className="setup-prompt-safety">
             <ShieldCheckIcon size={19} weight="duotone" aria-hidden="true" />
-            <p><strong>You stay in control.</strong> Setup asks before changing agent settings. It does not read your project or add credentials. Later, you approve exact context files and review the skill before saving.</p>
+            <p><strong>Your project stays private.</strong> Setup only configures the local MCP connection. It does not inspect your project or handle provider keys.</p>
           </div>
         </section>
       ) : (
         <section className="manual-setup-content" id="setup-panel" role="tabpanel" aria-labelledby="setup-tab-manual" tabIndex={0}>
-          <p>Install and build the MCP server, then add its local command to your agent’s MCP configuration. Keep provider keys out of agent config files.</p>
-          <div className="build-row"><div><span className="tiny-label">Build locally</span><p>Run these commands from a SkillChef checkout.</p></div><CodeBlock label="terminal" value={buildExample} /></div>
+          <div className="manual-setup-heading">
+            <h3>Build SkillChef locally.</h3>
+            <span className="simmer-mark" aria-hidden="true">
+              <span className="simmer-steam"><i /><i /><i /></span>
+              <CookingPotIcon className="simmer-pot" size={27} weight="duotone" />
+            </span>
+          </div>
+          <div className="manual-setup-build"><span className="tiny-label">1 · From the checkout root, build the server</span><CodeBlock label="terminal" value={buildExample} /></div>
           <RecipeStation />
         </section>
       )}

@@ -93,6 +93,9 @@ export function RecipeStation() {
 
   return (
     <div className="station">
+      <div className="station-heading">
+        <h4>2 · Add it to your agent</h4>
+      </div>
       <div className="station-tabs" role="group" aria-label="Choose your coding agent">
         {recipes.map((recipe) => (
           <button
@@ -107,19 +110,10 @@ export function RecipeStation() {
           </button>
         ))}
       </div>
-      <div key={selected.id} className="station-worktop" id="agent-setup-panel" aria-label={`${selected.name} setup`}>
-        <div className="station-instructions">
-          <div className="station-step"><span className="station-number">1</span><div><h3>Connect SkillChef</h3><p>Put this server entry in <code>{selected.configPath}</code>, then replace the example path with your checkout path.</p></div></div>
-          <CodeBlock label={selected.configPath} value={selected.config} />
-          <p className="station-reload-note">Restart or reload your agent after changing its MCP configuration.</p>
-          <div className="station-step station-step-last"><span className="station-number">2</span><div><h3>Save the finished skill</h3><p>Review the generated file, then save it at <code>{selected.skillPath}</code>. The folder name must match the front matter <code>name</code>.</p></div></div>
-        </div>
-        <aside className="station-slip">
-          <span className="slip-label">One format</span>
-          <h3>One portable skill format</h3>
-          <p>SkillChef returns standard <code>SKILL.md</code> with a name and description. Each agent scans its own folders for that file.</p>
-          <a href="https://agentskills.io/home" target="_blank" rel="noreferrer">Agent Skills format <span aria-hidden="true">↗</span></a>
-        </aside>
+      <div key={selected.id} className="station-config" id="agent-setup-panel" role="region" aria-label={`${selected.name} setup`} aria-live="polite">
+        <p>Put this entry in <code>{selected.configPath}</code> and replace the example path with your checkout path.</p>
+        <CodeBlock label={selected.configPath} value={selected.config} />
+        <p className="station-finish-note">Reload your agent. Save the reviewed skill to <code>{selected.skillPath}</code>, using its frontmatter name as the folder name.</p>
       </div>
     </div>
   );

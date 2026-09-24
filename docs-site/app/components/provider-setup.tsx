@@ -6,7 +6,6 @@ import { CloudIcon } from "@phosphor-icons/react/dist/csr/Cloud";
 import { ArrowSquareOutIcon } from "@phosphor-icons/react/dist/csr/ArrowSquareOut";
 import { FileTextIcon } from "@phosphor-icons/react/dist/csr/FileText";
 import { LaptopIcon } from "@phosphor-icons/react/dist/csr/Laptop";
-import { LockKeyIcon } from "@phosphor-icons/react/dist/csr/LockKey";
 import { CodeBlock } from "./code-block";
 
 type SetupMode = "none" | "local" | "cloud";
@@ -138,10 +137,6 @@ export function ProviderSetup() {
       </div>
 
       <div className="provider-panel">
-        <div className="provider-choice-header">
-          <span className="provider-choice-label">Choose a compiler</span>
-          <span className="provider-choice-help">Change this any time.</span>
-        </div>
         <div className="provider-choice-grid" role="tablist" aria-label="Choose how SkillChef should create skills" onKeyDown={moveProviderTab}>
           {setupModes.map((item) => (
             <button
@@ -226,7 +221,6 @@ export function ProviderSetup() {
         </div>
       </div>
 
-      <p className="provider-footnote"><LockKeyIcon size={17} weight="duotone" aria-hidden="true" /> Store the key in the MCP server environment. Keep it out of chat, source control, skills, and tool calls.</p>
     </section>
   );
 }
