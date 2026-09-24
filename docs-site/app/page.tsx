@@ -123,7 +123,7 @@ export default function Home() {
             <div className="recipe-layout">
               <div className="recipe-copy">
                 <div className="recipe-detail"><div><strong>A clear reason to use it</strong><p>The name and description tell the agent when to reach for this skill.</p></div></div>
-                <div className="recipe-detail"><div><strong>Approved ingredients</strong><p>Only the repo files you choose can shape the draft.</p></div></div>
+                <div className="recipe-detail"><div><strong>Choose the repo ingredients</strong><p>Only the repository files you approve are included as project context.</p></div></div>
                 <div className="recipe-detail"><div><strong>A final taste test</strong><p>Review the result, source notes, and risks before saving.</p></div></div>
               </div>
               <CodeBlock label="Sample recipe · SKILL.md" value={skillFrontmatter} variant="recipe" />
