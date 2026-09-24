@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { compileSkill } from "../src/compiler.js";
 import { LIMITS } from "../src/limits.js";
+import { escapeMarkdownCodeSpan } from "../src/markdown.js";
 import type { CompileSkillInput, SkillSource } from "../src/types.js";
 
 const input: CompileSkillInput = {
@@ -10,6 +11,12 @@ const input: CompileSkillInput = {
   project_brief: "Use the existing design system and add tests.",
   approved_context: [{ path: "src/routes.ts", reason: "Existing route conventions", content: "export const routes = {};" }]
 };
+const syntheticCredential = ["pass", "word=", "super", "secret", "123"].join("");
+
+test("preserves leading and trailing spaces in Markdown code spans", () => {
+  assert.equal(escapeMarkdownCodeSpan(" src/file.ts "), "`  src/file.ts  `");
+  assert.equal(escapeMarkdownCodeSpan("src/\nfile.ts"), "`src/ file.ts`");
+});
 
 const source: SkillSource = {
   url: "https://example.com/skill",
@@ -88,6 +95,26 @@ test("uses the configured provider adapter without placing its key in the prompt
   assert.doesNotMatch(result.changeSummary.join(" "), new RegExp(apiKey));
 });
 
+test("uses the configured Ollama model without requiring or transmitting an API key", async () => {
+  const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nExample";
+  let requestUrl = "";
+  let authHeader: string | null = null;
+  const result = await compileSkill(input, [], {
+    modelProvider: "ollama",
+    model: "qwen3:8b",
+    ollamaBaseUrl: "http://127.0.0.1:11434",
+    fetcher: (async (url, init) => {
+      requestUrl = String(url);
+      authHeader = new Headers(init?.headers).get("authorization");
+      return new Response(JSON.stringify({ message: { content: markdown } }), { status: 200 });
+    }) as typeof fetch
+  });
+  assert.equal(requestUrl, "http://127.0.0.1:11434/api/chat");
+  assert.equal(authHeader, null);
+  assert.match(result.changeSummary.join(" "), /configured ollama/);
+  assert.match(result.skillMarkdown, /^# Skill$/m);
+});
+
 test("times out provider calls that do not resolve and keeps the deterministic fallback", async () => {
   const result = await compileSkill(input, [], {
     modelProvider: "groq",
@@ -132,7 +159,7 @@ test("cancels a model response body that never finishes", async () => {
 });
 
 test("falls back when the model returns secret-like output", async () => {
-  const markdown = "---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\npassword=supersecret123";
+  const markdown = `---\nname: skill\ndescription: A safe example skill.\n---\n\n# Skill\n\n## Description\nSafe\n\n## Procedure\nDo it\n\n## Repository Constraints\nKeep scope\n\n## Examples\nexample ${syntheticCredential}`;
   const result = await compileSkill(input, [], {
     modelUrl: "https://model.example/compile",
     fetcher: (async () => new Response(JSON.stringify({ output: markdown }), { status: 200 })) as typeof fetch
@@ -160,7 +187,7 @@ test("falls back before parsing an oversized model response", async () => {
 
 test("withholds secret-like public source content from the model prompt", async () => {
   let promptBody = "";
-  const result = await compileSkill(input, [{ ...source, content: "password=supersecret123" }], {
+  const result = await compileSkill(input, [{ ...source, content: `example ${syntheticCredential}` }], {
     modelUrl: "https://model.example/compile",
     fetcher: (async (_url, init) => {
       promptBody = String(init?.body ?? "");
@@ -170,6 +197,51 @@ test("withholds secret-like public source content from the model prompt", async 
   });
   assert.doesNotMatch(promptBody, /supersecret123/);
   assert.match(result.changeSummary.join(" "), /Withheld 1 public source/);
+  assert.match(result.changeSummary.join(" "), /Public source skills were retrieved, but none were safe to use/);
   assert.equal(result.sources.length, 1);
   assert.equal(result.riskNotes.some((note) => note.category === "secret-like-value"), true);
+});
+
+test("does not claim blocked sources were adapted and escapes Markdown metadata", async () => {
+  const result = await compileSkill({
+    ...input,
+    task: "Add a `profile` page\n## Injected heading",
+    project_brief: "Use `existing` conventions\n- injected list item",
+    approved_context: [{ path: "src/`routes`.ts\n## path", reason: "Current `route` boundary\n- injected", content: "export const routes = {};" }]
+  }, [{ ...source, title: "Source [title]", url: "https://example.com/a)>\nunsafe", content: `example ${syntheticCredential}` }]);
+
+  assert.match(result.changeSummary.join(" "), /Public source skills were retrieved, but none were safe to use/);
+  assert.match(result.changeSummary.join(" "), /Withheld 1 public source/);
+  assert.doesNotMatch(result.skillMarkdown, /^## Injected heading$/m);
+  assert.match(result.skillMarkdown, /profile/);
+  assert.match(result.skillMarkdown, /``src\/`routes`\.ts ## path``/);
+});
+
+test("escapes Markdown source titles in link labels", async () => {
+  const result = await compileSkill(input, [{ ...source, title: "Source [title]" }]);
+  assert.match(result.skillMarkdown, /Source \\\[title\\\]/);
+});
+
+test("escapes Markdown links and HTML from matched public source text", async () => {
+  const result = await compileSkill(input, [{
+    ...source,
+    content: "Use existing design components [click](https://evil.example) and <img src=x> in frontend feature implementation."
+  }]);
+  assert.match(result.skillMarkdown, /\\\[click\\\]/);
+  assert.match(result.skillMarkdown, /\\<img/);
+  assert.doesNotMatch(result.skillMarkdown, /\[click\]\(https:\/\/evil\.example\)/);
+  assert.doesNotMatch(result.skillMarkdown, /(^|[^\\])<img/);
+});
+
+test("does not emit non-web source URLs into Markdown links", async () => {
+  const result = await compileSkill(input, [{ ...source, url: "javascript:alert(1)" }]);
+  assert.doesNotMatch(result.skillMarkdown, /javascript:/i);
+  assert.match(result.skillMarkdown, /\]\(<#>\)/);
+});
+
+test("distinguishes incomplete public retrieval from a genuine empty result", async () => {
+  const failed = await compileSkill(input, [], { retrievalStatus: "failed" });
+  assert.match(failed.changeSummary.join(" "), /retrieval failed/);
+  const partial = await compileSkill(input, [], { retrievalStatus: "partial" });
+  assert.match(partial.changeSummary.join(" "), /retrieval was incomplete/);
 });

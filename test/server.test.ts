@@ -25,7 +25,7 @@ test("rejects unknown compile_skill input fields", () => {
 });
 
 test("registers the compile_skill tool", async () => {
-  const retriever: SkillRetriever = { search: async () => [] };
+  const retriever: SkillRetriever = { search: async () => ({ sources: [], status: "complete" }) };
   const server = createServer({ retriever, rateLimiter: new RateLimiter(10) });
   const client = new Client({ name: "test-client", version: "0.1.0" });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
@@ -54,6 +54,70 @@ test("registers the compile_skill tool", async () => {
     arguments: { task: "Add a profile page", search_query: "frontend", approved_context: [], unexpected: true }
   });
   assert.equal(invalid.isError, true);
+  await client.close();
+  await server.close();
+});
+
+test("preserves the deterministic fallback budget after slow retrieval", async () => {
+  const retriever: SkillRetriever = {
+    search: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      return { sources: [], status: "complete" };
+    }
+  };
+  const server = createServer({
+    retriever,
+    rateLimiter: new RateLimiter(10),
+    compileDeadlineMs: 500,
+    compilerOptions: {
+      modelProvider: "ollama",
+      model: "qwen3:8b",
+      modelTimeoutMs: 60_000,
+      fetcher: (async () => { throw new Error("model request should be skipped to preserve fallback time"); }) as typeof fetch
+    }
+  });
+  const client = new Client({ name: "deadline-test-client", version: "0.1.0" });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+  const result = await client.callTool({
+    name: "compile_skill",
+    arguments: { task: "Add a profile page", search_query: "frontend", approved_context: [] }
+  });
+  assert.equal(result.isError, undefined);
+  const structured = result.structuredContent as { changeSummary: string[] };
+  assert.match(structured.changeSummary.join(" "), /Skipped model synthesis because too little compilation time remained.*deterministic compiler fallback/);
+  await client.close();
+  await server.close();
+});
+
+test("bounds model time to the budget left after retrieval", async () => {
+  const retriever: SkillRetriever = {
+    search: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return { sources: [], status: "complete" };
+    }
+  };
+  const server = createServer({
+    retriever,
+    rateLimiter: new RateLimiter(10),
+    compileDeadlineMs: 1_500,
+    compilerOptions: {
+      modelProvider: "ollama",
+      model: "qwen3:8b",
+      modelTimeoutMs: 60_000,
+      fetcher: (async () => new Promise<Response>(() => {})) as typeof fetch
+    }
+  });
+  const client = new Client({ name: "bounded-model-timeout-client", version: "0.1.0" });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+  const result = await client.callTool({
+    name: "compile_skill",
+    arguments: { task: "Add a profile page", search_query: "frontend", approved_context: [] }
+  });
+  assert.equal(result.isError, undefined);
+  const structured = result.structuredContent as { changeSummary: string[] };
+  assert.match(structured.changeSummary.join(" "), /timed out.*deterministic compiler fallback/);
   await client.close();
   await server.close();
 });

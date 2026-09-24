@@ -75,6 +75,8 @@ export function createStaticServer(rootDirectory = resolve(process.cwd(), "out")
         return;
       }
 
+      file = realFile;
+      fileStats = await stat(file);
       const headers = { ...responseHeaders(file), "content-length": String(fileStats.size) };
       response.writeHead(200, headers);
       if (request.method === "HEAD") {

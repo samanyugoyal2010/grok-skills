@@ -77,6 +77,72 @@ for (const fixture of providerCases) {
   });
 }
 
+test("sends Ollama native chat requests without an API key or authorization header", async () => {
+  let sentUrl = "";
+  let sentHeaders = new Headers();
+  let requestBody: Record<string, unknown> = {};
+  const result = await requestProvider({
+    provider: "ollama",
+    model: "qwen3:8b",
+    ollamaBaseUrl: "http://localhost:11434",
+    prompt,
+    fetcher: (async (url, init) => {
+      sentUrl = String(url);
+      sentHeaders = new Headers(init?.headers);
+      requestBody = JSON.parse(String(init?.body));
+      assert.equal(init?.redirect, "error");
+      return new Response(JSON.stringify({ message: { role: "assistant", content: markdown }, done: true }), { status: 200 });
+    }) as typeof fetch
+  });
+
+  assert.equal(sentUrl, "http://localhost:11434/api/chat");
+  assert.equal(sentHeaders.has("authorization"), false);
+  assert.equal(sentHeaders.has("x-api-key"), false);
+  assert.deepEqual(requestBody, {
+    model: "qwen3:8b",
+    messages: [{ role: "system", content: prompt.system }, { role: "user", content: prompt.user }],
+    think: false,
+    options: { num_predict: 1_536 },
+    stream: false
+  });
+  assert.deepEqual(result, { text: markdown });
+});
+
+test("returns bounded, sanitized failures for malformed, oversized, and errored Ollama responses", async () => {
+  const base = { provider: "ollama" as const, model: "qwen3:8b", prompt };
+  const malformed = await requestProvider({
+    ...base,
+    fetcher: (async () => new Response("not json", { status: 200 })) as typeof fetch
+  });
+  assert.deepEqual(malformed, { failure: { kind: "response" } });
+
+  const invalidShape = await requestProvider({
+    ...base,
+    fetcher: (async () => new Response(JSON.stringify({ message: { content: 42 } }), { status: 200 })) as typeof fetch
+  });
+  assert.deepEqual(invalidShape, { failure: { kind: "response" } });
+
+  const oversized = await requestProvider({
+    ...base,
+    fetcher: (async () => new Response(JSON.stringify({ message: { content: "x".repeat(140_000) } }), { status: 200 })) as typeof fetch
+  });
+  assert.deepEqual(oversized, { failure: { kind: "oversized" } });
+
+  const httpError = await requestProvider({
+    ...base,
+    fetcher: (async () => new Response("private endpoint detail", { status: 500 })) as typeof fetch
+  });
+  assert.deepEqual(httpError, { failure: { kind: "http", status: 500 } });
+  assert.equal(JSON.stringify(httpError).includes("private endpoint detail"), false);
+
+  const networkError = await requestProvider({
+    ...base,
+    fetcher: (async () => { throw new Error("private network detail"); }) as typeof fetch
+  });
+  assert.deepEqual(networkError, { failure: { kind: "network" } });
+  assert.equal(JSON.stringify(networkError).includes("private network detail"), false);
+});
+
 test("provider HTTP failures expose only a status code, never provider response text", async () => {
   const apiKey = "never-in-an-error-secret";
   const result = await requestProvider({

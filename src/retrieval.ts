@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { LIMITS } from "./limits.js";
-import type { SkillRetriever, SkillSource } from "./types.js";
+import type { SkillRetriever, SkillSearchResult, SkillSource } from "./types.js";
 import { readLimitedResponse } from "./body.js";
 import { abortReason, raceWithAbort } from "./abort.js";
 
@@ -113,7 +113,9 @@ export class GitHubSkillRetriever implements SkillRetriever {
       else signal.addEventListener("abort", abort, { once: true });
     }
     try {
-      const fetchOperation = Promise.resolve().then(() => this.fetcher(url, controller.signal, this.githubToken ? { authorization: `Bearer ${this.githubToken}` } : undefined));
+      const isGithubApiRequest = new URL(url).hostname === "api.github.com";
+      const headers = this.githubToken && isGithubApiRequest ? { authorization: `Bearer ${this.githubToken}` } : undefined;
+      const fetchOperation = Promise.resolve().then(() => this.fetcher(url, controller.signal, headers));
       const value = await raceWithAbort(Promise.race([
         fetchOperation,
         new Promise<string>((_, reject) => {
@@ -147,7 +149,8 @@ export class GitHubSkillRetriever implements SkillRetriever {
     this.cachedBytes += value.length;
   }
 
-  async search(query: string, signal?: AbortSignal): Promise<SkillSource[]> {
+  async search(query: string, signal?: AbortSignal): Promise<SkillSearchResult> {
+    let hadFailure = false;
     const repositories = this.repositories.slice(0, LIMITS.repositories);
     const candidateGroups = await mapWithConcurrency(repositories, 2, async (repository) => {
       try {
@@ -157,6 +160,7 @@ export class GitHubSkillRetriever implements SkillRetriever {
           .map((entry) => ({ repository, path: entry.path!, score: score(query, entry.path!) }));
       } catch {
         // A missing or rate-limited repository must not make other sources fail.
+        hadFailure = true;
         return [];
       }
     });
@@ -173,10 +177,11 @@ export class GitHubSkillRetriever implements SkillRetriever {
         return { candidate, sourceUrl, content };
       } catch {
         // A single stale public entry must not make the whole compile fail.
+        hadFailure = true;
         return null;
       }
     });
-    return retrieved
+    const results = retrieved
       .filter((source): source is { candidate: typeof candidates[number]; sourceUrl: string; content: string } => source !== null)
       .sort((a, b) => {
         const scoreDifference = score(query, b.candidate.path, b.content) - score(query, a.candidate.path, a.content);
@@ -194,5 +199,6 @@ export class GitHubSkillRetriever implements SkillRetriever {
           content
         } satisfies SkillSource;
       });
+    return { sources: results, status: hadFailure ? (results.length > 0 ? "partial" : "failed") : "complete" };
   }
 }

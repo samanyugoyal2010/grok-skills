@@ -107,15 +107,15 @@ export function RecipeStation() {
           </button>
         ))}
       </div>
-      <div className="station-worktop" id="agent-setup-panel" aria-label={`${selected.name} setup`}>
+      <div key={selected.id} className="station-worktop" id="agent-setup-panel" aria-label={`${selected.name} setup`}>
         <div className="station-instructions">
-          <div className="station-step"><span className="station-number">01</span><div><strong>Connect the tool</strong><p>Merge this server entry into <code>{selected.configPath}</code>, then replace the example path with your checkout path.</p></div></div>
+          <div className="station-step"><span className="station-number">1</span><div><h3>Connect SkillChef</h3><p>Put this server entry in <code>{selected.configPath}</code>, then replace the example path with your checkout path.</p></div></div>
           <CodeBlock label={selected.configPath} value={selected.config} />
           <p className="station-reload-note">Restart or reload your agent after changing its MCP configuration.</p>
-          <div className="station-step station-step-last"><span className="station-number">02</span><div><strong>Store the finished recipe</strong><p>After you review the generated file, save it at <code>{selected.skillPath}</code>. The folder name must match the front matter <code>name</code>.</p></div></div>
+          <div className="station-step station-step-last"><span className="station-number">2</span><div><h3>Save the finished skill</h3><p>Review the generated file, then save it at <code>{selected.skillPath}</code>. The folder name must match the front matter <code>name</code>.</p></div></div>
         </div>
         <aside className="station-slip">
-          <span className="slip-label">Shared pantry</span>
+          <span className="slip-label">One format</span>
           <h3>One portable skill format</h3>
           <p>SkillChef returns standard <code>SKILL.md</code> with a name and description. Each agent scans its own folders for that file.</p>
           <a href="https://agentskills.io/home" target="_blank" rel="noreferrer">Agent Skills format <span aria-hidden="true">↗</span></a>

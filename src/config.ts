@@ -7,10 +7,13 @@ export const DEFAULT_HTTP_MAX_BODY_BYTES = 256_000;
 export const DEFAULT_COMPILE_DEADLINE_MS = 60_000;
 export const DEFAULT_MAX_IN_FLIGHT_COMPILATIONS = 2;
 
-export const MODEL_PROVIDERS = ["openai", "anthropic", "openrouter", "groq"] as const;
+export const MODEL_PROVIDERS = ["openai", "anthropic", "openrouter", "groq", "ollama"] as const;
+const DEFAULT_OLLAMA_MODEL_TIMEOUT_MS = 45_000;
 export type ModelProvider = typeof MODEL_PROVIDERS[number];
+const CLOUD_MODEL_PROVIDERS = ["openai", "anthropic", "openrouter", "groq"] as const;
+type CloudModelProvider = typeof CLOUD_MODEL_PROVIDERS[number];
 
-const PROVIDER_KEYS: Record<ModelProvider, string> = {
+const PROVIDER_KEYS: Record<CloudModelProvider, string> = {
   openai: "OPENAI_API_KEY",
   anthropic: "ANTHROPIC_API_KEY",
   openrouter: "OPENROUTER_API_KEY",
@@ -21,8 +24,11 @@ const DEFAULT_MODELS: Record<ModelProvider, string> = {
   openai: "gpt-4.1-mini",
   anthropic: "claude-sonnet-5",
   openrouter: "openai/gpt-4.1-mini",
-  groq: "openai/gpt-oss-20b"
+  groq: "openai/gpt-oss-20b",
+  ollama: "qwen3:8b"
 };
+
+export const DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434";
 
 export interface RuntimeConfig {
   transport: "stdio" | "http";
@@ -32,10 +38,12 @@ export interface RuntimeConfig {
   bearerToken?: string;
   allowedOrigins: string[];
   allowedHosts: string[];
+  httpClientIdHeader?: string;
   modelUrl?: string;
   modelToken?: string;
   modelProvider?: ModelProvider;
   modelApiKey?: string;
+  ollamaBaseUrl?: string;
   model?: string;
   modelTimeoutMs: number;
   compileDeadlineMs: number;
@@ -58,6 +66,14 @@ function parsePositiveInteger(name: string, value: string | undefined, fallback:
 
 function parseList(value: string | undefined): string[] {
   return (value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function parseHeaderName(value: string | undefined): string | undefined {
+  const header = value?.trim().toLowerCase();
+  if (!header) return undefined;
+  const objectPrototypeNames = new Set(Object.getOwnPropertyNames(Object.prototype).map((name) => name.toLowerCase()));
+  if (!/^[a-z0-9-]+$/.test(header) || objectPrototypeNames.has(header)) throw new Error("MCP_HTTP_CLIENT_ID_HEADER must be a valid HTTP header name");
+  return header;
 }
 
 function isLoopbackHostname(hostname: string): boolean {
@@ -97,17 +113,35 @@ function validateRepositories(repositories: string[]): void {
   }
 }
 
-export function loadModelConfig(env: NodeJS.ProcessEnv = process.env): Pick<RuntimeConfig, "modelUrl" | "modelToken" | "modelProvider" | "modelApiKey" | "model"> {
+function parseOllamaBaseUrl(value: string | undefined): string {
+  const configured = value?.trim() || DEFAULT_OLLAMA_BASE_URL;
+  let parsed: URL;
+  try {
+    parsed = new URL(configured);
+  } catch {
+    throw new Error("SKILL_COMPILER_OLLAMA_BASE_URL must be a valid loopback HTTP URL");
+  }
+  if (parsed.protocol !== "http:" || !isLoopbackHostname(parsed.hostname)) {
+    throw new Error("SKILL_COMPILER_OLLAMA_BASE_URL must use HTTP on a loopback host");
+  }
+  if (parsed.username || parsed.password) throw new Error("SKILL_COMPILER_OLLAMA_BASE_URL must not contain embedded credentials");
+  if (parsed.pathname !== "/" || parsed.search || parsed.hash) {
+    throw new Error("SKILL_COMPILER_OLLAMA_BASE_URL must not contain a path, query, or fragment");
+  }
+  return parsed.origin;
+}
+
+export function loadModelConfig(env: NodeJS.ProcessEnv = process.env): Pick<RuntimeConfig, "modelUrl" | "modelToken" | "modelProvider" | "modelApiKey" | "model" | "ollamaBaseUrl"> {
   const modelUrl = parseModelUrl(env.SKILL_COMPILER_MODEL_URL, env.SKILL_COMPILER_ALLOW_INSECURE_HTTP === "true");
   const modelToken = env.SKILL_COMPILER_MODEL_TOKEN || undefined;
-  const configuredKeys = MODEL_PROVIDERS.flatMap((provider) => {
+  const configuredKeys = CLOUD_MODEL_PROVIDERS.flatMap((provider) => {
     const key = env[PROVIDER_KEYS[provider]];
     return key?.trim() ? [{ provider, key }] : [];
   });
   const requestedProvider = env.SKILL_COMPILER_PROVIDER?.trim().toLowerCase();
 
   if (requestedProvider && !(MODEL_PROVIDERS as readonly string[]).includes(requestedProvider)) {
-    throw new Error("SKILL_COMPILER_PROVIDER must be openai, anthropic, openrouter, or groq");
+    throw new Error("SKILL_COMPILER_PROVIDER must be openai, anthropic, openrouter, groq, or ollama");
   }
   if (modelUrl && requestedProvider) throw new Error("SKILL_COMPILER_MODEL_URL cannot be combined with SKILL_COMPILER_PROVIDER");
   if (modelUrl && configuredKeys.length > 0) throw new Error("Provider API keys cannot be combined with SKILL_COMPILER_MODEL_URL");
@@ -118,7 +152,7 @@ export function loadModelConfig(env: NodeJS.ProcessEnv = process.env): Pick<Runt
   let provider: ModelProvider | undefined;
   if (requestedProvider) {
     provider = requestedProvider as ModelProvider;
-    if (!env[PROVIDER_KEYS[provider]]?.trim()) {
+    if (provider !== "ollama" && !env[PROVIDER_KEYS[provider]]?.trim()) {
       throw new Error(`${PROVIDER_KEYS[provider]} must be set when SKILL_COMPILER_PROVIDER selects ${provider}`);
     }
   } else if (configuredKeys.length === 1) {
@@ -128,6 +162,13 @@ export function loadModelConfig(env: NodeJS.ProcessEnv = process.env): Pick<Runt
   }
 
   if (!provider) return {};
+  if (provider === "ollama") {
+    return {
+      modelProvider: provider,
+      model: env.SKILL_COMPILER_MODEL?.trim() || DEFAULT_MODELS[provider],
+      ollamaBaseUrl: parseOllamaBaseUrl(env.SKILL_COMPILER_OLLAMA_BASE_URL)
+    };
+  }
   const apiKey = env[PROVIDER_KEYS[provider]]!.trim();
   return {
     modelProvider: provider,
@@ -146,6 +187,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const bearerToken = env.MCP_HTTP_AUTH_TOKEN || undefined;
   const allowedOrigins = parseList(env.MCP_HTTP_ALLOWED_ORIGINS);
   const allowedHosts = parseList(env.MCP_HTTP_ALLOWED_HOSTS);
+  const httpClientIdHeader = parseHeaderName(env.MCP_HTTP_CLIENT_ID_HEADER);
   const normalizedAllowedHosts = allowedHosts.map((host) => host.toLowerCase());
   const modelConfig = loadModelConfig(env);
   const publicSkillRepositories = parseList(env.PUBLIC_SKILL_REPOSITORIES === undefined ? "vercel-labs/agent-skills,anthropics/skills" : env.PUBLIC_SKILL_REPOSITORIES);
@@ -170,8 +212,13 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     ...(bearerToken ? { bearerToken } : {}),
     allowedOrigins,
     allowedHosts: normalizedAllowedHosts.length > 0 || !isLoopbackHost(httpHost) ? normalizedAllowedHosts : ["localhost", "127.0.0.1", "[::1]"],
+    ...(httpClientIdHeader ? { httpClientIdHeader } : {}),
     ...modelConfig,
-    modelTimeoutMs: parsePositiveInteger("SKILL_COMPILER_MODEL_TIMEOUT_MS", env.SKILL_COMPILER_MODEL_TIMEOUT_MS, 20_000),
+    modelTimeoutMs: parsePositiveInteger(
+      "SKILL_COMPILER_MODEL_TIMEOUT_MS",
+      env.SKILL_COMPILER_MODEL_TIMEOUT_MS,
+      modelConfig.modelProvider === "ollama" ? DEFAULT_OLLAMA_MODEL_TIMEOUT_MS : 20_000
+    ),
     compileDeadlineMs: parsePositiveInteger("SKILL_COMPILER_DEADLINE_MS", env.SKILL_COMPILER_DEADLINE_MS, DEFAULT_COMPILE_DEADLINE_MS),
     maxInFlightCompilations: parsePositiveInteger("MAX_IN_FLIGHT_COMPILATIONS", env.MAX_IN_FLIGHT_COMPILATIONS, DEFAULT_MAX_IN_FLIGHT_COMPILATIONS),
     rateLimitMaxKeys: parsePositiveInteger("RATE_LIMIT_MAX_KEYS", env.RATE_LIMIT_MAX_KEYS, DEFAULT_RATE_LIMIT_MAX_KEYS),

@@ -21,17 +21,17 @@ SkillChef itself never reads the working tree, writes files, or executes generat
 There are two separate model connections:
 
 1. The coding agent's model connection powers the user's normal coding conversation. Keep using that platform's existing login or provider configuration.
-2. SkillChef's model connection is used for the one-time skill-compilation call. The developer chooses OpenAI, Anthropic, OpenRouter, or Groq and pays that provider directly with their API key.
+2. SkillChef's model connection is used for the one-time skill-compilation call. The developer can use OpenAI, Anthropic, OpenRouter, or Groq with their own API key, or run Ollama locally without a key.
 
 An OpenAI API key is not the same as a ChatGPT subscription, and a Claude Code login is not an Anthropic API key. You do not need to change the coding agent's model to use SkillChef.
 
 ## Local development and individual use
 
-The local MCP server is the simplest BYOK deployment. The developer puts one provider key in the environment of the machine that runs SkillChef, selects that provider and model, then configures their coding agent to launch the local server. Use the variable names and setup for the provider in [`.env.example`](.env.example) and [`examples/integrations`](examples/integrations).
+The local MCP server is the simplest deployment. For a cloud provider, the developer puts one provider key in the environment of the machine that runs SkillChef. Alternatively, they select Ollama and an already-installed local model; SkillChef does not pull models. Ollama's base URL is restricted to HTTP loopback hosts and no authentication header is sent. In either case, they configure their coding agent to launch the local server. Use the variable names and setup in [`.env.example`](.env.example) and [`examples/integrations`](examples/integrations).
 
 Keep keys in a local secret store or shell environment. If you use an untracked environment file, make sure your server launcher explicitly loads it and restrict its file permissions; SkillChef does not automatically load arbitrary `.env` files. Never paste a key into `compile_skill`, a prompt, a generated `SKILL.md`, a committed MCP config, or a client-side website. The key belongs to the SkillChef server process. The server should send it only in the provider's authentication header and must not return it in tool results or log it.
 
-With no model key configured, the server uses its deterministic local compiler. With a provider configured, the approved task, brief, and file contents are sent to that provider for synthesis. Check the provider's current data-retention and training terms before sending private repository context. API usage is billed to the configured provider account.
+With no model provider configured, the server uses its deterministic local compiler. With a cloud provider configured, the approved task, brief, and file contents are sent to that provider for synthesis; check its current data-retention and training terms before sending private repository context. With Ollama, approved context is sent only to the local loopback Ollama service configured by the developer. Cloud API usage is billed to the configured provider account; SkillChef does not require an API key for Ollama.
 
 ## Shared hosted service: production boundary
 

@@ -11,6 +11,7 @@ export interface HttpSecurityOptions {
   path?: string;
   healthPath?: string;
   rateLimiter?: RateLimiter;
+  clientKey?: (request: IncomingMessage) => string;
 }
 
 export function isLoopbackHost(host: string): boolean {
@@ -86,6 +87,7 @@ export function createProtectedHttpHandler(
   const allowedHosts = new Set((options.allowedHosts ?? []).map((host) => host.toLowerCase()));
   const maxBodyBytes = options.maxBodyBytes ?? 256_000;
   const rateLimiter = options.rateLimiter;
+  const clientKey = options.clientKey ?? ((request: IncomingMessage) => request.socket?.remoteAddress ?? "anonymous");
 
   const setHeader = (response: ServerResponse, name: string, value: string) => {
     response.setHeader?.(name, value);
@@ -185,7 +187,7 @@ export function createProtectedHttpHandler(
 
     if (rateLimiter) {
       try {
-        rateLimiter.consume(request.socket?.remoteAddress ?? "anonymous");
+        rateLimiter.consume(clientKey(request));
       } catch (error) {
         if (error instanceof RateLimitError) {
           reject(response, 429, "Too many requests", { "retry-after": String(error.retryAfterSeconds) });

@@ -1,41 +1,38 @@
 import {
   ArrowUpRight,
   Check,
-  ChefHat,
-  FileText,
-  Github,
   ShieldCheck
 } from "lucide-react";
-import Image from "next/image";
 import { CodeBlock } from "./components/code-block";
-import { DocsSidebar } from "./components/docs-sidebar";
-import { RecipeStation } from "./components/recipe-station";
 import { ProviderSetup } from "./components/provider-setup";
 import { SetupPrompt } from "./components/setup-prompt";
 
 const repositoryUrl = "https://github.com/samanyugoyal2010/grok-skills";
 
-const buildExample = `npm ci
-npm run build`;
-
 const skillFrontmatter = `---
-name: account-form-validation
-description: Add and verify client-side validation in the account settings form.
+name: mcp-server-release-check
+description: Verify an MCP server before cutting a release.
 ---
 
-# Account form validation
+# MCP server release check
 
 ## Procedure
-...`;
+1. Run the repository's lint and test commands.
+2. Launch the server over stdio and initialize a client.
+3. List tools and call one safe tool; verify stdout contains only protocol messages.
+4. Record any failing command and its output.
+
+## Repo constraints
+- Use the scripts defined in package.json.`;
 
 const requestExample = `{
-  "task": "Add client-side validation to account settings.",
-  "search_query": "frontend form validation testing",
-  "project_brief": "TypeScript app; use Vitest.",
+  "task": "Check the MCP server before a release.",
+  "search_query": "MCP server stdio protocol release checklist",
+  "project_brief": "Node.js MCP server; follow the repository's scripts and test setup.",
   "approved_context": [
     {
-      "path": "src/account/form.ts",
-      "reason": "Current form boundary.",
+      "path": "package.json",
+      "reason": "Use the project's actual lint and test commands.",
       "content": "..."
     }
   ]
@@ -47,132 +44,104 @@ export default function Home() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <nav className="topbar" aria-label="Primary navigation">
         <a className="brand" href="#overview" aria-label="SkillChef home">
-          <span className="brand-mark" aria-hidden="true"><ChefHat size={19} /></span>
-          <span>SkillChef</span>
+          <span className="brand-glyph" aria-hidden="true">▲</span><span><span className="brand-skill">Skill</span><span className="brand-chef">Chef</span></span>
         </a>
         <div className="topbar-meta">
-          <span className="topbar-context">Task-time skill compiler</span>
-          <a className="source-link" href={repositoryUrl} target="_blank" rel="noreferrer">Source <Github size={14} aria-hidden="true" /></a>
-          <a className="topbar-cta" href="#station">Set up SkillChef <ArrowUpRight size={14} aria-hidden="true" /></a>
+          <a className="topbar-link" href="#how-it-works">Workflow</a>
+          <a className="topbar-link" href="#the-recipe">Skill file</a>
+          <a className="topbar-cta" href="#station">Get started <ArrowUpRight size={14} aria-hidden="true" /></a>
         </div>
       </nav>
 
       <div className="docs-layout">
-        <DocsSidebar />
         <main className="content-column" id="main-content" tabIndex={-1}>
           <section className="hero section" id="overview">
-            <div className="hero-copy">
-              <span className="hero-ribbon">A little prep. A much better workflow.</span>
-              <h1>Turn repeat work into a repo-specific skill.</h1>
-              <p className="hero-lede">Give SkillChef a task, project brief, and files you approve. It finds relevant public skills and returns a reviewable <code>SKILL.md</code> with sources and risk notes. Your agent decides whether to save it.</p>
-              <div className="hero-actions">
-                <a className="button button-primary" href="#station">Set up your agent <ArrowUpRight size={15} aria-hidden="true" /></a>
-                <a className="text-link" href="#the-recipe">See the output</a>
+            <div className="hero-intro">
+              <div className="hero-wordmark-wrap">
+                <p className="eyebrow">THE LOCAL AGENT SKILL WORKBENCH</p>
+                <h1 className="hero-wordmark" aria-label="SkillChef"><span>SKILL</span><span>CHEF</span></h1>
               </div>
-              <div className="hero-facts"><span><Check size={14} aria-hidden="true" /> no repository access</span><span><Check size={14} aria-hidden="true" /> approved files only</span><span><Check size={14} aria-hidden="true" /> inspect before saving</span></div>
-            </div>
-
-            <div className="hero-workbench">
-              <div className="hero-illustration" aria-label="Illustration of a recipe sheet, tomato, basil, spoon, and a wooden prep board">
-                <Image src="/skillchef-prep-art.webp" alt="A recipe sheet, tomato, basil, wooden spoon, and cutting board" width={760} height={507} priority />
-                <span>Gather the good bits</span>
+              <div className="hero-copy">
+                <p className="hero-kicker">PREP <span>→</span> COOK <span>→</span> REVIEW</p>
+                <p className="hero-lede">Turn a repeatable task into an Agent Skill. Approve the context, shape the workflow, and review the <code>SKILL.md</code> before saving.</p>
+                <div className="hero-actions">
+                  <a className="button button-primary" href="#station">Choose a setup path <ArrowUpRight size={15} aria-hidden="true" /></a>
+                  <a className="text-link" href="#the-recipe">View a sample</a>
+                </div>
               </div>
-              <figure className="skill-specimen">
-                <figcaption className="specimen-head"><span><FileText size={15} aria-hidden="true" /> Example output</span><span>review before saving</span></figcaption>
-                <div className="specimen-path">.agents/skills/account-form-validation/SKILL.md</div>
-                <pre className="specimen-body"><code>{`---
-name: account-form-validation
-description: Validate account settings inputs.
----
-
-# Account form validation
-
-## Procedure
-1. Reuse the shared schema.
-2. Show errors beside fields.
-3. Test valid and invalid values.
-
-## Repo constraints
-- Shared form components; no new dependency.`}</code></pre>
-                <div className="specimen-evidence"><span><b>Context</b> src/account/form.ts · approved</span><span><b>Sources</b> 2 public skills · linked</span></div>
-              </figure>
             </div>
-          </section>
-
-          <section className="promise-strip" aria-label="Workflow summary">
-            <p>From task to reviewable file.</p>
-            <div><span>Task</span><b>→</b><span>Approved files</span><b>→</b><span>Public skills</span><b>→</b><span><code>SKILL.md</code></span></div>
+            <div className="hero-quickstart">
+              <div className="hero-command">
+                <span className="eyebrow">QUICK START</span>
+                <a href="#station">Get the setup prompt <ArrowUpRight size={14} aria-hidden="true" /></a>
+                <small>Local MCP server · review before saving</small>
+              </div>
+              <div className="hero-agents">
+                <span className="eyebrow">AVAILABLE FOR YOUR AGENT</span>
+                <div className="agent-list" role="group" aria-label="Works with Claude Code, Cursor, Codex, and other MCP clients">
+                  <span>CLAUDE CODE</span><span>CURSOR</span><span>CODEX</span><span>+ MCP CLIENTS</span>
+                </div>
+              </div>
+            </div>
           </section>
 
           <section className="section method-section" id="how-it-works">
             <div className="section-heading">
-              <span className="section-kicker">How it works</span>
-              <div><h2>Prep the context. Cook the skill. Taste before saving.</h2><p>Your coding agent stays in control of file selection and installation. SkillChef only compiles the request it receives.</p></div>
+              <div><h2>A workflow becomes a reviewable skill.</h2><p>Choose the task and context, compile it, then inspect sources and risk notes before saving.</p></div>
             </div>
             <div className="method-line">
               <article className="method-step">
-                <span className="method-index">01 / PREP</span>
-                <h3>Choose the ingredients</h3>
-                <p>Describe the task and brief. Your agent proposes useful files; approve the exact text before sending it.</p>
+                <span className="method-index">Step 1 · Prep</span>
+                <h3>Choose a task and files</h3>
+                <p>Describe the repeatable workflow. Approve each file before its text is sent.</p>
               </article>
               <article className="method-step">
-                <span className="method-index">02 / COOK</span>
-                <h3>Compile a focused skill</h3>
-                <p>SkillChef pairs public skill references with the approved context, using your configured model or its local deterministic compiler.</p>
+                <span className="method-index">Step 2 · Cook</span>
+                <h3>Compile with approved context</h3>
+                <p>SkillChef finds public references and combines them with approved context.</p>
               </article>
               <article className="method-step">
-                <span className="method-index">03 / TASTE</span>
-                <h3>Inspect before plating</h3>
-                <p>Review the skill, linked sources, context manifest, and risk notes. Your agent asks before saving; nothing runs automatically.</p>
+                <span className="method-index">Step 3 · Taste</span>
+                <h3>Review before saving</h3>
+                <p>Check the skill, sources, and risk notes. Nothing is saved or run automatically.</p>
               </article>
             </div>
           </section>
-
-          <section className="section station-section" id="station">
-            <div className="section-heading">
-              <span className="section-kicker">Agent setup</span>
-              <div><h2>Let your agent set it up.</h2><p>Copy one instruction into the coding agent you already use. It will install SkillChef locally, prepare the right MCP connection, and verify the tool is available.</p></div>
-            </div>
-            <SetupPrompt />
-            <details className="manual-setup">
-              <summary>Configure SkillChef yourself instead</summary>
-              <div className="manual-setup-content">
-                <p>These local stdio examples are here if you prefer to install and configure it by hand. Keep provider keys out of your agent configuration.</p>
-                <div className="build-row"><div><span className="tiny-label">Build locally</span><p>From the SkillChef repository:</p></div><CodeBlock label="terminal" value={buildExample} /></div>
-                <RecipeStation />
-              </div>
-            </details>
-          </section>
-
-          <ProviderSetup />
 
           <section className="section recipe-section" id="the-recipe">
             <div className="section-heading">
-              <span className="section-kicker">The finished skill</span>
-              <div><h2>What the compiler returns.</h2><p>A plain Agent Skills file. Its folder name must match the <code>name</code> in its front matter.</p></div>
+              <div><h2>A skill file you can inspect.</h2><p>Save it in your agent’s skills folder. Match the folder name to the file’s <code>name</code>.</p></div>
             </div>
             <div className="recipe-layout">
               <div className="recipe-copy">
-                <div className="recipe-detail"><span className="detail-mark detail-green" /><div><strong>Clear name and description</strong><p>Help the agent recognize when this workflow applies.</p></div></div>
-                <div className="recipe-detail"><span className="detail-mark detail-yellow" /><div><strong>Repo-specific constraints</strong><p>Carry forward the conventions in the context you approved.</p></div></div>
-                <div className="recipe-detail"><span className="detail-mark detail-purple" /><div><strong>Sources to inspect</strong><p>See matched excerpts with source links and content hashes.</p></div></div>
+                <div className="recipe-detail"><div><strong>Clear name and description</strong><p>Help the agent recognize when this workflow applies.</p></div></div>
+                <div className="recipe-detail"><div><strong>Repo-specific constraints</strong><p>Carry forward the conventions in the context you approved.</p></div></div>
+                <div className="recipe-detail"><div><strong>Sources to inspect</strong><p>See matched excerpts with source links and content hashes.</p></div></div>
               </div>
               <CodeBlock label="SKILL.md / Agent Skills format" value={skillFrontmatter} />
             </div>
           </section>
 
+          <section className="section station-section" id="station">
+            <div className="section-heading">
+              <div><h2>Pick one setup path.</h2><p>Ask your coding agent to guide setup, or configure the local MCP server yourself.</p></div>
+            </div>
+            <SetupPrompt />
+          </section>
+
+          <ProviderSetup />
+
           <section className="section contract-section" id="contract">
             <div className="section-heading">
-              <span className="section-kicker">What goes in</span>
-              <div><h2>Know what leaves the machine.</h2><p>The MCP tool receives the approved task payload. With a model provider configured, that payload is sent for synthesis; without one, the deterministic compiler runs locally.</p></div>
+              <div><h2>Know where your text goes.</h2><p>Your local MCP server receives only the task and context your agent sends. Choose local deterministic output, local Ollama, or a cloud provider.</p></div>
             </div>
             <div className="contract-layout">
               <CodeBlock label="compile_skill · request" value={requestExample} />
               <div className="boundary-list">
-                <div><Check size={15} aria-hidden="true" /><span><b>Local MCP process:</b> receives the task and approved text from your coding agent.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span><b>GitHub:</b> receives public retrieval requests for configured skill repositories.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span><b>Model provider (optional):</b> receives the submitted task, brief, approved file contents, and selected public skill excerpts for synthesis.</span></div>
-                <div><Check size={15} aria-hidden="true" /><span><b>Your repository:</b> is never read or changed by SkillChef; your agent asks before saving the returned file.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span><b>Your computer:</b> runs the MCP server and receives the text you approved.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span><b>GitHub:</b> serves public skill references to the retriever.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span><b>Model provider:</b> gets the request and selected references only when synthesis is configured.</span></div>
+                <div><Check size={15} aria-hidden="true" /><span><b>Your project:</b> is not read or changed by SkillChef. You review before saving.</span></div>
                 <a href="https://agentskills.io/specification" target="_blank" rel="noreferrer">Read the Agent Skills specification <ArrowUpRight size={14} aria-hidden="true" /></a>
               </div>
             </div>
@@ -180,10 +149,10 @@ description: Validate account settings inputs.
 
           <section className="safety-section" id="safety">
             <div className="safety-mark"><ShieldCheck size={20} aria-hidden="true" /></div>
-            <div><span className="section-kicker">Safety & deployment</span><h2>Local-first today. Not shared BYOK hosting.</h2><p>SkillChef has no user accounts, persistent storage, or per-user provider credentials. Its optional HTTP transport uses the server’s single provider key and billing identity, so it is for a private single-owner deployment—not a public multi-user service. Before sending private code, verify the chosen provider’s current retention and training terms. Public skills and model output are untrusted; risk checks are advisory. Review the generated file before installing it.</p><p className="safety-followup">For a hosted multi-user product, add authentication, per-user authorization and isolated credentials, managed secret storage, tenant-aware rate limits, and explicit data-retention controls first.</p></div>
+            <div><h2>Designed to run locally.</h2><p>SkillChef has no accounts or per-user credentials. HTTP mode uses one server-side provider key, so keep it private and single-tenant. Check a cloud provider’s current data terms before sending private code. Public skills and generated instructions are untrusted; risk checks are advisory. Review every skill before use.</p><p className="safety-followup">A shared hosted service needs user authentication, isolated credentials, and tenant-level controls first.</p></div>
           </section>
 
-          <footer className="footer"><a className="footer-brand" href="#overview"><ChefHat size={17} aria-hidden="true" /> SkillChef</a><span>Task-time compiler for repo-specific agent skills.</span><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRight size={13} aria-hidden="true" /></a></footer>
+          <footer className="footer"><a className="footer-brand" href="#overview">SkillChef</a><span>Turn a workflow into a skill you can inspect.</span><div className="footer-links"><a href="/llms.txt">Full guide</a><a href={repositoryUrl} target="_blank" rel="noreferrer">Source code <ArrowUpRight size={13} aria-hidden="true" /></a></div></footer>
         </main>
       </div>
     </div>

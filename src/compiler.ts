@@ -1,7 +1,7 @@
-import type { CompileSkillInput, CompileSkillResponse, RiskNote, SkillSource } from "./types.js";
+import type { CompileSkillInput, CompileSkillResponse, RiskNote, SkillRetrievalStatus, SkillSource } from "./types.js";
 import { mergeRiskNotes, scanRisk } from "./safety.js";
 import { LIMITS, findSecretKinds } from "./limits.js";
-import { trimText, validateSkillMarkdown } from "./markdown.js";
+import { escapeMarkdownCodeSpan, escapeMarkdownInline, escapeMarkdownLinkLabel, escapeMarkdownUrl, singleLine, trimText, validateSkillMarkdown } from "./markdown.js";
 import { buildCompilerPrompt } from "./prompt.js";
 import { readLimitedResponse } from "./body.js";
 import { raceWithAbort } from "./abort.js";
@@ -13,8 +13,11 @@ export interface CompilerOptions {
   modelToken?: string;
   modelProvider?: ModelProvider;
   modelApiKey?: string;
+  ollamaBaseUrl?: string;
   model?: string;
   modelTimeoutMs?: number;
+  retrievalStatus?: SkillRetrievalStatus;
+  skipModel?: boolean;
   fetcher?: typeof fetch;
   signal?: AbortSignal;
 }
@@ -33,8 +36,8 @@ function skillIdentity(input: CompileSkillInput): { name: string; title: string;
     .replace(/^-|-$/g, "")
     .slice(0, 64)
     .replace(/-+$/g, "") || "repo-workflow";
-  const title = query.replace(/\s+/g, " ").slice(0, 120) || "Repository workflow";
-  const description = trimText(`Use this workflow for ${input.task.trim()}`, 500);
+  const title = singleLine(query).slice(0, 120) || "Repository workflow";
+  const description = trimText(`Use this workflow for ${singleLine(input.task)}`, 500);
   return { name, title, description };
 }
 
@@ -71,13 +74,13 @@ function sourceTechniques(input: CompileSkillInput, sources: SkillSource[]): str
   return matches
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title) || a.text.localeCompare(b.text))
     .slice(0, 5)
-    .map((match) => `- ${match.text} ([${match.title}](${match.url}), sha256: ${match.hash})`);
+    .map((match) => `- ${escapeMarkdownInline(match.text)} ([${escapeMarkdownLinkLabel(match.title)}](<${escapeMarkdownUrl(match.url)}>), sha256: ${escapeMarkdownInline(match.hash)})`);
 }
 
 function deterministicSkill(input: CompileSkillInput, sources: SkillSource[]): string {
   const identity = skillIdentity(input);
   const sourceLines = sources.length
-    ? trimText(sources.map((source) => `- [${trimText(source.title, 160)}](${trimText(source.url, 500)}) (${trimText(source.sourceHash, 128)})`).join("\n"), 2_400)
+    ? trimText(sources.map((source) => `- [${escapeMarkdownLinkLabel(trimText(source.title, 160))}](<${escapeMarkdownUrl(trimText(source.url, 500))}>) (${escapeMarkdownInline(trimText(source.sourceHash, 128))})`).join("\n"), 2_400)
     : "- No public source skill was found; use the repository context and task requirements directly.";
   const techniqueLines = sourceTechniques(input, sources);
   const matchedTechniques = trimText(techniqueLines.join("\n"), 1_800);
@@ -85,11 +88,11 @@ function deterministicSkill(input: CompileSkillInput, sources: SkillSource[]): s
     ? `## Matched Techniques\n\nThe following source notes matched this task. Treat them as reference material, check them against the repository, and review commands before use.\n\n${matchedTechniques}\n\n`
     : "";
   const contextLines = input.approved_context.length
-    ? trimText(input.approved_context.map((file) => `- \`${file.path}\`: ${file.reason}`).join("\n"), 1_800)
+    ? trimText(input.approved_context.map((file) => `- ${escapeMarkdownCodeSpan(file.path)}: ${escapeMarkdownInline(file.reason)}`).join("\n"), 1_800)
     : "- No repository files were approved; ask for the minimum context needed before making assumptions.";
-  const task = trimText(input.task.trim(), 2_000);
-  const projectBrief = trimText(input.project_brief ?? "No project brief was provided.", 1_500);
-  const exampleTask = trimText(input.task.trim(), 1_000);
+  const task = trimText(escapeMarkdownInline(input.task), 2_000);
+  const projectBrief = trimText(escapeMarkdownInline(input.project_brief ?? "No project brief was provided."), 1_500);
+  const exampleTask = trimText(escapeMarkdownInline(input.task), 1_000);
 
   return `---
 name: ${identity.name}
@@ -156,7 +159,8 @@ function safeProviderFailure(failure: ProviderFailure): string {
 }
 
 async function compileWithModel(input: CompileSkillInput, sources: SkillSource[], options: CompilerOptions): Promise<ModelAttempt> {
-  if (!options.modelUrl && !(options.modelProvider && options.modelApiKey && options.model)) return { markdown: null };
+  if (options.skipModel) return { markdown: null };
+  if (!options.modelUrl && !(options.modelProvider && options.model && (options.modelProvider === "ollama" || options.modelApiKey))) return { markdown: null };
   if (options.signal?.aborted) return { markdown: null, failure: "cancelled" };
   const fetcher = options.fetcher ?? fetch;
   const prompt = buildCompilerPrompt(input, sources);
@@ -170,11 +174,12 @@ async function compileWithModel(input: CompileSkillInput, sources: SkillSource[]
   }
   try {
     const request = Promise.resolve().then(async (): Promise<ModelAttempt> => {
-      if (options.modelProvider && options.modelApiKey && options.model) {
+      if (options.modelProvider && options.model && (options.modelProvider === "ollama" || options.modelApiKey)) {
         const result = await requestProvider({
           provider: options.modelProvider,
           model: options.model,
           apiKey: options.modelApiKey,
+          ollamaBaseUrl: options.ollamaBaseUrl,
           prompt,
           fetcher,
           signal: controller.signal
@@ -240,7 +245,7 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
   const modelAttempt = await compileWithModel(input, safeSources, options);
   if (options.signal?.aborted) throw new Error("Skill compilation deadline exceeded");
   const modelMarkdown = modelAttempt.markdown;
-  const skillMarkdown = modelMarkdown ?? deterministicSkill(input, sources);
+  const skillMarkdown = modelMarkdown ?? deterministicSkill(input, safeSources);
   validateSkillMarkdown(skillMarkdown);
 
   const sourceSummaries = sources.map(({ content: _content, ...summary }) => summary);
@@ -253,9 +258,19 @@ export async function compileSkill(input: CompileSkillInput, sources: SkillSourc
       modelMarkdown
         ? `Compiled with the configured ${options.modelProvider ?? "model endpoint"}.`
         : options.modelUrl || options.modelProvider
-          ? `The configured ${options.modelProvider ?? "model endpoint"} ${modelAttempt.failure ?? "did not produce valid output"}; used the deterministic compiler fallback.`
+          ? options.skipModel
+            ? "Skipped model synthesis because too little compilation time remained; used the deterministic compiler fallback."
+            : `The configured ${options.modelProvider ?? "model endpoint"} ${modelAttempt.failure ?? "did not produce valid output"}; used the deterministic compiler fallback.`
           : "Compiled with the deterministic local compiler; no model provider was configured.",
-      sources.length ? `Adapted guidance from ${sources.length} public skill source(s).` : "No public source skill was available; compiled from the approved request context.",
+      safeSources.length
+        ? `${options.retrievalStatus === "partial" ? "Public source retrieval was incomplete; " : ""}Adapted guidance from ${safeSources.length} safe public skill source(s).`
+        : sources.length > 0
+          ? `${options.retrievalStatus === "partial" ? "Public source retrieval was incomplete; " : ""}Public source skills were retrieved, but none were safe to use; compiled from the approved request context.`
+          : options.retrievalStatus === "failed"
+          ? "Public source retrieval failed; compiled from the approved request context."
+          : options.retrievalStatus === "partial"
+            ? "Public source retrieval was incomplete; compiled from the approved request context."
+            : "No public source skill was available; compiled from the approved request context.",
       ...(blockedSources.length ? [`Withheld ${blockedSources.length} public source(s) containing secret-like material from the model prompt.`] : [])
     ],
     riskNotes: riskNotesFor(input, sources, skillMarkdown),
