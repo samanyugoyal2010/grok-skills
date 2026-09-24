@@ -132,7 +132,7 @@ export default function Home() {
 
           <section className="section station-section" id="station">
             <div className="section-heading">
-              <div><h2>Connect SkillChef to your agent.</h2><p>Use a guided setup prompt or configure the local MCP server yourself.</p></div>
+              <div><h2>Set up SkillChef.</h2><p>Choose a guided prompt or connect the local server yourself.</p></div>
             </div>
             <SetupPrompt />
           </section>
