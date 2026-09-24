@@ -78,7 +78,7 @@ export default function Home() {
               </div>
               <div className="hero-agents">
                 <span className="eyebrow">AVAILABLE FOR YOUR AGENT</span>
-                <div className="agent-list" aria-label="Works with Claude Code, Cursor, Codex, and other MCP clients">
+                <div className="agent-list" role="group" aria-label="Works with Claude Code, Cursor, Codex, and other MCP clients">
                   <span>CLAUDE CODE</span><span>CURSOR</span><span>CODEX</span><span>+ MCP CLIENTS</span>
                 </div>
               </div>

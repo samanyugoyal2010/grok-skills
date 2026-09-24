@@ -91,7 +91,7 @@ SKILL_COMPILER_MODEL=${provider.model}`;
           <div>
             <span className="provider-guide-kicker">Cloud setup</span>
             <h3>Use {provider.name} to help write the final skill.</h3>
-            <p>SkillChef sends the task and files you approve to this provider to help write the skill. The key stays in the MCP server process.</p>
+            <p>SkillChef sends the task and files you approve to this provider to help write the skill. The key is read from the MCP server environment and sent only as the provider authentication header.</p>
           </div>
         </div>
 

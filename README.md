@@ -92,10 +92,10 @@ Set exactly one of `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, 
 For Ollama, install and start Ollama yourself, make sure the model is already installed, then configure:
 
 ```bash
-SKILL_COMPILER_PROVIDER=ollama
-SKILL_COMPILER_MODEL=qwen3:8b
+export SKILL_COMPILER_PROVIDER=ollama
+export SKILL_COMPILER_MODEL=qwen3:8b
 # Optional; defaults to http://127.0.0.1:11434
-SKILL_COMPILER_OLLAMA_BASE_URL=http://127.0.0.1:11434
+export SKILL_COMPILER_OLLAMA_BASE_URL=http://127.0.0.1:11434
 ```
 
 SkillChef does not download/pull Ollama models. The endpoint must be plain HTTP on `localhost`, `127.0.0.1`, or `[::1]`; credentials, paths, query strings, fragments, HTTPS, and remote hosts are rejected. Requests use Ollama's native `/api/chat` API with `stream: false`; no API key or authorization header is sent. Approved context is sent to the local Ollama process. `SKILL_COMPILER_MODEL_TIMEOUT_MS` controls request timeout for all providers. Use a local secret manager or your MCP host's process-environment injection; `.env.example` documents names only and is not loaded automatically. For a stdio MCP server started by an IDE, the child inherits the IDE process environment plus any variables the IDE's local MCP launcher injects. An `export` in a terminal affects only processes started from that shell; it will not update an already-running IDE. Configure secrets in an uncommitted local secret store/launcher and restart the MCP child (or IDE, if needed). Never put a real key in repository examples or `compile_skill` arguments.

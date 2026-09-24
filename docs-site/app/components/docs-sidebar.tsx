@@ -34,7 +34,7 @@ export function DocsSidebar() {
 
   return (
     <aside className="sidebar">
-      <nav className="sidebar-group" aria-label="In this guide">
+      <nav className="sidebar-group" aria-label="On this page">
         <span className="sidebar-label">On this page</span>
         {navItems.map(([id, label]) => (
           <a className={`sidebar-link${activeSection === id ? " active" : ""}`} href={`#${id}`} key={id} aria-current={activeSection === id ? "location" : undefined}>

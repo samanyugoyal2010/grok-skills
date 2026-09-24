@@ -1,41 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Clipboard } from "lucide-react";
+import { copyTextToClipboard } from "./copy-to-clipboard";
 
 export function CodeBlock({ label, value }: { label: string; value: string }) {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const resetTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => {
+    if (resetTimer.current !== undefined) window.clearTimeout(resetTimer.current);
+  }, []);
 
   async function copy() {
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(value);
-      } else {
-        throw new Error("Clipboard API unavailable");
-      }
+      await copyTextToClipboard(value);
       setCopyStatus("copied");
     } catch {
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = value;
-        textarea.setAttribute("readonly", "");
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        let copied = false;
-        try {
-          textarea.select();
-          copied = document.execCommand("copy");
-        } finally {
-          textarea.remove();
-        }
-        if (!copied) throw new Error("Copy command failed");
-        setCopyStatus("copied");
-      } catch {
-        setCopyStatus("error");
-      }
+      setCopyStatus("error");
     }
-    window.setTimeout(() => setCopyStatus("idle"), 1800);
+    if (resetTimer.current !== undefined) window.clearTimeout(resetTimer.current);
+    resetTimer.current = window.setTimeout(() => {
+      setCopyStatus("idle");
+      resetTimer.current = undefined;
+    }, 1800);
   }
 
   return (

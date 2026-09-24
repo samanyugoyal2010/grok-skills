@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Bot, Check, Clipboard, ShieldCheck, Wrench } from "lucide-react";
 import { CodeBlock } from "./code-block";
 import { RecipeStation } from "./recipe-station";
+import { copyTextToClipboard } from "./copy-to-clipboard";
 
 const setupPrompt = `Set up SkillChef as a local MCP tool for the coding agent I am using right now.
 
 Official source: https://github.com/samanyugoyal2010/grok-skills (production branch: master)
 
-First inspect the repository README, package.json, and examples/integrations for the current installation instructions. Use a dedicated per-user install directory outside my current project. If SkillChef is already installed there, inspect it and ask before replacing or updating anything. Install dependencies, build it, and run its tests.
+First inspect the repository README, package.json, lockfile, and examples/integrations for current setup instructions. Review package lifecycle scripts before executing them. Use the current environment's per-user application-data directory outside my project. If SkillChef is already installed there, inspect it and ask before replacing or updating anything. Install dependencies, build it, and run its tests. Do not use administrator privileges or run a remote shell script.
 
-Then configure this agent to launch the built SkillChef MCP server over stdio. Follow the integration example for this agent and preserve every existing MCP server entry. Use absolute paths. Do not edit my current project to install SkillChef.
+Detect which coding agent I am using. Configure it to launch the built SkillChef MCP server over stdio, following that agent's integration example. Preserve every existing MCP server entry and use absolute paths. Do not edit my current project to install SkillChef.
 
 Safety:
 - Before changing any agent configuration, show me the exact file and proposed diff and wait for my approval.
@@ -40,34 +41,24 @@ function moveSetupTab(event: KeyboardEvent<HTMLDivElement>) {
 export function SetupPrompt() {
   const [method, setMethod] = useState<SetupMethod>("agent");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const resetTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => {
+    if (resetTimer.current !== undefined) window.clearTimeout(resetTimer.current);
+  }, []);
 
   async function copyPrompt() {
     try {
-      if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable");
-      await navigator.clipboard.writeText(setupPrompt);
+      await copyTextToClipboard(setupPrompt);
       setCopyStatus("copied");
     } catch {
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = setupPrompt;
-        textarea.setAttribute("readonly", "");
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        let copied = false;
-        try {
-          textarea.select();
-          copied = document.execCommand("copy");
-        } finally {
-          textarea.remove();
-        }
-        if (!copied) throw new Error("Copy failed");
-        setCopyStatus("copied");
-      } catch {
-        setCopyStatus("error");
-      }
+      setCopyStatus("error");
     }
-    window.setTimeout(() => setCopyStatus("idle"), 2400);
+    if (resetTimer.current !== undefined) window.clearTimeout(resetTimer.current);
+    resetTimer.current = window.setTimeout(() => {
+      setCopyStatus("idle");
+      resetTimer.current = undefined;
+    }, 2400);
   }
 
   return (
