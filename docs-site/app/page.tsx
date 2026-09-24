@@ -15,18 +15,23 @@ description: Add a searchable list filter using the project's existing patterns.
 
 # Add a list filter
 
-Use this when a page needs to filter items it already has.
+## Description
+Use this skill when a page needs to filter a list of items it already has. Keep the change accessible and consistent with the project.
 
-## Recipe
-1. Reuse the page's current list and input patterns.
-2. Filter loaded items locally. Do not add a request or change the API.
-3. Show all items for a blank query.
-4. Give a clear message when nothing matches.
+## Procedure
+1. Inspect the page and identify its existing list, input, and empty-state patterns.
+2. Add a labeled search input and filter the loaded items locally.
+3. Show the full list when the query is blank and a clear message when no items match.
 
-## Taste test
-- Try matching, unmatched, and blank searches.
-- Check keyboard access and input labels.
-- Run the project's lint and test commands.`;
+## Constraints
+- Do not add a network request or change the API.
+- Reuse existing project components and styles where practical.
+- Keep the search usable with a keyboard and a visible label.
+
+## Examples
+- Query `billing` shows matching settings and hides unrelated items.
+- A blank query shows every setting.
+- A query with no matches shows a helpful empty state.`;
 
 const requestExample = `{
   "task": "Add an accessible search filter to the settings page.",
